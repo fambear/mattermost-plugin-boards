@@ -23,6 +23,7 @@ import (
 	appModel "github.com/mattermost/mattermost-plugin-boards/server/model"
 	"github.com/mattermost/mattermost-plugin-boards/server/services/audit"
 	"github.com/mattermost/mattermost-plugin-boards/server/services/config"
+	"github.com/mattermost/mattermost-plugin-boards/server/services/github"
 	"github.com/mattermost/mattermost-plugin-boards/server/services/metrics"
 	"github.com/mattermost/mattermost-plugin-boards/server/services/notify"
 	"github.com/mattermost/mattermost-plugin-boards/server/services/notify/notifylogger"
@@ -128,6 +129,12 @@ func New(params Params) (*Server, error) {
 		return nil, fmt.Errorf("cannot initialize notification service(s): %w", errNotify)
 	}
 
+	// Init GitHub service (only if ServicesAPI supports PluginHTTP)
+	var githubService *github.Service
+	if params.ServicesAPI != nil {
+		githubService = github.New(params.ServicesAPI)
+	}
+
 	appServices := app.Services{
 		Auth:             authenticator,
 		Store:            params.DBStore,
@@ -139,6 +146,7 @@ func New(params Params) (*Server, error) {
 		Permissions:      params.PermissionsService,
 		ServicesAPI:      params.ServicesAPI,
 		SkipTemplateInit: utils.IsRunningUnitTests(),
+		GitHub:           githubService,
 	}
 	app := app.New(params.Cfg, wsAdapter, appServices)
 

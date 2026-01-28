@@ -262,5 +262,14 @@ func (a *pluginAPIAdapter) DeletePreferencesForUser(userID string, preferences m
 	return normalizeAppErr(appErr)
 }
 
+//
+// Plugin IPC service.
+//
+
+func (a *pluginAPIAdapter) PluginHTTP(request *mm_model.PluginHTTPRequest) (*mm_model.PluginHTTPResponse, error) {
+	resp, appErr := a.api.PluginHTTP(request)
+	return resp, normalizeAppErr(appErr)
+}
+
 // Ensure the adapter implements ServicesAPI.
 var _ model.ServicesAPI = &pluginAPIAdapter{}

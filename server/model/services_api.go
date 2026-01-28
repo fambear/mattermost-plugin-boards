@@ -89,4 +89,7 @@ type ServicesAPI interface {
 	GetPreferencesForUser(userID string) (mm_model.Preferences, error)
 	UpdatePreferencesForUser(userID string, preferences mm_model.Preferences) error
 	DeletePreferencesForUser(userID string, preferences mm_model.Preferences) error
+
+	// Plugin IPC service
+	PluginHTTP(request *mm_model.PluginHTTPRequest) (*mm_model.PluginHTTPResponse, error)
 }
