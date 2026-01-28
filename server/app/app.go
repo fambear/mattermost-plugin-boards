@@ -9,9 +9,7 @@ import (
 	"time"
 
 	"github.com/mattermost/mattermost-plugin-boards/server/auth"
-	"github.com/mattermost/mattermost-plugin-boards/server/model"
 	"github.com/mattermost/mattermost-plugin-boards/server/services/config"
-	"github.com/mattermost/mattermost-plugin-boards/server/services/github"
 	"github.com/mattermost/mattermost-plugin-boards/server/services/metrics"
 	"github.com/mattermost/mattermost-plugin-boards/server/services/notify"
 	"github.com/mattermost/mattermost-plugin-boards/server/services/permissions"
@@ -58,7 +56,6 @@ type Services struct {
 	Permissions      permissions.PermissionsService
 	SkipTemplateInit bool
 	ServicesAPI      servicesAPI
-	GitHub           *github.Service
 }
 
 type App struct {
@@ -74,7 +71,6 @@ type App struct {
 	permissions         permissions.PermissionsService
 	blockChangeNotifier *utils.CallbackQueue
 	servicesAPI         servicesAPI
-	github              *github.Service
 
 	cardLimitMux sync.RWMutex
 	cardLimit    int
@@ -108,15 +104,9 @@ func New(config *config.Configuration, wsAdapter ws.Adapter, services Services) 
 		permissions:         services.Permissions,
 		blockChangeNotifier: utils.NewCallbackQueue("blockChangeNotifier", blockChangeNotifierQueueSize, blockChangeNotifierPoolSize, services.Logger),
 		servicesAPI:         services.ServicesAPI,
-		github:              services.GitHub,
 	}
 	app.initialize(services.SkipTemplateInit)
 	return app
-}
-
-// GetGitHubService returns the GitHub service instance.
-func (a *App) GetGitHubService() *github.Service {
-	return a.github
 }
 
 func (a *App) CardLimit() int {
