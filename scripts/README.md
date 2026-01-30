@@ -79,6 +79,77 @@ MATTERMOST_PATH="/your/custom/path"
 
 ---
 
+### 4. `poll-and-dispatch.sh` (Bot Automation)
+Автоматический опрос карточек и запуск задач для бота.
+
+**Использование:**
+```bash
+# Установить переменные окружения
+export MM_ACCESS_TOKEN="your_access_token"
+export MM_SERVER_URL="https://mm.fambear.online"
+export MM_BOARD_ID="your_board_id"
+
+# Запустить опрос
+./scripts/poll-and-dispatch.sh
+```
+
+**Требования:**
+- jq
+- curl
+- git
+- MM_ACCESS_TOKEN (токен доступа к Mattermost)
+
+**Переменные окружения:**
+- `MM_ACCESS_TOKEN` - токен доступа к Mattermost API (обязательно)
+- `MM_SERVER_URL` - URL сервера Mattermost (по умолчанию: https://mm.fambear.online)
+- `MM_BOARD_ID` - ID доски для опроса (по умолчанию: bpn1j696qhjg1bfp45x59x57tdr)
+- `STATUS_FILTER` - фильтр по статусу карточек (по умолчанию: "In Progress")
+- `PROJECT_FILTER` - фильтр по проекту (по умолчанию: "Boards")
+- `REPO_OWNER` - владелец репозитория GitHub (по умолчанию: fambear)
+- `REPO_NAME` - название репозитория (по умолчанию: mattermost-plugin-boards)
+
+**Что делает:**
+1. Опрашивает доску Mattermost Boards для получения карточек
+2. Фильтрует карточки по статусу и проекту
+3. Для каждой карточки вызывает `execute-bot-task.sh`
+4. Выводит статистику обработанных карточек
+
+---
+
+### 5. `execute-bot-task.sh` (Bot Task Execution)
+Выполнение задачи бота для конкретной карточки с проверкой существующих веток.
+
+**Использование:**
+```bash
+./scripts/execute-bot-task.sh <card_code> <card_title> <card_description> <repo_owner> <repo_name>
+```
+
+**Пример:**
+```bash
+./scripts/execute-bot-task.sh "IT-367" "Fix login bug" "Users cannot login" "fambear" "mattermost-plugin-boards"
+```
+
+**Требования:**
+- git
+- Находиться в корне git-репозитория
+
+**Что делает:**
+1. Проверяет, существует ли ветка `bot/{card_code}` (локально или удаленно)
+2. Если ветка существует:
+   - Переключается на существующую ветку
+   - Подтягивает последние изменения
+   - Продолжает работу на существующей ветке
+3. Если ветка не существует:
+   - Создает новую ветку `bot/{card_code}` от основной ветки
+   - Начинает работу на новой ветке
+4. Подготавливает инструкцию для Augment
+5. Выводит информацию о ветке для дальнейшей работы
+
+**Ключевая особенность:**
+Скрипт **НЕ создает новую ветку**, если уже существует ветка для данной карточки. Это позволяет боту продолжать работу на существующих ветках вместо создания дубликатов.
+
+---
+
 ## 🔧 Настройка прав выполнения
 
 После клонирования репозитория, сделайте скрипты исполняемыми:
@@ -123,6 +194,26 @@ sudo /tmp/update-plugin-on-server.sh
 0 3 * * * /opt/scripts/update-plugin-on-server.sh >> /var/log/boards-update.log 2>&1
 ```
 
+### Автоматизация бота
+
+Настройте автоматический опрос карточек:
+
+```bash
+# Создайте файл с переменными окружения
+cat > ~/.bot-env << 'EOF'
+export MM_ACCESS_TOKEN="your_mattermost_token"
+export MM_SERVER_URL="https://mm.fambear.online"
+export MM_BOARD_ID="bpn1j696qhjg1bfp45x59x57tdr"
+export STATUS_FILTER="In Progress"
+export PROJECT_FILTER="Boards"
+export REPO_OWNER="fambear"
+export REPO_NAME="mattermost-plugin-boards"
+EOF
+
+# Добавьте в crontab для опроса каждые 15 минут
+*/15 * * * * source ~/.bot-env && cd /path/to/repo && ./scripts/poll-and-dispatch.sh >> /var/log/bot-tasks.log 2>&1
+```
+
 ---
 
 ## 🐛 Troubleshooting
@@ -152,6 +243,27 @@ systemctl stop mattermost
 rm -rf /opt/mattermost/plugins/boards
 mv /opt/mattermost/plugins/boards.backup.* /opt/mattermost/plugins/boards
 systemctl start mattermost
+```
+
+### poll-and-dispatch.sh: No cards found
+```bash
+# Проверьте токен доступа
+echo $MM_ACCESS_TOKEN
+
+# Проверьте ID доски
+echo $MM_BOARD_ID
+
+# Проверьте доступность API
+curl -H "Authorization: Bearer $MM_ACCESS_TOKEN" \
+     -H "X-Requested-With: XMLHttpRequest" \
+     "${MM_SERVER_URL}/plugins/focalboard/api/v2/boards/${MM_BOARD_ID}/cards"
+```
+
+### execute-bot-task.sh: Not in a git repository
+```bash
+# Убедитесь, что вы в корне репозитория
+cd /path/to/mattermost-plugin-boards
+./scripts/execute-bot-task.sh ...
 ```
 
 ---
