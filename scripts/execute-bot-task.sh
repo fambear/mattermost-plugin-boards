@@ -28,6 +28,22 @@ if [ -z "$CARD_CODE" ] || [ -z "$CARD_TITLE" ] || [ -z "$REPO_OWNER" ] || [ -z "
     exit 1
 fi
 
+# Validate and sanitize CARD_CODE for use in git branch names
+# Git branch names cannot contain: spaces, ~, ^, :, ?, *, [, \, .., @{, //, end with /, or end with .lock
+if [[ ! "$CARD_CODE" =~ ^[a-zA-Z0-9._-]+$ ]]; then
+    echo -e "${RED}❌ Error: Invalid CARD_CODE '${CARD_CODE}'${NC}"
+    echo "CARD_CODE must contain only alphanumeric characters, dots, underscores, and hyphens"
+    echo "Invalid characters detected. Please use a valid card code format (e.g., IT-367, PROJ_123)"
+    exit 1
+fi
+
+# Additional check: ensure it doesn't start or end with problematic characters
+if [[ "$CARD_CODE" =~ ^[.-] ]] || [[ "$CARD_CODE" =~ [.-]$ ]]; then
+    echo -e "${RED}❌ Error: Invalid CARD_CODE '${CARD_CODE}'${NC}"
+    echo "CARD_CODE cannot start or end with dots or hyphens"
+    exit 1
+fi
+
 echo -e "${YELLOW}📋 Card: ${CARD_CODE} - ${CARD_TITLE}${NC}"
 echo -e "${YELLOW}📦 Repository: ${REPO_OWNER}/${REPO_NAME}${NC}"
 echo ""
@@ -36,6 +52,30 @@ echo ""
 if [ ! -d ".git" ]; then
     echo -e "${RED}❌ Error: Not in a git repository${NC}"
     exit 1
+fi
+
+# Check for clean working tree before proceeding
+echo -e "${YELLOW}🔍 Checking working tree status...${NC}"
+if ! git diff-index --quiet HEAD -- 2>/dev/null; then
+    echo -e "${RED}❌ Error: Working tree has uncommitted changes${NC}"
+    echo ""
+    echo "Please commit or stash your changes before running this script:"
+    echo "  git status                    # See what changed"
+    echo "  git stash                     # Temporarily save changes"
+    echo "  git commit -am 'message'      # Commit changes"
+    echo ""
+    git status --short
+    exit 1
+fi
+
+# Also check for untracked files that might interfere
+if [ -n "$(git ls-files --others --exclude-standard)" ]; then
+    echo -e "${YELLOW}⚠️  Warning: Untracked files detected${NC}"
+    echo "The following untracked files exist:"
+    git ls-files --others --exclude-standard
+    echo ""
+    echo -e "${YELLOW}Continuing anyway (untracked files won't interfere with branch switching)${NC}"
+    echo ""
 fi
 
 # Fetch latest changes
@@ -73,10 +113,27 @@ if [ -n "$EXISTING_BRANCH" ]; then
 else
     echo -e "${YELLOW}🌿 Creating new branch: ${BRANCH_NAME}${NC}"
     
-    # Get default branch (usually main or master)
-    DEFAULT_BRANCH=$(git remote show origin | grep 'HEAD branch' | cut -d' ' -f5)
+    # Get default branch using symbolic-ref (locale-independent and reliable)
+    # This queries the remote HEAD reference directly
+    DEFAULT_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
+
+    # If symbolic-ref fails (e.g., remote HEAD not set), try to detect it
     if [ -z "$DEFAULT_BRANCH" ]; then
-        DEFAULT_BRANCH="main"
+        # Set the remote HEAD reference
+        git remote set-head origin --auto >/dev/null 2>&1 || true
+        DEFAULT_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
+    fi
+
+    # Final fallback: check which common default branch exists
+    if [ -z "$DEFAULT_BRANCH" ]; then
+        if git ls-remote --heads origin main | grep -q "main"; then
+            DEFAULT_BRANCH="main"
+        elif git ls-remote --heads origin master | grep -q "master"; then
+            DEFAULT_BRANCH="master"
+        else
+            echo -e "${RED}❌ Error: Could not determine default branch${NC}"
+            exit 1
+        fi
     fi
     
     # Ensure we're on the latest default branch

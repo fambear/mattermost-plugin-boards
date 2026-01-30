@@ -69,8 +69,23 @@ echo ""
 echo "Test 5: Remote branch detection"
 echo "--------------------------------"
 git fetch origin --quiet
-if git ls-remote --heads origin main | grep -q "main"; then
-    echo "✅ PASS: Can detect remote branches"
+
+# Detect default branch dynamically (same logic as execute-bot-task.sh)
+DEFAULT_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
+if [ -z "$DEFAULT_BRANCH" ]; then
+    git remote set-head origin --auto >/dev/null 2>&1 || true
+    DEFAULT_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
+fi
+if [ -z "$DEFAULT_BRANCH" ]; then
+    if git ls-remote --heads origin main | grep -q "main"; then
+        DEFAULT_BRANCH="main"
+    elif git ls-remote --heads origin master | grep -q "master"; then
+        DEFAULT_BRANCH="master"
+    fi
+fi
+
+if [ -n "$DEFAULT_BRANCH" ] && git ls-remote --heads origin "$DEFAULT_BRANCH" | grep -q "$DEFAULT_BRANCH"; then
+    echo "✅ PASS: Can detect remote branches (found default: $DEFAULT_BRANCH)"
 else
     echo "❌ FAIL: Cannot detect remote branches"
     exit 1
