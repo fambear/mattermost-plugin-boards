@@ -107,10 +107,21 @@ while IFS= read -r card; do
     echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo -e "${GREEN}✓ Processing: ${CARD_CODE} - ${CARD_TITLE}${NC}"
     echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    
+
     # Get card description (from content blocks)
     CARD_DESCRIPTION=$(echo "$card" | jq -r '.fields.description // "No description"')
-    
+
+    # Extract GitHub branch from card fields if it exists
+    # The githubBranch field contains: {ref: "refs/heads/branch-name", url: "...", repo: "...", createdAt: "..."}
+    GITHUB_BRANCH_REF=$(echo "$card" | jq -r '.fields.githubBranch.ref // empty')
+    EXISTING_BRANCH_NAME=""
+
+    if [ -n "$GITHUB_BRANCH_REF" ] && [ "$GITHUB_BRANCH_REF" != "null" ]; then
+        # Extract branch name from ref (e.g., "refs/heads/fb-123/my-feature" -> "fb-123/my-feature")
+        EXISTING_BRANCH_NAME=$(echo "$GITHUB_BRANCH_REF" | sed 's|^refs/heads/||')
+        echo -e "${GREEN}✓ Card has associated branch: ${EXISTING_BRANCH_NAME}${NC}"
+    fi
+
     # Execute bot task
     if [ -f "./scripts/execute-bot-task.sh" ]; then
         ./scripts/execute-bot-task.sh \
@@ -118,8 +129,9 @@ while IFS= read -r card; do
             "$CARD_TITLE" \
             "$CARD_DESCRIPTION" \
             "$REPO_OWNER" \
-            "$REPO_NAME"
-        
+            "$REPO_NAME" \
+            "$EXISTING_BRANCH_NAME"
+
         ((PROCESSED++))
     else
         echo -e "${RED}❌ Error: execute-bot-task.sh not found${NC}"

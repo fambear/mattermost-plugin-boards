@@ -2,13 +2,14 @@
 set -e
 
 # Script to execute a bot task for a card
-# Usage: ./scripts/execute-bot-task.sh <card_code> <card_title> <card_description> <repo_owner> <repo_name>
+# Usage: ./scripts/execute-bot-task.sh <card_code> <card_title> <card_description> <repo_owner> <repo_name> [existing_branch_name]
 
 CARD_CODE="$1"
 CARD_TITLE="$2"
 CARD_DESCRIPTION="$3"
 REPO_OWNER="$4"
 REPO_NAME="$5"
+EXISTING_BRANCH_NAME="${6:-}"  # Optional: branch name from card's githubBranch field
 
 # Colors for output
 RED='\033[0;31m'
@@ -82,17 +83,44 @@ fi
 echo -e "${YELLOW}🔄 Fetching latest changes...${NC}"
 git fetch origin
 
-# Check if branch already exists (locally or remotely)
-BRANCH_NAME="bot/${CARD_CODE}"
+# Determine which branch to use
+# Priority:
+# 1. Branch from card's githubBranch field (if provided)
+# 2. Existing bot/{CARD_CODE} branch (for backward compatibility)
+# 3. Create new bot/{CARD_CODE} branch
+
+BRANCH_NAME=""
 EXISTING_BRANCH=""
 
-# Check remote branches
-if git ls-remote --heads origin "${BRANCH_NAME}" | grep -q "${BRANCH_NAME}"; then
-    EXISTING_BRANCH="remote"
-    echo -e "${GREEN}✓ Found existing remote branch: ${BRANCH_NAME}${NC}"
-elif git show-ref --verify --quiet "refs/heads/${BRANCH_NAME}"; then
-    EXISTING_BRANCH="local"
-    echo -e "${GREEN}✓ Found existing local branch: ${BRANCH_NAME}${NC}"
+if [ -n "$EXISTING_BRANCH_NAME" ]; then
+    # Card has an associated branch - use it
+    BRANCH_NAME="$EXISTING_BRANCH_NAME"
+    echo -e "${BLUE}📎 Card has associated branch: ${BRANCH_NAME}${NC}"
+
+    # Check if this branch exists (locally or remotely)
+    if git ls-remote --heads origin "${BRANCH_NAME}" | grep -q "${BRANCH_NAME}"; then
+        EXISTING_BRANCH="remote"
+        echo -e "${GREEN}✓ Found existing remote branch: ${BRANCH_NAME}${NC}"
+    elif git show-ref --verify --quiet "refs/heads/${BRANCH_NAME}"; then
+        EXISTING_BRANCH="local"
+        echo -e "${GREEN}✓ Found existing local branch: ${BRANCH_NAME}${NC}"
+    else
+        echo -e "${YELLOW}⚠️  Warning: Card references branch '${BRANCH_NAME}' but it doesn't exist${NC}"
+        echo -e "${YELLOW}    Will attempt to create it${NC}"
+    fi
+else
+    # No branch in card - use bot/{CARD_CODE} pattern
+    BRANCH_NAME="bot/${CARD_CODE}"
+    echo -e "${BLUE}🤖 Using bot branch pattern: ${BRANCH_NAME}${NC}"
+
+    # Check if branch already exists (locally or remotely)
+    if git ls-remote --heads origin "${BRANCH_NAME}" | grep -q "${BRANCH_NAME}"; then
+        EXISTING_BRANCH="remote"
+        echo -e "${GREEN}✓ Found existing remote branch: ${BRANCH_NAME}${NC}"
+    elif git show-ref --verify --quiet "refs/heads/${BRANCH_NAME}"; then
+        EXISTING_BRANCH="local"
+        echo -e "${GREEN}✓ Found existing local branch: ${BRANCH_NAME}${NC}"
+    fi
 fi
 
 # Handle existing or new branch
@@ -149,12 +177,18 @@ echo -e "${GREEN}✅ Branch ready: ${BRANCH_NAME}${NC}"
 echo ""
 
 # Prepare instruction for Augment
+if [ -n "$EXISTING_BRANCH" ]; then
+    BRANCH_CONTEXT="You are continuing work on existing branch: ${BRANCH_NAME}"
+else
+    BRANCH_CONTEXT="You are working on branch: ${BRANCH_NAME}"
+fi
+
 INSTRUCTION="Work on task ${CARD_CODE}: ${CARD_TITLE}
 
 Description:
 ${CARD_DESCRIPTION}
 
-You are working on branch: ${BRANCH_NAME}
+${BRANCH_CONTEXT}
 
 Please:
 1. Analyze the task requirements

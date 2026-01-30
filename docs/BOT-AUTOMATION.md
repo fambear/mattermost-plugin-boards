@@ -52,6 +52,7 @@ The bot automation system allows automated task execution based on cards in Matt
 **Key Features:**
 - Fetches cards from specified board
 - Filters by status and project
+- **Extracts existing branch from card's `githubBranch` field** (if present)
 - Calls execute-bot-task.sh for each matching card
 - Provides detailed logging and statistics
 
@@ -77,13 +78,23 @@ export MM_ACCESS_TOKEN="your_token"
 **Purpose:** Execute a bot task for a specific card with smart branch management.
 
 **Key Features:**
+- **Uses card's associated branch** if the card has a `githubBranch` field
 - **Checks for existing branches** (both local and remote)
 - **Uses existing branch** if found (continues previous work)
 - **Creates new branch** only if none exists
 - Prepares instruction for Augment
 - Outputs branch information for tracking
 
-**Branch Naming Convention:**
+**Branch Selection Priority:**
+```
+1. Branch from card's githubBranch field (if provided)
+   - Extracted from card.fields.githubBranch.ref
+   - Example: "fb-123/my-feature" from "refs/heads/fb-123/my-feature"
+2. Existing bot/{card_code} branch (for backward compatibility)
+3. Create new bot/{card_code} branch
+```
+
+**Branch Naming Convention (when creating new):**
 ```
 bot/{card_code}
 ```
@@ -96,30 +107,43 @@ Examples:
 **Logic Flow:**
 ```
 1. Fetch latest changes from origin
-2. Check if branch bot/{card_code} exists:
-   a. Check remote: git ls-remote --heads origin bot/{card_code}
-   b. Check local: git show-ref --verify refs/heads/bot/{card_code}
-3. If branch exists:
+2. Determine which branch to use:
+   a. If card has githubBranch field: use that branch name
+   b. Otherwise: use bot/{card_code} pattern
+3. Check if the determined branch exists:
+   a. Check remote: git ls-remote --heads origin {branch_name}
+   b. Check local: git show-ref --verify refs/heads/{branch_name}
+4. If branch exists:
    - Checkout existing branch
    - Pull latest changes
    - Continue work on existing branch
-4. If branch does NOT exist:
+5. If branch does NOT exist:
    - Checkout default branch (main/master)
    - Pull latest changes
-   - Create new branch bot/{card_code}
+   - Create new branch
    - Start fresh work
-5. Prepare instruction for Augment
-6. Output branch name and status
+6. Prepare instruction for Augment
+7. Output branch name and status
 ```
 
 **Usage:**
 ```bash
+# Without existing branch (creates bot/{card_code})
 ./scripts/execute-bot-task.sh \
     "IT-367" \
     "Fix login bug" \
     "Users cannot login with OAuth" \
     "fambear" \
     "mattermost-plugin-boards"
+
+# With existing branch from card
+./scripts/execute-bot-task.sh \
+    "IT-367" \
+    "Fix login bug" \
+    "Users cannot login with OAuth" \
+    "fambear" \
+    "mattermost-plugin-boards" \
+    "fb-123/my-feature"
 ```
 
 ## Workflow Example
