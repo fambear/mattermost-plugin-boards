@@ -22,9 +22,10 @@ import {IDType, Utils} from '../../utils'
 import AddPropertiesTourStep from '../onboardingTour/addProperties/add_properties'
 import {Permission} from '../../constants'
 import {useHasCurrentBoardPermissions} from '../../hooks/permissions'
-import {GITHUB_PRS_PROPERTY_ID} from './githubPRStatus'
 import propRegistry from '../../properties'
 import {PropertyType} from '../../properties/types'
+
+import {GITHUB_PRS_PROPERTY_ID} from './githubPRStatus'
 
 type Props = {
     board: Board
