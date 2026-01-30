@@ -22,6 +22,7 @@ import {IDType, Utils} from '../../utils'
 import AddPropertiesTourStep from '../onboardingTour/addProperties/add_properties'
 import {Permission} from '../../constants'
 import {useHasCurrentBoardPermissions} from '../../hooks/permissions'
+import {GITHUB_PRS_PROPERTY_ID} from './githubPRStatus'
 import propRegistry from '../../properties'
 import {PropertyType} from '../../properties/types'
 
@@ -146,7 +147,15 @@ const CardDetailProperties = (props: Props) => {
     const visibleProperties: IPropertyTemplate[] = []
     const hiddenProperties: IPropertyTemplate[] = []
 
+    // Property IDs rendered by dedicated components (not in the sidebar)
+    const dedicatedComponentProperties = new Set([GITHUB_PRS_PROPERTY_ID])
+
     board.cardProperties.forEach((propertyTemplate: IPropertyTemplate) => {
+        // Skip properties that have dedicated UI components
+        if (dedicatedComponentProperties.has(propertyTemplate.id)) {
+            return
+        }
+
         const isEmpty = isPropertyEmpty(propertyTemplate)
         const shouldHide = isEmpty && propertyTemplate.options.some((opt) => opt.hideIfEmpty)
 

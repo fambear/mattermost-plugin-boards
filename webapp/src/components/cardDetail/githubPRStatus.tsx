@@ -26,7 +26,7 @@ interface PropertyPR {
     title: string
     url: string
     status: PRStatus
-    repo: string
+    repo?: string
     branch?: string
 }
 
@@ -99,9 +99,7 @@ const parsePRsFromProperty = (card: Card): PropertyPR[] => {
                     typeof pr.number === 'number' &&
                     typeof pr.url === 'string' &&
                     typeof pr.status === 'string' &&
-                    VALID_PR_STATUSES.includes(pr.status) &&
-                    typeof pr.repo === 'string' &&
-                    pr.repo.length > 0,
+                    VALID_PR_STATUSES.includes(pr.status),
                 )
                 .map((pr: any) => ({
                     ...pr,
@@ -121,7 +119,7 @@ const PropertyPRList = ({prs}: {prs: PropertyPR[]}): JSX.Element => {
         <div className='GitHubPRStatus__property-list'>
             {prs.map((pr) => (
                 <div
-                    key={`${pr.repo}-${pr.number}`}
+                    key={`${pr.repo || 'pr'}-${pr.number}`}
                     className='GitHubPRStatus__property-pr'
                 >
                     <a
@@ -129,7 +127,7 @@ const PropertyPRList = ({prs}: {prs: PropertyPR[]}): JSX.Element => {
                         target='_blank'
                         rel='noopener noreferrer'
                         className='GitHubPRStatus__property-pr-title'
-                        title={`${pr.repo}#${pr.number}`}
+                        title={pr.repo ? `${pr.repo}#${pr.number}` : `#${pr.number}`}
                     >
                         {pr.title || `#${pr.number}`}
                     </a>
