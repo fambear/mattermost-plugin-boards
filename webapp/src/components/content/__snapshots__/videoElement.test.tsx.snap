@@ -54,6 +54,7 @@ exports[`components/content/VideoElement YouTube video type should match snapsho
       <img
         alt="Video thumbnail"
         class="VideoElement__thumbnail"
+        data-testid="video-thumbnail"
         src="https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg"
       />
       <div
@@ -94,6 +95,7 @@ exports[`components/content/VideoElement file video type should match snapshot f
     >
       <video
         class="VideoElement__preview"
+        data-testid="video"
       >
         <source
           src="blob:test-video.mp4"

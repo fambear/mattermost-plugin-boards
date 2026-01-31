@@ -6,7 +6,7 @@ import {render, screen, fireEvent, waitFor} from '@testing-library/react'
 import {mocked} from 'jest-mock'
 import {act} from 'react-dom/test-utils'
 
-import {VideoBlock, createVideoBlock} from '../../blocks/videoBlock'
+import {VideoBlock} from '../../blocks/videoBlock'
 
 import {wrapIntl} from '../../testUtils'
 

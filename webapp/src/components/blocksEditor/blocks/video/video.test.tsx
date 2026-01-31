@@ -19,10 +19,6 @@ jest.mock('../../../rootPortal', () => ({
 }))
 
 describe('components/blocksEditor/blocks/video', () => {
-    const mockOnSave = jest.fn()
-    const mockOnCancel = jest.fn()
-    const mockOnChange = jest.fn()
-
     beforeEach(() => {
         jest.clearAllMocks()
     })
@@ -114,8 +110,8 @@ describe('components/blocksEditor/blocks/video', () => {
                 />,
             ))
 
-            const thumbnail = screen.getByTestId('video-thumbnail')
-            fireEvent.click(thumbnail)
+            const overlay = screen.getByRole('button')
+            fireEvent.click(overlay)
 
             await waitFor(() => {
                 expect(screen.queryByTestId('root-portal')).toBeTruthy()

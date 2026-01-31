@@ -140,6 +140,7 @@ const VideoElement = (props: Props): JSX.Element|null => {
                             className='VideoElement__thumbnail'
                             src={thumbnailUrl}
                             alt='Video thumbnail'
+                            data-testid='video-thumbnail'
                         />
                         <div
                             className='VideoElement__overlay'
@@ -227,6 +228,7 @@ const VideoElement = (props: Props): JSX.Element|null => {
                     <div className='VideoElement__wrapper'>
                         <video
                             className='VideoElement__preview'
+                            data-testid='video'
                         >
                             <source src={videoDataUrl}/>
                         </video>

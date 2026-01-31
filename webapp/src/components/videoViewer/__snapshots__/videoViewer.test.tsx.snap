@@ -1,0 +1,116 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`components/videoViewer/VideoViewer File video should match snapshot for file video 1`] = `
+<div>
+  <div
+    class="VideoViewer"
+  >
+    <div
+      class="VideoViewer__backdrop"
+    />
+    <div
+      class="VideoViewer__controls VideoViewer__controls--top"
+    >
+      <button
+        aria-label="Close video"
+        class="IconButton size--medium"
+        title="Close video"
+        type="button"
+      >
+        <i
+          class="CompassIcon icon-close CloseIcon"
+        />
+      </button>
+    </div>
+    <div
+      class="VideoViewer__content"
+    >
+      <video
+        autoplay=""
+        class="VideoViewer__video"
+        controls=""
+      >
+        <source
+          src="blob:test-video.mp4"
+        />
+      </video>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`components/videoViewer/VideoViewer Google Drive video should match snapshot for Google Drive video 1`] = `
+<div>
+  <div
+    class="VideoViewer"
+  >
+    <div
+      class="VideoViewer__backdrop"
+    />
+    <div
+      class="VideoViewer__controls VideoViewer__controls--top"
+    >
+      <button
+        aria-label="Close video"
+        class="IconButton size--medium"
+        title="Close video"
+        type="button"
+      >
+        <i
+          class="CompassIcon icon-close CloseIcon"
+        />
+      </button>
+    </div>
+    <div
+      class="VideoViewer__content"
+    >
+      <iframe
+        allow="autoplay"
+        allowfullscreen=""
+        class="VideoViewer__iframe"
+        frameborder="0"
+        src="https://drive.google.com/file/d/abc123xyz456/preview"
+        title="Google Drive video player"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`components/videoViewer/VideoViewer YouTube video should match snapshot for YouTube video 1`] = `
+<div>
+  <div
+    class="VideoViewer"
+  >
+    <div
+      class="VideoViewer__backdrop"
+    />
+    <div
+      class="VideoViewer__controls VideoViewer__controls--top"
+    >
+      <button
+        aria-label="Close video"
+        class="IconButton size--medium"
+        title="Close video"
+        type="button"
+      >
+        <i
+          class="CompassIcon icon-close CloseIcon"
+        />
+      </button>
+    </div>
+    <div
+      class="VideoViewer__content"
+    >
+      <iframe
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen=""
+        class="VideoViewer__iframe"
+        frameborder="0"
+        src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"
+        title="YouTube video player"
+      />
+    </div>
+  </div>
+</div>
+`;
