@@ -271,8 +271,8 @@ contentRegistry.registerContentType({
     type: 'video',
     getDisplayText: (intl: IntlShape) => intl.formatMessage({id: 'ContentBlock.video', defaultMessage: 'video'}),
     getIcon: () => <CompassIcon icon='file-video-outline'/>,
-    createBlock: async (boardId: string, intl: IntlShape): Promise<VideoBlock | null> => {
-        return new Promise<VideoBlock | null>((resolve) => {
+    createBlock: async (boardId: string, intl: IntlShape) => {
+        return new Promise<VideoBlock>((resolve) => {
             const promptForUrl = () => {
                 const url = window.prompt(intl.formatMessage({
                     id: 'VideoElement.enterUrl',
@@ -280,8 +280,8 @@ contentRegistry.registerContentType({
                 }))
 
                 if (url === null) {
-                    // User cancelled - resolve with null instead of rejecting
-                    resolve(null)
+                    // User cancelled - resolve with empty block instead of rejecting
+                    resolve(createVideoBlock())
                     return
                 }
 
@@ -303,8 +303,8 @@ contentRegistry.registerContentType({
                             }),
                             severity: 'normal',
                         })
-                        // Resolve with null instead of rejecting to avoid unhandled promise rejection
-                        resolve(null)
+                        // Resolve with empty block instead of rejecting to avoid unhandled promise rejection
+                        resolve(createVideoBlock())
                     }
                 } else {
                     // User wants to upload a file
@@ -325,8 +325,8 @@ contentRegistry.registerContentType({
                                     }),
                                     severity: 'normal',
                                 })
-                                // Resolve with null instead of rejecting
-                                resolve(null)
+                                // Resolve with empty block instead of rejecting
+                                resolve(createVideoBlock())
                             }
                         } catch (error) {
                             sendFlashMessage({
@@ -336,8 +336,8 @@ contentRegistry.registerContentType({
                                 }),
                                 severity: 'normal',
                             })
-                            // Resolve with null instead of rejecting
-                            resolve(null)
+                            // Resolve with empty block instead of rejecting
+                            resolve(createVideoBlock())
                         }
                     }, 'video/*')
                 }
