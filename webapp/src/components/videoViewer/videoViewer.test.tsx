@@ -182,11 +182,21 @@ describe('components/videoViewer/VideoViewer', () => {
                 ),
             )
 
+            // First verify that clicking the backdrop DOES close the viewer
+            const backdrop = document.querySelector('.VideoViewer__backdrop')
+            if (backdrop) {
+                fireEvent.click(backdrop)
+                expect(mockOnClose).toHaveBeenCalledTimes(1)
+            }
+
+            // Reset the mock
+            mockOnClose.mockClear()
+
+            // Now verify that clicking the video does NOT close the viewer
+            // because stopPropagation prevents the click from reaching the backdrop
             const video = document.querySelector('.VideoViewer__video')
             if (video) {
                 fireEvent.click(video)
-                // onClose should NOT be called because stopPropagation prevents
-                // the click from reaching the backdrop
                 expect(mockOnClose).not.toHaveBeenCalled()
             }
         })
