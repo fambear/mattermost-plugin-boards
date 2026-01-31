@@ -117,7 +117,7 @@
         border-top: 1px solid transparent;
         box-sizing: border-box;
         padding: 8px;
-        height: 44px;
+        min-height: 44px;
         font-size: 14px;
         position: relative;
         text-overflow: ellipsis;
@@ -135,6 +135,9 @@
         }
 
         &.title-cell {
+            align-items: flex-start;
+            padding-top: 10px;
+
             &:hover {
                 background: transparent;
             }
@@ -143,6 +146,13 @@
         .octo-icontitle {
             flex: 1 1 auto;
             font-weight: 600;
+            min-width: 0;
+
+            .octo-titletext {
+                white-space: normal;
+                word-break: break-word;
+                overflow-wrap: break-word;
+            }
 
             .octo-icon {
                 min-width: 20px;
@@ -246,6 +256,8 @@
     .octo-table-row {
         display: flex;
         flex-direction: row;
+        align-items: stretch;
+        min-height: 44px;
     }
 
     .octo-table-header {
