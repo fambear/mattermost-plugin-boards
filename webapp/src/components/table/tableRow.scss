@@ -61,6 +61,9 @@
     }
 
     .code-cell {
+        display: flex;
+        align-items: center;
+
         .card-code {
             font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
             font-size: 12px;
@@ -71,7 +74,6 @@
             color: rgba(var(--center-channel-color-rgb), 0.72);
             display: inline-block;
             white-space: nowrap;
-            vertical-align: top;
         }
     }
 

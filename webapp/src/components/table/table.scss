@@ -116,7 +116,7 @@
         border-top: 1px solid transparent;
         box-sizing: border-box;
         padding: 8px;
-        height: 44px;
+        min-height: 44px;
         font-size: 14px;
         position: relative;
         text-overflow: ellipsis;
@@ -142,6 +142,12 @@
         .octo-icontitle {
             flex: 1 1 auto;
             font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            word-break: break-word;
 
             .octo-icon {
                 min-width: 20px;
@@ -153,6 +159,12 @@
                 justify-content: center;
                 width: 20px;
                 height: 20px;
+            }
+
+            .octo-titletext {
+                white-space: normal;
+                word-break: break-word;
+                overflow-wrap: break-word;
             }
 
             .Editable {
@@ -199,7 +211,9 @@
         .Editable,
         .octo-propertyvalue {
             text-align: left;
-            white-space: nowrap;
+            white-space: normal;
+            word-break: break-word;
+            overflow-wrap: break-word;
             width: inherit;
         }
 
