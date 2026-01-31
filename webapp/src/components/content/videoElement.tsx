@@ -53,6 +53,7 @@ const detectVideoSource = (url: string): {sourceType: VideoSourceType; videoId: 
 const VideoElement = (props: Props): JSX.Element|null => {
     const [videoDataUrl, setVideoDataUrl] = useState<string|null>(null)
     const [showViewer, setShowViewer] = useState(false)
+    const [loadError, setLoadError] = useState(false)
 
     const {block} = props
     const sourceType: VideoSourceType = block.fields.sourceType || 'file'
@@ -60,14 +61,22 @@ const VideoElement = (props: Props): JSX.Element|null => {
     const videoUrl = block.fields.videoUrl || ''
 
     useEffect(() => {
-        if (sourceType === 'file' && !videoDataUrl && block.fields.fileId) {
+        if (sourceType === 'file' && !videoDataUrl && !loadError && block.fields.fileId) {
             const loadVideo = async () => {
-                const fileURL = await octoClient.getFileAsDataUrl(block.boardId, block.fields.fileId)
-                setVideoDataUrl(fileURL.url || '')
+                try {
+                    const fileURL = await octoClient.getFileAsDataUrl(block.boardId, block.fields.fileId)
+                    if (fileURL.url) {
+                        setVideoDataUrl(fileURL.url)
+                    } else {
+                        setLoadError(true)
+                    }
+                } catch (error) {
+                    setLoadError(true)
+                }
             }
             loadVideo()
         }
-    }, [block, sourceType, videoDataUrl])
+    }, [block, sourceType, videoDataUrl, loadError])
 
     const handleVideoClick = useCallback((e: React.MouseEvent) => {
         e.stopPropagation()
@@ -230,7 +239,10 @@ contentRegistry.registerContentType({
     createBlock: async (boardId: string, intl: IntlShape) => {
         return new Promise<VideoBlock>((resolve) => {
             // Prompt for URL or file
-            const url = prompt('Enter YouTube or Google Drive URL (or leave empty to upload a file):')
+            const url = prompt(intl.formatMessage({
+                id: 'createVideoBlock.prompt',
+                defaultMessage: 'Enter YouTube or Google Drive URL (or leave empty to upload a file):'
+            }))
             if (url && url.trim()) {
                 const detected = detectVideoSource(url.trim())
                 if (detected) {
@@ -247,7 +259,7 @@ contentRegistry.registerContentType({
                         }),
                         severity: 'normal'
                     })
-                    resolve({} as VideoBlock)
+                    resolve(createVideoBlock())
                 }
             } else {
                 // File upload
@@ -271,10 +283,10 @@ contentRegistry.registerContentType({
                                 }),
                                 severity: 'normal'
                             })
-                            resolve({} as VideoBlock)
+                            resolve(createVideoBlock())
                         }
                     } else {
-                        resolve({} as VideoBlock)
+                        resolve(createVideoBlock())
                     }
                 }
                 input.click()
