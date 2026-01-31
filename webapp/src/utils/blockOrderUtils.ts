@@ -93,5 +93,5 @@ export function repairContentOrder(contentOrder: ContentOrder | undefined, conte
         repairedOrder.push(missingId)
     }
 
-    return repairedOrder
+    return repairedOrder.length > 0 ? repairedOrder : []
 }
