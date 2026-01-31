@@ -14,8 +14,11 @@ import {RootState} from './index'
 
 export const repairCardBlockOrder = createAsyncThunk(
     'contents/repairCardBlockOrder',
-    async (cardId: string) => {
-        await client.repairBlockOrder(cardId)
+    async (cardId: string, thunkAPI) => {
+        const response = await client.repairBlockOrder(cardId)
+        if (!response.ok) {
+            return thunkAPI.rejectWithValue({cardId, status: response.status})
+        }
         return {cardId}
     },
 )

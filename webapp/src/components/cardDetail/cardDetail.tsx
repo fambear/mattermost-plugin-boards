@@ -172,6 +172,10 @@ const CardDetail = (props: Props): JSX.Element|null => {
     }, [card.id])
 
     useEffect(() => {
+        if (!canEditBoardCards) {
+            return
+        }
+
         if (props.contents.length === 0) {
             return
         }
@@ -186,7 +190,7 @@ const CardDetail = (props: Props): JSX.Element|null => {
             Utils.log(`Repairing block order for card ${card.id}: ${validation.orphanedIds.length} orphaned, ${validation.missingIds.length} missing`)
             dispatch(repairCardBlockOrder(card.id))
         }
-    }, [card.id, card.fields.contentOrder, props.contents, dispatch])
+    }, [canEditBoardCards, card.id, card.fields.contentOrder, props.contents, dispatch])
 
     if (!card) {
         return null
