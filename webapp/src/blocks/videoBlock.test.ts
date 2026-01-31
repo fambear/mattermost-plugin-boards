@@ -18,11 +18,22 @@ describe('blocks/videoBlock', () => {
 
         test('should create a video block with file fields', () => {
             const baseBlock = {
+                id: 'test-id',
+                boardId: 'board-123',
+                parentId: '',
+                createdBy: 'user-1',
+                modifiedBy: 'user-1',
+                schema: 0,
+                type: 'unknown' as const,
+                title: '',
                 fields: {
                     fileId: 'file-id-123',
                     filename: 'my-video.mp4',
                     sourceType: 'file' as const,
                 },
+                createAt: 0,
+                updateAt: 0,
+                deleteAt: 0,
             }
 
             const block = createVideoBlock(baseBlock)
@@ -35,11 +46,22 @@ describe('blocks/videoBlock', () => {
 
         test('should create a video block with YouTube fields', () => {
             const baseBlock = {
+                id: 'test-id',
+                boardId: 'board-123',
+                parentId: '',
+                createdBy: 'user-1',
+                modifiedBy: 'user-1',
+                schema: 0,
+                type: 'unknown' as const,
+                title: '',
                 fields: {
                     sourceType: 'youtube' as const,
                     videoId: 'dQw4w9WgXcQ',
                     videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
                 },
+                createAt: 0,
+                updateAt: 0,
+                deleteAt: 0,
             }
 
             const block = createVideoBlock(baseBlock)
@@ -52,11 +74,22 @@ describe('blocks/videoBlock', () => {
 
         test('should create a video block with Google Drive fields', () => {
             const baseBlock = {
+                id: 'test-id',
+                boardId: 'board-123',
+                parentId: '',
+                createdBy: 'user-1',
+                modifiedBy: 'user-1',
+                schema: 0,
+                type: 'unknown' as const,
+                title: '',
                 fields: {
                     sourceType: 'gdrive' as const,
                     videoId: 'abc123xyz456',
                     videoUrl: 'https://drive.google.com/file/d/abc123xyz456/view',
                 },
+                createAt: 0,
+                updateAt: 0,
+                deleteAt: 0,
             }
 
             const block = createVideoBlock(baseBlock)
@@ -71,6 +104,12 @@ describe('blocks/videoBlock', () => {
             const baseBlock = {
                 id: 'custom-block-id',
                 boardId: 'board-123',
+                parentId: '',
+                createdBy: 'user-1',
+                modifiedBy: 'user-1',
+                schema: 0,
+                type: 'unknown' as const,
+                title: '',
                 fields: {
                     fileId: 'file-id-123',
                     filename: 'test-video.mov',
@@ -78,6 +117,9 @@ describe('blocks/videoBlock', () => {
                     videoUrl: 'https://example.com/video',
                     videoId: 'custom-id',
                 },
+                createAt: 0,
+                updateAt: 0,
+                deleteAt: 0,
             }
 
             const block = createVideoBlock(baseBlock)
