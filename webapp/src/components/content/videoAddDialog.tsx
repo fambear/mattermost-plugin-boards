@@ -62,7 +62,7 @@ const VideoAddDialog = (props: Props): JSX.Element => {
         e.preventDefault()
         e.stopPropagation()
         onClose()
-    }, {enableOnFormTags: ['INPUT']})
+    }, {enableOnTags: ['INPUT']})
 
     const handleUrlSubmit = useCallback(() => {
         const trimmed = urlInput.trim()
