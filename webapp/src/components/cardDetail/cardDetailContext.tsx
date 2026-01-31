@@ -46,26 +46,31 @@ export const CardDetailProvider = (props: CardDetailProps): ReactElement => {
     })
     const {card} = props
     const addBlock = useCallback(async (handler: ContentHandler, index: number, auto: boolean) => {
-        const block = await handler.createBlock(card.boardId, intl)
-        block.parentId = card.id
-        block.boardId = card.boardId
-        const typeName = handler.getDisplayText(intl)
-        const description = intl.formatMessage({id: 'ContentBlock.addElement', defaultMessage: 'add {type}'}, {type: typeName})
-        await mutator.performAsUndoGroup(async () => {
-            const afterRedo = async (newBlock: Block) => {
-                const contentOrder = card.fields.contentOrder.slice()
-                contentOrder.splice(index, 0, newBlock.id)
-                await octoClient.patchBlock(card.boardId, card.id, {updatedFields: {contentOrder}})
-            }
+        try {
+            const block = await handler.createBlock(card.boardId, intl)
+            block.parentId = card.id
+            block.boardId = card.boardId
+            const typeName = handler.getDisplayText(intl)
+            const description = intl.formatMessage({id: 'ContentBlock.addElement', defaultMessage: 'add {type}'}, {type: typeName})
+            await mutator.performAsUndoGroup(async () => {
+                const afterRedo = async (newBlock: Block) => {
+                    const contentOrder = card.fields.contentOrder.slice()
+                    contentOrder.splice(index, 0, newBlock.id)
+                    await octoClient.patchBlock(card.boardId, card.id, {updatedFields: {contentOrder}})
+                }
 
-            const beforeUndo = async () => {
-                const contentOrder = card.fields.contentOrder.slice()
-                await octoClient.patchBlock(card.boardId, card.id, {updatedFields: {contentOrder}})
-            }
+                const beforeUndo = async () => {
+                    const contentOrder = card.fields.contentOrder.slice()
+                    await octoClient.patchBlock(card.boardId, card.id, {updatedFields: {contentOrder}})
+                }
 
-            const insertedBlock = await mutator.insertBlock(block.boardId, block, description, afterRedo, beforeUndo)
-            setLastAddedBlock({id: insertedBlock.id, autoAdded: auto})
-        })
+                const insertedBlock = await mutator.insertBlock(block.boardId, block, description, afterRedo, beforeUndo)
+                setLastAddedBlock({id: insertedBlock.id, autoAdded: auto})
+            })
+        } catch (error) {
+            // Block creation was cancelled or failed - silently ignore
+            // The createBlock function already shows appropriate error messages
+        }
     }, [card.boardId, card.id, card.fields.contentOrder])
 
     const deleteBlock = useCallback(async (block: Block, index: number) => {

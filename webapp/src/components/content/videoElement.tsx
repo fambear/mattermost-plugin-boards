@@ -52,6 +52,7 @@ const detectVideoSource = (url: string): {sourceType: VideoSourceType; videoId: 
 const VideoElement = (props: Props): JSX.Element|null => {
     const [videoDataUrl, setVideoDataUrl] = useState<string|null>(null)
     const [showViewer, setShowViewer] = useState(false)
+    const [loadError, setLoadError] = useState(false)
 
     const {block} = props
     const sourceType: VideoSourceType = block.fields.sourceType || 'file'
@@ -60,8 +61,15 @@ const VideoElement = (props: Props): JSX.Element|null => {
     useEffect(() => {
         if (sourceType === 'file' && !videoDataUrl && block.fields.fileId) {
             const loadVideo = async () => {
-                const fileURL = await octoClient.getFileAsDataUrl(block.boardId, block.fields.fileId)
-                setVideoDataUrl(fileURL.url || '')
+                try {
+                    const fileURL = await octoClient.getFileAsDataUrl(block.boardId, block.fields.fileId)
+                    setVideoDataUrl(fileURL.url || '')
+                    setLoadError(false)
+                } catch (error) {
+                    // Failed to load video file - set error state to show placeholder
+                    setLoadError(true)
+                    setVideoDataUrl(null)
+                }
             }
             loadVideo()
         }
@@ -174,6 +182,26 @@ const VideoElement = (props: Props): JSX.Element|null => {
         )
     }
 
+    // File upload - show error placeholder if load failed
+    if (sourceType === 'file' && loadError) {
+        return (
+            <div className='VideoElement__container'>
+                <div className='VideoElement__wrapper'>
+                    <div className='VideoElement__gdrive-placeholder'>
+                        <CompassIcon
+                            icon='alert-circle-outline'
+                            className='ErrorIcon'
+                        />
+                        <span className='VideoElement__error-text'>Failed to load video</span>
+                    </div>
+                </div>
+                <div className='VideoElement__metadata'>
+                    <span className='VideoElement__source'>Video (Error)</span>
+                </div>
+            </div>
+        )
+    }
+
     // File upload
     if (sourceType === 'file' && videoDataUrl) {
         return (
@@ -226,7 +254,7 @@ contentRegistry.registerContentType({
     getDisplayText: (intl: IntlShape) => intl.formatMessage({id: 'ContentBlock.video', defaultMessage: 'video'}),
     getIcon: () => <VideoIcon/>,
     createBlock: async (boardId: string, intl: IntlShape) => {
-        return new Promise<VideoBlock>((resolve) => {
+        return new Promise<VideoBlock>((resolve, reject) => {
             // Prompt for URL or file
             const url = prompt('Enter YouTube or Google Drive URL (or leave empty to upload a file):')
             if (url && url.trim()) {
@@ -245,7 +273,7 @@ contentRegistry.registerContentType({
                         }),
                         severity: 'normal'
                     })
-                    resolve({} as VideoBlock)
+                    reject(new Error('Invalid video URL'))
                 }
             } else {
                 // File upload
@@ -255,24 +283,36 @@ contentRegistry.registerContentType({
                 input.onchange = async (e) => {
                     const file = (e.target as HTMLInputElement).files?.[0]
                     if (file) {
-                        const fileId = await octoClient.uploadFile(boardId, file)
-                        if (fileId) {
-                            const block = createVideoBlock()
-                            block.fields.sourceType = 'file'
-                            block.fields.fileId = fileId
-                            resolve(block)
-                        } else {
+                        try {
+                            const fileId = await octoClient.uploadFile(boardId, file)
+                            if (fileId) {
+                                const block = createVideoBlock()
+                                block.fields.sourceType = 'file'
+                                block.fields.fileId = fileId
+                                resolve(block)
+                            } else {
+                                sendFlashMessage({
+                                    content: intl.formatMessage({
+                                        id: 'createVideoBlock.failed',
+                                        defaultMessage: 'Unable to upload the file. File size limit reached.'
+                                    }),
+                                    severity: 'normal'
+                                })
+                                reject(new Error('File upload failed'))
+                            }
+                        } catch (error) {
                             sendFlashMessage({
                                 content: intl.formatMessage({
-                                    id: 'createVideoBlock.failed',
-                                    defaultMessage: 'Unable to upload the file. File size limit reached.'
+                                    id: 'createVideoBlock.uploadError',
+                                    defaultMessage: 'An error occurred while uploading the file.'
                                 }),
                                 severity: 'normal'
                             })
-                            resolve({} as VideoBlock)
+                            reject(error)
                         }
                     } else {
-                        resolve({} as VideoBlock)
+                        // User cancelled file selection
+                        reject(new Error('File selection cancelled'))
                     }
                 }
                 input.click()
