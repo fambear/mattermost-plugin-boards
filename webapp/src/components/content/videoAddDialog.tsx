@@ -58,7 +58,11 @@ const VideoAddDialog = (props: Props): JSX.Element => {
     const [isDragging, setIsDragging] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
-    useHotkeys('esc', () => onClose())
+    useHotkeys('esc', (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        onClose()
+    }, {enableOnFormTags: ['INPUT']})
 
     const handleUrlSubmit = useCallback(() => {
         const trimmed = urlInput.trim()
@@ -164,6 +168,7 @@ const VideoAddDialog = (props: Props): JSX.Element => {
                             tabIndex={0}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault()
                                     fileInputRef.current?.click()
                                 }
                             }}
@@ -200,7 +205,10 @@ const VideoAddDialog = (props: Props): JSX.Element => {
 
                         {/* URL input */}
                         <div className='VideoAddDialog__url-section'>
-                            <label className='VideoAddDialog__url-label'>
+                            <label
+                                className='VideoAddDialog__url-label'
+                                htmlFor='video-add-url-input'
+                            >
                                 {intl.formatMessage({
                                     id: 'VideoAddDialog.urlLabel',
                                     defaultMessage: 'Paste a video link',
@@ -208,9 +216,13 @@ const VideoAddDialog = (props: Props): JSX.Element => {
                             </label>
                             <div className='VideoAddDialog__url-input-row'>
                                 <input
+                                    id='video-add-url-input'
                                     className='VideoAddDialog__url-input'
                                     type='text'
-                                    placeholder='https://youtube.com/watch?v=... or drive.google.com/file/d/...'
+                                    placeholder={intl.formatMessage({
+                                        id: 'VideoAddDialog.urlPlaceholder',
+                                        defaultMessage: 'https://youtube.com/watch?v=... or drive.google.com/file/d/...',
+                                    })}
                                     value={urlInput}
                                     onChange={(e) => {
                                         setUrlInput(e.target.value)

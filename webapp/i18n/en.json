@@ -323,6 +323,7 @@
     "VideoAddDialog.or": "or",
     "VideoAddDialog.title": "Add video",
     "VideoAddDialog.urlLabel": "Paste a video link",
+    "VideoAddDialog.urlPlaceholder": "https://youtube.com/watch?v=... or drive.google.com/file/d/...",
     "VideoElement.enterUrl": "Enter YouTube or Google Drive URL (or leave empty to upload a file):",
     "VideoElement.error": "Unable to load video",
     "VideoElement.file": "Video",

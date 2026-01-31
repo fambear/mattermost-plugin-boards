@@ -6,7 +6,7 @@ import ReactDOM from 'react-dom'
 import {IntlShape, useIntl, IntlProvider} from 'react-intl'
 
 import {ContentBlock} from '../../blocks/contentBlock'
-import {VideoBlock, createVideoBlock, VideoSourceType} from '../../blocks/videoBlock'
+import {VideoBlock, createVideoBlock} from '../../blocks/videoBlock'
 import octoClient from '../../octoClient'
 import {Utils} from '../../utils'
 import CompassIcon from '../../widgets/icons/compassIcon'
@@ -21,32 +21,6 @@ import './videoElement.scss'
 
 type Props = {
     block: ContentBlock
-}
-
-// URL detection patterns
-const YOUTUBE_PATTERNS = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
-    /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/,
-]
-
-const GDRIVE_PATTERN = /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/
-
-const detectVideoSource = (url: string): {sourceType: VideoSourceType; videoId: string} | null => {
-    // Check YouTube patterns
-    for (const pattern of YOUTUBE_PATTERNS) {
-        const match = url.match(pattern)
-        if (match) {
-            return {sourceType: 'youtube', videoId: match[1]}
-        }
-    }
-
-    // Check Google Drive pattern
-    const gdriveMatch = url.match(GDRIVE_PATTERN)
-    if (gdriveMatch) {
-        return {sourceType: 'gdrive', videoId: gdriveMatch[1]}
-    }
-
-    return null
 }
 
 const VideoElement = (props: Props): JSX.Element|null => {
@@ -337,10 +311,13 @@ contentRegistry.registerContentType({
                 resolve(createVideoBlock())
             }
 
+            // intl.messages carries all loaded translations from the parent IntlProvider.
+            // This is the same approach used by rhsChannelBoards and boardsUnfurl
+            // for imperatively-mounted components outside the React tree.
             ReactDOM.render(
                 <IntlProvider
                     locale={intl.locale}
-                    messages={intl.messages}
+                    messages={intl.messages as Record<string, string>}
                 >
                     <VideoAddDialog
                         onSelect={handleSelect}
