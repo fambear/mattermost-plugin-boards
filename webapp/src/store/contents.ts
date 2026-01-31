@@ -68,6 +68,13 @@ const contentsSlice = createSlice({
         },
     },
     extraReducers: (builder) => {
+        builder.addCase(repairCardBlockOrder.rejected, (state, action) => {
+            // Silently log permission failures without updating state
+            if (action.payload) {
+                const {cardId, status} = action.payload as {cardId: string, status: number}
+                console.warn(`Failed to repair block order for card ${cardId}: ${status}`)
+            }
+        })
         builder.addCase(initialReadOnlyLoad.fulfilled, (state, action) => {
             state.contents = {}
             state.contentsByCard = {}

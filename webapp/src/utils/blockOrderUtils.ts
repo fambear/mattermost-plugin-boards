@@ -84,6 +84,7 @@ export function repairContentOrder(contentOrder: ContentOrder | undefined, conte
     const validation = validateContentOrder(contentOrder, contents)
 
     if (validation.isValid) {
+        // Ensure we never return undefined - always return a valid ContentOrder
         return contentOrder ?? []
     }
 
