@@ -3,7 +3,7 @@
 
 import {ContentBlock} from '../blocks/contentBlock'
 
-export type ContentOrder = Array<string | string[]>
+export type ContentOrder = Array<string | string[] | null | undefined>
 
 export interface ValidateContentOrderResult {
     isValid: boolean
