@@ -11,7 +11,6 @@ import VideoIcon from '../../widgets/icons/video'
 import {sendFlashMessage} from '../../components/flashMessages'
 import CompassIcon from '../../widgets/icons/compassIcon'
 
-import {FileInfo} from '../../blocks/block'
 import VideoViewer from '../videoViewer/videoViewer'
 import RootPortal from '../rootPortal'
 
@@ -57,7 +56,6 @@ const VideoElement = (props: Props): JSX.Element|null => {
     const {block} = props
     const sourceType: VideoSourceType = block.fields.sourceType || 'file'
     const videoId = block.fields.videoId || ''
-    const videoUrl = block.fields.videoUrl || ''
 
     useEffect(() => {
         if (sourceType === 'file' && !videoDataUrl && block.fields.fileId) {
