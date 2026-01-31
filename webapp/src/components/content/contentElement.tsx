@@ -18,6 +18,7 @@ import './markdownElement'
 import './imageElement'
 import './dividerElement'
 import './checkboxElement'
+import './videoElement'
 
 type Props = {
     block: ContentBlock
