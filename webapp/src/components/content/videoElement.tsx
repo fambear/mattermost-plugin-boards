@@ -65,7 +65,18 @@ const VideoElement = (props: Props): JSX.Element|null => {
                 if (fileId) {
                     try {
                         const fileURL = await octoClient.getFileAsDataUrl(block.boardId, fileId)
-                        setVideoDataUrl(fileURL.url || '')
+                        if (fileURL.url) {
+                            setVideoDataUrl(fileURL.url)
+                        } else {
+                            setLoadError(true)
+                            sendFlashMessage({
+                                content: intl.formatMessage({
+                                    id: 'VideoElement.load-failed',
+                                    defaultMessage: 'Unable to load video file',
+                                }),
+                                severity: 'normal',
+                            })
+                        }
                     } catch (error) {
                         Utils.logError(`Failed to load video file: ${error}`)
                         setLoadError(true)
@@ -260,8 +271,8 @@ contentRegistry.registerContentType({
     type: 'video',
     getDisplayText: (intl: IntlShape) => intl.formatMessage({id: 'ContentBlock.video', defaultMessage: 'video'}),
     getIcon: () => <CompassIcon icon='file-video-outline'/>,
-    createBlock: async (boardId: string, intl: IntlShape): Promise<VideoBlock> => {
-        return new Promise<VideoBlock>((resolve, reject) => {
+    createBlock: async (boardId: string, intl: IntlShape): Promise<VideoBlock | null> => {
+        return new Promise<VideoBlock | null>((resolve) => {
             const promptForUrl = () => {
                 const url = window.prompt(intl.formatMessage({
                     id: 'VideoElement.enterUrl',
@@ -269,19 +280,20 @@ contentRegistry.registerContentType({
                 }))
 
                 if (url === null) {
-                    // User cancelled
-                    reject(new Error('User cancelled video input'))
+                    // User cancelled - resolve with null instead of rejecting
+                    resolve(null)
                     return
                 }
 
                 if (url.trim()) {
-                    // User entered a URL
-                    const detected = detectVideoSource(url)
+                    // User entered a URL - use trimmed URL
+                    const trimmedUrl = url.trim()
+                    const detected = detectVideoSource(trimmedUrl)
                     if (detected) {
                         const block = createVideoBlock()
                         block.fields.sourceType = detected.sourceType
                         block.fields.videoId = detected.videoId
-                        block.fields.videoUrl = url
+                        block.fields.videoUrl = trimmedUrl
                         resolve(block)
                     } else {
                         sendFlashMessage({
@@ -291,7 +303,8 @@ contentRegistry.registerContentType({
                             }),
                             severity: 'normal',
                         })
-                        reject(new Error('Invalid video URL'))
+                        // Resolve with null instead of rejecting to avoid unhandled promise rejection
+                        resolve(null)
                     }
                 } else {
                     // User wants to upload a file
@@ -312,7 +325,8 @@ contentRegistry.registerContentType({
                                     }),
                                     severity: 'normal',
                                 })
-                                reject(new Error('File upload failed'))
+                                // Resolve with null instead of rejecting
+                                resolve(null)
                             }
                         } catch (error) {
                             sendFlashMessage({
@@ -322,7 +336,8 @@ contentRegistry.registerContentType({
                                 }),
                                 severity: 'normal',
                             })
-                            reject(error)
+                            // Resolve with null instead of rejecting
+                            resolve(null)
                         }
                     }, 'video/*')
                 }
