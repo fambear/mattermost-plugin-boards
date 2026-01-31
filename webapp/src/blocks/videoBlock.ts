@@ -7,11 +7,11 @@ import {ContentBlock} from './contentBlock'
 type VideoSourceType = 'file' | 'youtube' | 'gdrive'
 
 type VideoBlockFields = {
-    sourceType: VideoSourceType
     fileId?: string
+    filename?: string
+    sourceType?: VideoSourceType
     videoUrl?: string
     videoId?: string
-    thumbnailUrl?: string
 }
 
 type VideoBlock = ContentBlock & {
@@ -24,13 +24,14 @@ function createVideoBlock(block?: Block): VideoBlock {
         ...createBlock(block),
         type: 'video',
         fields: {
-            sourceType: block?.fields.sourceType || 'file',
             fileId: block?.fields.fileId || '',
+            filename: block?.fields.filename || '',
+            sourceType: block?.fields.sourceType || 'file',
             videoUrl: block?.fields.videoUrl || '',
             videoId: block?.fields.videoId || '',
-            thumbnailUrl: block?.fields.thumbnailUrl || '',
         },
     }
 }
 
-export {VideoBlock, createVideoBlock}
+export {VideoBlock, VideoBlockFields, VideoSourceType, createVideoBlock}
+
