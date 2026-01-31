@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useRef, useEffect, useState, useCallback} from 'react'
+import {useIntl} from 'react-intl'
 
 import {BlockInputProps, ContentType} from '../types'
 import octoClient from '../../../../octoClient'
@@ -58,6 +59,7 @@ const Video: ContentType<FileInfo> = {
     runSlashCommand: (): void => {},
     editable: false,
     Display: (props: BlockInputProps<FileInfo>) => {
+        const intl = useIntl()
         const [videoDataUrl, setVideoDataUrl] = useState<string|null>(null)
         const [showViewer, setShowViewer] = useState(false)
         const sourceType = props.value?.sourceType || 'file'
@@ -124,7 +126,7 @@ const Video: ContentType<FileInfo> = {
                             </div>
                         </div>
                         <div className='VideoElement__metadata'>
-                            <span className='VideoElement__source'>YouTube</span>
+                            <span className='VideoElement__source'>{intl.formatMessage({id: 'VideoElement.youtube', defaultMessage: 'YouTube'})}</span>
                         </div>
                     </div>
                     {showViewer && (
@@ -169,7 +171,7 @@ const Video: ContentType<FileInfo> = {
                             </div>
                         </div>
                         <div className='VideoElement__metadata'>
-                            <span className='VideoElement__source'>Google Drive</span>
+                            <span className='VideoElement__source'>{intl.formatMessage({id: 'VideoElement.gdrive', defaultMessage: 'Google Drive'})}</span>
                         </div>
                     </div>
                     {showViewer && (
@@ -214,7 +216,7 @@ const Video: ContentType<FileInfo> = {
                             </div>
                         </div>
                         <div className='VideoElement__metadata'>
-                            <span className='VideoElement__source'>{props.value?.filename || 'Video'}</span>
+                            <span className='VideoElement__source'>{props.value?.filename || intl.formatMessage({id: 'VideoElement.file', defaultMessage: 'Video'})}</span>
                         </div>
                     </div>
                     {showViewer && (
@@ -232,6 +234,7 @@ const Video: ContentType<FileInfo> = {
         return null
     },
     Input: (props: BlockInputProps<FileInfo>) => {
+        const intl = useIntl()
         const ref = useRef<HTMLInputElement|null>(null)
         const [urlInput, setUrlInput] = useState('')
         const [showFileInput, setShowFileInput] = useState(false)
@@ -281,7 +284,7 @@ const Video: ContentType<FileInfo> = {
                     <div className='VideoInput__url'>
                         <input
                             type='text'
-                            placeholder='Paste YouTube or Google Drive URL...'
+                            placeholder={intl.formatMessage({id: 'VideoInput.placeholder', defaultMessage: 'Paste YouTube or Google Drive URL...'})}
                             value={urlInput}
                             onChange={(e) => setUrlInput(e.target.value)}
                             onKeyDown={(e) => {
@@ -293,8 +296,8 @@ const Video: ContentType<FileInfo> = {
                             }}
                             autoFocus={true}
                         />
-                        <button type="button" onClick={handleUrlSubmit}>{'Add'}</button>
-                        <button type="button" onClick={handleFileSelect}>{'Upload File'}</button>
+                        <button type="button" onClick={handleUrlSubmit}>{intl.formatMessage({id: 'VideoInput.add', defaultMessage: 'Add'})}</button>
+                        <button type="button" onClick={handleFileSelect}>{intl.formatMessage({id: 'VideoInput.uploadFile', defaultMessage: 'Upload File'})}</button>
                     </div>
                 ) : (
                     <>
@@ -322,7 +325,7 @@ const Video: ContentType<FileInfo> = {
 
 Video.runSlashCommand = (changeType: (contentType: ContentType<FileInfo>) => void, changeValue: (value: FileInfo) => void): void => {
     changeType(Video)
-    changeValue({} as any)
+    changeValue({})
 }
 
 export default Video

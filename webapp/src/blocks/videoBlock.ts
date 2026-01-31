@@ -19,16 +19,16 @@ type VideoBlock = ContentBlock & {
     fields: VideoBlockFields
 }
 
-function createVideoBlock(block?: Block): VideoBlock {
+function createVideoBlock(block?: Partial<Block>): VideoBlock {
     return {
         ...createBlock(block),
         type: 'video',
         fields: {
-            fileId: block?.fields.fileId || '',
-            filename: block?.fields.filename || '',
-            sourceType: block?.fields.sourceType || 'file',
-            videoUrl: block?.fields.videoUrl || '',
-            videoId: block?.fields.videoId || '',
+            fileId: block?.fields?.fileId || '',
+            filename: block?.fields?.filename || '',
+            sourceType: block?.fields?.sourceType || 'file',
+            videoUrl: block?.fields?.videoUrl || '',
+            videoId: block?.fields?.videoId || '',
         },
     }
 }

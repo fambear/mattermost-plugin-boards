@@ -1,6 +1,49 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`components/blocksEditor/blocks/video should match Display snapshot for YouTube 1`] = `
+exports[`components/blocksEditor/blocks/video Display component should match Display snapshot for Google Drive 1`] = `
+<div>
+  <div
+    class="VideoElement__container"
+  >
+    <div
+      class="VideoElement__wrapper"
+    >
+      <div
+        class="VideoElement__gdrive-placeholder"
+      >
+        <i
+          class="CompassIcon icon-file-video-outline GDriveIcon"
+        />
+      </div>
+      <div
+        aria-label="Play video in full screen"
+        class="VideoElement__overlay"
+        role="button"
+        tabindex="0"
+      >
+        <div
+          class="VideoElement__play-icon"
+        >
+          <i
+            class="CompassIcon icon-play PlayIcon"
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      class="VideoElement__metadata"
+    >
+      <span
+        class="VideoElement__source"
+      >
+        Google Drive
+      </span>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`components/blocksEditor/blocks/video Display component should match Display snapshot for YouTube 1`] = `
 <div>
   <div
     class="VideoElement__container"
@@ -42,7 +85,7 @@ exports[`components/blocksEditor/blocks/video should match Display snapshot for 
 </div>
 `;
 
-exports[`components/blocksEditor/blocks/video should match Display snapshot for file upload 1`] = `
+exports[`components/blocksEditor/blocks/video Display component should match Display snapshot for file upload 1`] = `
 <div>
   <div
     class="VideoElement__container"
@@ -86,7 +129,7 @@ exports[`components/blocksEditor/blocks/video should match Display snapshot for 
 </div>
 `;
 
-exports[`components/blocksEditor/blocks/video should match Display snapshot for file upload with fileId 1`] = `
+exports[`components/blocksEditor/blocks/video Display component should match Display snapshot for file upload with fileId 1`] = `
 <div>
   <div
     class="VideoElement__container"
@@ -130,9 +173,9 @@ exports[`components/blocksEditor/blocks/video should match Display snapshot for 
 </div>
 `;
 
-exports[`components/blocksEditor/blocks/video should match Display snapshot with empty value 1`] = `<div />`;
+exports[`components/blocksEditor/blocks/video Display component should match Display snapshot with empty value 1`] = `<div />`;
 
-exports[`components/blocksEditor/blocks/video should match Input snapshot 1`] = `
+exports[`components/blocksEditor/blocks/video Input component should match Input snapshot 1`] = `
 <div>
   <div
     class="VideoInput"
@@ -160,7 +203,7 @@ exports[`components/blocksEditor/blocks/video should match Input snapshot 1`] = 
 </div>
 `;
 
-exports[`components/blocksEditor/blocks/video should match Input snapshot with empty input 1`] = `
+exports[`components/blocksEditor/blocks/video Input component should match Input snapshot with empty input 1`] = `
 <div>
   <div
     class="VideoInput"
