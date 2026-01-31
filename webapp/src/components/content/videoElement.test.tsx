@@ -77,8 +77,10 @@ describe('components/content/VideoElement', () => {
             })
 
             expect(mockedOcto.getFileAsDataUrl).toHaveBeenCalledWith('board-123', 'test-file-id')
-            const video = document.querySelector('.VideoElement__preview')
-            expect(video).toBeTruthy()
+            await waitFor(() => {
+                const video = screen.queryByTestId('video')
+                expect(video).toBeTruthy()
+            })
         })
 
         test('should show error placeholder on load failure', async () => {

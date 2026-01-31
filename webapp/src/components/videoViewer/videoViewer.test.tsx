@@ -172,8 +172,6 @@ describe('components/videoViewer/VideoViewer', () => {
         })
 
         test('should stop click propagation on video element', () => {
-            const mockStopPropagation = jest.fn()
-            const mockEvent = {stopPropagation: mockStopPropagation}
             render(
                 wrapIntl(
                     <VideoViewer
@@ -186,12 +184,10 @@ describe('components/videoViewer/VideoViewer', () => {
 
             const video = document.querySelector('.VideoViewer__video')
             if (video) {
-                // Simulate the onClick handler
-                const clickHandler = (video as any).onClick
-                if (clickHandler) {
-                    clickHandler(mockEvent)
-                    expect(mockStopPropagation).toHaveBeenCalled()
-                }
+                fireEvent.click(video)
+                // onClose should NOT be called because stopPropagation prevents
+                // the click from reaching the backdrop
+                expect(mockOnClose).not.toHaveBeenCalled()
             }
         })
     })
