@@ -1,0 +1,128 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`components/content/VideoElement Google Drive video type should match snapshot for Google Drive video 1`] = `
+<div>
+  <div
+    class="VideoElement__container"
+  >
+    <div
+      class="VideoElement__wrapper"
+    >
+      <div
+        class="VideoElement__gdrive-placeholder"
+      >
+        <i
+          class="CompassIcon icon-file-video-outline GDriveIcon"
+        />
+      </div>
+      <div
+        aria-label="Play video in full screen"
+        class="VideoElement__overlay"
+        role="button"
+        tabindex="0"
+      >
+        <div
+          class="VideoElement__play-icon"
+        >
+          <i
+            class="CompassIcon icon-play PlayIcon"
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      class="VideoElement__metadata"
+    >
+      <span
+        class="VideoElement__source"
+      >
+        Google Drive
+      </span>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`components/content/VideoElement YouTube video type should match snapshot for YouTube video 1`] = `
+<div>
+  <div
+    class="VideoElement__container"
+  >
+    <div
+      class="VideoElement__wrapper"
+    >
+      <img
+        alt="Video thumbnail"
+        class="VideoElement__thumbnail"
+        src="https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg"
+      />
+      <div
+        aria-label="Play video in full screen"
+        class="VideoElement__overlay"
+        role="button"
+        tabindex="0"
+      >
+        <div
+          class="VideoElement__play-icon"
+        >
+          <i
+            class="CompassIcon icon-play PlayIcon"
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      class="VideoElement__metadata"
+    >
+      <span
+        class="VideoElement__source"
+      >
+        YouTube
+      </span>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`components/content/VideoElement file video type should match snapshot for file video 1`] = `
+<div>
+  <div
+    class="VideoElement__container"
+  >
+    <div
+      class="VideoElement__wrapper"
+    >
+      <video
+        class="VideoElement__preview"
+      >
+        <source
+          src="blob:test-video.mp4"
+        />
+      </video>
+      <div
+        aria-label="Play video in full screen"
+        class="VideoElement__overlay"
+        role="button"
+        tabindex="0"
+      >
+        <div
+          class="VideoElement__play-icon"
+        >
+          <i
+            class="CompassIcon icon-play PlayIcon"
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      class="VideoElement__metadata"
+    >
+      <span
+        class="VideoElement__source"
+      >
+        test-video.mp4
+      </span>
+    </div>
+  </div>
+</div>
+`;

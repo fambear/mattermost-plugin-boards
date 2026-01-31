@@ -158,7 +158,7 @@ const VideoElement = (props: Props): JSX.Element|null => {
                         </div>
                     </div>
                     <div className='VideoElement__metadata'>
-                        <span className='VideoElement__source'>YouTube</span>
+                        <span className='VideoElement__source'>{intl.formatMessage({id: 'VideoElement.youtube', defaultMessage: 'YouTube'})}</span>
                     </div>
                 </div>
                 {showViewer && (
@@ -203,7 +203,7 @@ const VideoElement = (props: Props): JSX.Element|null => {
                         </div>
                     </div>
                     <div className='VideoElement__metadata'>
-                        <span className='VideoElement__source'>Google Drive</span>
+                        <span className='VideoElement__source'>{intl.formatMessage({id: 'VideoElement.gdrive', defaultMessage: 'Google Drive'})}</span>
                     </div>
                 </div>
                 {showViewer && (
@@ -247,7 +247,7 @@ const VideoElement = (props: Props): JSX.Element|null => {
                         </div>
                     </div>
                     <div className='VideoElement__metadata'>
-                        <span className='VideoElement__source'>{videoBlock.fields.filename || 'Video'}</span>
+                        <span className='VideoElement__source'>{videoBlock.fields.filename || intl.formatMessage({id: 'VideoElement.file', defaultMessage: 'Video'})}</span>
                     </div>
                 </div>
                 {showViewer && (
