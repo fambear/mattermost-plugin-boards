@@ -3,7 +3,7 @@
 
 import {ContentBlock} from '../blocks/contentBlock'
 
-export type ContentOrder = Array<string | string[] | null | undefined>
+export type ContentOrder = Array<string | Array<string | null | undefined> | null | undefined>
 
 export interface ValidateContentOrderResult {
     isValid: boolean
@@ -12,7 +12,7 @@ export interface ValidateContentOrderResult {
     validOrder: ContentOrder
 }
 
-export function validateContentOrder(contentOrder: ContentOrder, contents: ContentBlock[]): ValidateContentOrderResult {
+export function validateContentOrder(contentOrder: ContentOrder | undefined, contents: ContentBlock[]): ValidateContentOrderResult {
     const result: ValidateContentOrderResult = {
         isValid: true,
         orphanedIds: [],
@@ -80,11 +80,11 @@ export function validateContentOrder(contentOrder: ContentOrder, contents: Conte
     return result
 }
 
-export function repairContentOrder(contentOrder: ContentOrder, contents: ContentBlock[]): ContentOrder {
+export function repairContentOrder(contentOrder: ContentOrder | undefined, contents: ContentBlock[]): ContentOrder {
     const validation = validateContentOrder(contentOrder, contents)
 
     if (validation.isValid) {
-        return contentOrder
+        return contentOrder ?? []
     }
 
     const repairedOrder: ContentOrder = [...validation.validOrder]
