@@ -53,6 +53,8 @@ type Store interface {
 	DuplicateBlock(boardID string, blockID string, userID string, asTemplate bool) ([]*model.Block, error)
 	// @withTransaction
 	PatchBlocks(blockPatches *model.BlockPatchBatch, userID string) error
+	// @withTransaction
+	RepairCardBlockOrder(cardID string, userID string) error
 
 	Shutdown() error
 

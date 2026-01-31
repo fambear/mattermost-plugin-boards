@@ -873,6 +873,30 @@ func (s *SQLStore) ReorderCategoryBoards(categoryID string, newBoardsOrder []str
 
 }
 
+func (s *SQLStore) RepairCardBlockOrder(cardID string, userID string) error {
+	if s.dbType == model.SqliteDBType {
+		return s.repairCardBlockOrder(s.db, cardID, userID)
+	}
+	tx, txErr := s.db.BeginTx(context.Background(), nil)
+	if txErr != nil {
+		return txErr
+	}
+	err := s.repairCardBlockOrder(tx, cardID, userID)
+	if err != nil {
+		if rollbackErr := tx.Rollback(); rollbackErr != nil {
+			s.logger.Error("transaction rollback error", mlog.Err(rollbackErr), mlog.String("methodName", "RepairCardBlockOrder"))
+		}
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
 func (s *SQLStore) ReplaceStatusTransitionRules(boardID string, rules []*model.StatusTransitionRule) error {
 	if s.dbType == model.SqliteDBType {
 		return s.replaceStatusTransitionRules(s.db, boardID, rules)

@@ -2,14 +2,26 @@
 // See LICENSE.txt for license information.
 
 
-import {createSlice, PayloadAction, createSelector} from '@reduxjs/toolkit'
+import {createSlice, PayloadAction, createSelector, createAsyncThunk} from '@reduxjs/toolkit'
 
 import {ContentBlock} from '../blocks/contentBlock'
+import {default as client} from '../octoClient'
 
 import {getCards, getTemplates} from './cards'
 import {loadBoardData, initialReadOnlyLoad} from './initialLoad'
 
 import {RootState} from './index'
+
+export const repairCardBlockOrder = createAsyncThunk(
+    'contents/repairCardBlockOrder',
+    async (cardId: string, thunkAPI) => {
+        const response = await client.repairBlockOrder(cardId)
+        if (!response.ok) {
+            return thunkAPI.rejectWithValue({cardId, status: response.status})
+        }
+        return {cardId}
+    },
+)
 
 type ContentsState = {
     contents: {[key: string]: ContentBlock}
@@ -56,6 +68,13 @@ const contentsSlice = createSlice({
         },
     },
     extraReducers: (builder) => {
+        builder.addCase(repairCardBlockOrder.rejected, (state, action) => {
+            // Silently log permission failures without updating state
+            if (action.payload) {
+                const {cardId, status} = action.payload as {cardId: string, status: number}
+                console.warn(`Failed to repair block order for card ${cardId}: ${status}`)
+            }
+        })
         builder.addCase(initialReadOnlyLoad.fulfilled, (state, action) => {
             state.contents = {}
             state.contentsByCard = {}

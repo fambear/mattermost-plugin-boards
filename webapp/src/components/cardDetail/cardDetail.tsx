@@ -21,7 +21,8 @@ import TelemetryClient, {TelemetryActions, TelemetryCategory} from '../../teleme
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks'
 import {updateCards, setCurrent as setCurrentCard} from '../../store/cards'
-import {updateContents} from '../../store/contents'
+import {updateContents, repairCardBlockOrder} from '../../store/contents'
+import {validateContentOrder} from '../../utils/blockOrderUtils'
 import {Permission} from '../../constants'
 import {useHasCurrentBoardPermissions} from '../../hooks/permissions'
 import BlocksEditor from '../blocksEditor/blocksEditor'
@@ -169,6 +170,27 @@ const CardDetail = (props: Props): JSX.Element|null => {
     useEffect(() => {
         dispatch(setCurrentCard(card.id))
     }, [card.id])
+
+    useEffect(() => {
+        if (!canEditBoardCards) {
+            return
+        }
+
+        if (props.contents.length === 0) {
+            return
+        }
+
+        const contentBlocks = props.contents.flatMap((item: ContentBlock | ContentBlock[]): ContentBlock[] => {
+            return Array.isArray(item) ? item : [item]
+        })
+
+        const validation = validateContentOrder(card.fields.contentOrder, contentBlocks)
+
+        if (!validation.isValid && (validation.orphanedIds.length > 0 || validation.missingIds.length > 0)) {
+            Utils.log(`Repairing block order for card ${card.id}: ${validation.orphanedIds.length} orphaned, ${validation.missingIds.length} missing`)
+            dispatch(repairCardBlockOrder(card.id))
+        }
+    }, [canEditBoardCards, card.id, card.fields.contentOrder, props.contents, dispatch])
 
     if (!card) {
         return null
