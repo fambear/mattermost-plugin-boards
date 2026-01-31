@@ -1,0 +1,220 @@
+@import '../../styles/z-index';
+
+.VideoAddDialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    @include z-index(dialog-back);
+
+    &__backdrop {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(var(--center-channel-color-rgb), 0.5);
+        @include z-index(dialog-backdrop);
+    }
+
+    &__wrapper {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        @include z-index(dialog);
+    }
+
+    &__dialog {
+        position: relative;
+        background-color: rgb(var(--center-channel-bg-rgb));
+        border-radius: var(--modal-rad, 8px);
+        box-shadow: rgba(var(--center-channel-color-rgb), 0.1) 0 0 0 1px,
+            rgba(var(--center-channel-color-rgb), 0.2) 0 8px 24px;
+        max-width: 480px;
+        width: calc(100% - 32px);
+        overflow: hidden;
+    }
+
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 24px 12px;
+    }
+
+    &__title {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 24px;
+        color: rgb(var(--center-channel-color-rgb));
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .CompassIcon {
+            font-size: 22px;
+            color: rgba(var(--center-channel-color-rgb), 0.64);
+        }
+    }
+
+    &__body {
+        padding: 8px 24px 24px;
+    }
+
+    &__dropzone {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 32px 24px;
+        border: 2px dashed rgba(var(--center-channel-color-rgb), 0.16);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        background: rgba(var(--center-channel-color-rgb), 0.02);
+
+        &:hover {
+            border-color: rgba(var(--button-bg-rgb), 0.48);
+            background: rgba(var(--button-bg-rgb), 0.04);
+        }
+
+        &--active {
+            border-color: rgb(var(--button-bg-rgb));
+            background: rgba(var(--button-bg-rgb), 0.08);
+        }
+    }
+
+    &__upload-icon {
+        font-size: 36px;
+        color: rgba(var(--center-channel-color-rgb), 0.48);
+
+        .VideoAddDialog__dropzone:hover &,
+        .VideoAddDialog__dropzone--active & {
+            color: rgb(var(--button-bg-rgb));
+        }
+    }
+
+    &__dropzone-text {
+        font-size: 14px;
+        font-weight: 600;
+        color: rgba(var(--center-channel-color-rgb), 0.72);
+    }
+
+    &__dropzone-hint {
+        font-size: 12px;
+        color: rgba(var(--center-channel-color-rgb), 0.48);
+    }
+
+    &__file-input {
+        display: none;
+    }
+
+    &__separator {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin: 20px 0;
+
+        &::before,
+        &::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(var(--center-channel-color-rgb), 0.08);
+        }
+
+        span {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: rgba(var(--center-channel-color-rgb), 0.4);
+        }
+    }
+
+    &__url-section {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    &__url-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: rgba(var(--center-channel-color-rgb), 0.72);
+    }
+
+    &__url-input-row {
+        display: flex;
+        gap: 8px;
+    }
+
+    &__url-input {
+        flex: 1;
+        padding: 8px 12px;
+        border: 1px solid rgba(var(--center-channel-color-rgb), 0.16);
+        border-radius: 4px;
+        font-size: 14px;
+        background: rgb(var(--center-channel-bg-rgb));
+        color: rgb(var(--center-channel-color-rgb));
+        outline: none;
+
+        &:focus {
+            border-color: rgb(var(--button-bg-rgb));
+            box-shadow: 0 0 0 2px rgba(var(--button-bg-rgb), 0.16);
+        }
+
+        &::placeholder {
+            color: rgba(var(--center-channel-color-rgb), 0.32);
+        }
+    }
+
+    &__url-submit {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        background: rgb(var(--button-bg-rgb));
+        color: rgb(var(--button-color-rgb));
+        white-space: nowrap;
+        transition: opacity 0.15s;
+
+        &:hover {
+            opacity: 0.88;
+        }
+
+        &:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+    }
+
+    &__url-error {
+        font-size: 12px;
+        color: rgb(var(--error-text-color-rgb));
+    }
+
+    &__url-providers {
+        display: flex;
+        gap: 16px;
+        margin-top: 4px;
+    }
+
+    &__provider {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        color: rgba(var(--center-channel-color-rgb), 0.48);
+
+        .CompassIcon {
+            font-size: 14px;
+        }
+    }
+}
