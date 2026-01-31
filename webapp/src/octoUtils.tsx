@@ -19,6 +19,7 @@ import {createH2Block} from './blocks/h2Block'
 import {createH3Block} from './blocks/h3Block'
 import {FilterCondition} from './blocks/filterClause'
 import {createAttachmentBlock} from './blocks/attachmentBlock'
+import {createVideoBlock} from './blocks/videoBlock'
 import {Utils} from './utils'
 
 class OctoUtils {
@@ -36,6 +37,7 @@ class OctoUtils {
         case 'comment': { return createCommentBlock(block) }
         case 'checkbox': { return createCheckboxBlock(block) }
         case 'attachment': { return createAttachmentBlock(block) }
+        case 'video': { return createVideoBlock(block) }
         default: {
             Utils.assertFailure(`Can't hydrate unknown block type: ${block.type}`)
             return createBlock(block)
