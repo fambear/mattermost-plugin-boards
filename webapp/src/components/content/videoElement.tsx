@@ -65,7 +65,7 @@ const VideoElement = (props: Props): JSX.Element|null => {
                 if (fileId) {
                     try {
                         const fileURL = await octoClient.getFileAsDataUrl(block.boardId, fileId)
-                        if (fileURL.url) {
+                        if (fileURL.url && fileURL.url.length > 0) {
                             setVideoDataUrl(fileURL.url)
                         } else {
                             setLoadError(true)
