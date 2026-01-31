@@ -147,4 +147,54 @@ describe('components/blocksEditor/blocks/video', () => {
         const fileInput = screen.getByTestId('video-input')
         expect(fileInput).toBeTruthy()
     })
+
+    test('should handle Google Drive URL input', async () => {
+        const onSave = jest.fn()
+        const Component = VideoBlock.Input
+        render(
+            <Component
+                onChange={jest.fn()}
+                value={{}}
+                onCancel={jest.fn()}
+                onSave={onSave}
+            />,
+        )
+
+        const input = screen.getByPlaceholderText('Paste YouTube or Google Drive URL...')
+        fireEvent.change(input, {target: {value: 'https://drive.google.com/file/d/1ABC123xyz/view'}})
+
+        const addButton = screen.getByText('Add')
+        fireEvent.click(addButton)
+
+        expect(onSave).toBeCalledWith({
+            sourceType: 'gdrive',
+            videoId: '1ABC123xyz',
+            videoUrl: 'https://drive.google.com/file/d/1ABC123xyz/view',
+        })
+    })
+
+    test('should handle youtu.be short URL', async () => {
+        const onSave = jest.fn()
+        const Component = VideoBlock.Input
+        render(
+            <Component
+                onChange={jest.fn()}
+                value={{}}
+                onCancel={jest.fn()}
+                onSave={onSave}
+            />,
+        )
+
+        const input = screen.getByPlaceholderText('Paste YouTube or Google Drive URL...')
+        fireEvent.change(input, {target: {value: 'https://youtu.be/dQw4w9WgXcQ'}})
+
+        const addButton = screen.getByText('Add')
+        fireEvent.click(addButton)
+
+        expect(onSave).toBeCalledWith({
+            sourceType: 'youtube',
+            videoId: 'dQw4w9WgXcQ',
+            videoUrl: 'https://youtu.be/dQw4w9WgXcQ',
+        })
+    })
 })
