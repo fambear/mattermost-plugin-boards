@@ -63,6 +63,11 @@ describe('components/content/VideoElement', () => {
                 const {container: c} = render(component)
                 container = c
             })
+
+            // Wait for async video load to complete before snapshot
+            await waitFor(() => {
+                expect(screen.queryByTestId('video')).toBeTruthy()
+            })
             expect(container).toMatchSnapshot()
         })
 

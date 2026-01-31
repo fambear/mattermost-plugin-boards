@@ -195,10 +195,9 @@ describe('components/videoViewer/VideoViewer', () => {
             // Now verify that clicking the video does NOT close the viewer
             // because stopPropagation prevents the click from reaching the backdrop
             const video = document.querySelector('.VideoViewer__video')
-            if (video) {
-                fireEvent.click(video)
-                expect(mockOnClose).not.toHaveBeenCalled()
-            }
+            expect(video).toBeTruthy()
+            fireEvent.click(video!)
+            expect(mockOnClose).not.toHaveBeenCalled()
         })
     })
 
