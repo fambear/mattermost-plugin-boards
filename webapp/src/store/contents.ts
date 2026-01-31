@@ -2,14 +2,23 @@
 // See LICENSE.txt for license information.
 
 
-import {createSlice, PayloadAction, createSelector} from '@reduxjs/toolkit'
+import {createSlice, PayloadAction, createSelector, createAsyncThunk} from '@reduxjs/toolkit'
 
 import {ContentBlock} from '../blocks/contentBlock'
+import {default as client} from '../octoClient'
 
 import {getCards, getTemplates} from './cards'
 import {loadBoardData, initialReadOnlyLoad} from './initialLoad'
 
 import {RootState} from './index'
+
+export const repairCardBlockOrder = createAsyncThunk(
+    'contents/repairCardBlockOrder',
+    async (cardId: string) => {
+        await client.repairBlockOrder(cardId)
+        return {cardId}
+    },
+)
 
 type ContentsState = {
     contents: {[key: string]: ContentBlock}

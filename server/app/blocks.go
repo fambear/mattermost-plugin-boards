@@ -597,3 +597,7 @@ func (a *App) applyDefaultCardProperties(block *model.Block, board *model.Board)
 		}
 	}
 }
+
+func (a *App) RepairCardBlockOrder(cardID string, userID string) error {
+	return a.store.RepairCardBlockOrder(cardID, userID)
+}

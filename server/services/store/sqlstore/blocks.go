@@ -1338,3 +1338,176 @@ func (s *SQLStore) undeleteBlockChildren(db sq.BaseRunner, boardID string, paren
 
 	return nil
 }
+
+func (s *SQLStore) repairCardBlockOrder(db sq.BaseRunner, cardID string, userID string) error {
+	card, err := s.getBlock(db, cardID)
+	if err != nil {
+		return err
+	}
+
+	if card.Type != model.TypeCard {
+		return fmt.Errorf("block %s is not a card: %w", cardID, model.ErrNotCardBlock)
+	}
+
+	if card.Fields == nil {
+		card.Fields = make(map[string]interface{})
+	}
+
+	contentOrderRaw, ok := card.Fields["contentOrder"]
+	if !ok || contentOrderRaw == nil {
+		contentOrderRaw = []interface{}{}
+	}
+
+	contentOrder, ok := contentOrderRaw.([]interface{})
+	if !ok {
+		contentOrder = []interface{}{}
+	}
+
+	blocks, err := s.getBlocksWithParent(db, card.BoardID, cardID)
+	if err != nil {
+		return fmt.Errorf("failed to get child blocks: %w", err)
+	}
+
+	validation := validateContentOrderLocal(contentOrder, blocks)
+
+	if !validation.HasIssues {
+		s.logger.Debug("repairCardBlockOrder - no issues found", mlog.String("card_id", cardID))
+		return nil
+	}
+
+	s.logger.Info("repairCardBlockOrder - repairing card",
+		mlog.String("card_id", cardID),
+		mlog.Int("orphaned_count", len(validation.OrphanedIDs)),
+		mlog.Int("missing_count", len(validation.MissingIDs)),
+	)
+
+	repairedOrder := repairContentOrderLocal(card, blocks)
+
+	if card.Fields == nil {
+		card.Fields = make(map[string]interface{})
+	}
+	card.Fields["contentOrder"] = repairedOrder
+
+	card.ModifiedBy = userID
+	card.UpdateAt = utils.GetMillis()
+
+	if err := s.insertBlock(db, card, userID); err != nil {
+		return fmt.Errorf("failed to update card with repaired contentOrder: %w", err)
+	}
+
+	s.logger.Info("repairCardBlockOrder - successfully repaired card",
+		mlog.String("card_id", cardID),
+		mlog.Int("new_order_size", len(repairedOrder)),
+	)
+
+	return nil
+}
+
+// Local versions of the validation and repair functions to avoid import cycle.
+type localValidateContentOrderResult struct {
+	ValidOrder  []interface{}
+	OrphanedIDs []string
+	MissingIDs  []string
+	HasIssues   bool
+}
+
+func validateContentOrderLocal(contentOrder []interface{}, blocks []*model.Block) localValidateContentOrderResult {
+	result := localValidateContentOrderResult{
+		ValidOrder:  make([]interface{}, 0),
+		OrphanedIDs: make([]string, 0),
+		MissingIDs:  make([]string, 0),
+		HasIssues:   false,
+	}
+
+	if len(contentOrder) == 0 {
+		if len(blocks) > 0 {
+			result.HasIssues = true
+			for _, block := range blocks {
+				result.MissingIDs = append(result.MissingIDs, block.ID)
+			}
+		}
+		return result
+	}
+
+	blockIDSet := make(map[string]bool)
+	for _, block := range blocks {
+		blockIDSet[block.ID] = true
+	}
+
+	seenInOrder := make(map[string]bool)
+
+	for _, item := range contentOrder {
+		if item == nil {
+			continue
+		}
+
+		if itemID, ok := item.(string); ok {
+			if blockIDSet[itemID] {
+				result.ValidOrder = append(result.ValidOrder, itemID)
+				seenInOrder[itemID] = true
+			} else {
+				result.OrphanedIDs = append(result.OrphanedIDs, itemID)
+				result.HasIssues = true
+			}
+		} else if itemArray, ok := item.([]interface{}); ok {
+			validGroup := make([]interface{}, 0)
+			for _, subItem := range itemArray {
+				if subItem == nil {
+					continue
+				}
+				if subItemID, ok := subItem.(string); ok {
+					if blockIDSet[subItemID] {
+						validGroup = append(validGroup, subItemID)
+						seenInOrder[subItemID] = true
+					} else {
+						result.OrphanedIDs = append(result.OrphanedIDs, subItemID)
+						result.HasIssues = true
+					}
+				}
+			}
+			if len(validGroup) > 0 {
+				result.ValidOrder = append(result.ValidOrder, validGroup)
+			}
+		}
+	}
+
+	for _, block := range blocks {
+		if !seenInOrder[block.ID] {
+			result.MissingIDs = append(result.MissingIDs, block.ID)
+			result.HasIssues = true
+		}
+	}
+
+	return result
+}
+
+func repairContentOrderLocal(card *model.Block, allBlocks []*model.Block) []interface{} {
+	if card == nil || card.Fields == nil {
+		return []interface{}{}
+	}
+
+	contentOrderRaw, ok := card.Fields["contentOrder"]
+	if !ok || contentOrderRaw == nil {
+		contentOrderRaw = []interface{}{}
+	}
+
+	contentOrder, ok := contentOrderRaw.([]interface{})
+	if !ok {
+		contentOrder = []interface{}{}
+	}
+
+	validation := validateContentOrderLocal(contentOrder, allBlocks)
+
+	if !validation.HasIssues {
+		return contentOrder
+	}
+
+	repairedOrder := make([]interface{}, 0, len(validation.ValidOrder)+len(validation.MissingIDs))
+	repairedOrder = append(repairedOrder, validation.ValidOrder...)
+
+	for _, missingID := range validation.MissingIDs {
+		repairedOrder = append(repairedOrder, missingID)
+	}
+
+	return repairedOrder
+}

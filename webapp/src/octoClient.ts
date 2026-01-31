@@ -1149,6 +1149,14 @@ class OctoClient {
         }))
     }
 
+    async repairBlockOrder(blockId: string): Promise<Response> {
+        return fetch(`${this.getBaseURL()}/api/v2/blocks/${blockId}/repair`, Client4.getOptions({
+            method: 'POST',
+            headers: this.headers(),
+            body: '{}',
+        }))
+    }
+
     async hideBoard(categoryID: string, boardID: string): Promise<Response> {
         const path = `${this.teamPath()}/categories/${categoryID}/boards/${boardID}/hide`
         return fetch(this.getBaseURL() + path, Client4.getOptions({

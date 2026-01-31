@@ -35,6 +35,7 @@ func (a *API) registerBlocksRoutes(r *mux.Router) {
 	r.HandleFunc("/boards/{boardID}/blocks/{blockID}", a.sessionRequired(a.handlePatchBlock)).Methods("PATCH")
 	r.HandleFunc("/boards/{boardID}/blocks/{blockID}/undelete", a.sessionRequired(a.handleUndeleteBlock)).Methods("POST")
 	r.HandleFunc("/boards/{boardID}/blocks/{blockID}/duplicate", a.sessionRequired(a.handleDuplicateBlock)).Methods("POST")
+	r.HandleFunc("/blocks/{blockID}/repair", a.sessionRequired(a.handleRepairBlockOrder)).Methods("POST")
 }
 
 func (a *API) handleGetBlocks(w http.ResponseWriter, r *http.Request) {
@@ -853,6 +854,43 @@ func (a *API) handleDuplicateBlock(w http.ResponseWriter, r *http.Request) {
 
 	// response
 	jsonBytesResponse(w, http.StatusOK, data)
+
+	auditRec.Success()
+}
+
+func (a *API) handleRepairBlockOrder(w http.ResponseWriter, r *http.Request) {
+	userID := getUserID(r)
+	vars := mux.Vars(r)
+	blockID := vars["blockID"]
+
+	block, err := a.app.GetBlockByID(blockID)
+	if err != nil {
+		a.errorResponse(w, r, err)
+		return
+	}
+
+	if block.Type != model.TypeCard {
+		a.errorResponse(w, r, model.NewErrBadRequest("block is not a card"))
+		return
+	}
+
+	if !a.permissions.HasPermissionToBoard(userID, block.BoardID, model.PermissionManageBoardCards) {
+		a.errorResponse(w, r, model.NewErrPermission("access denied to repair card block order"))
+		return
+	}
+
+	auditRec := a.makeAuditRecord(r, "repairBlockOrder", audit.Fail)
+	defer a.audit.LogRecord(audit.LevelModify, auditRec)
+	auditRec.AddMeta("blockID", blockID)
+
+	err = a.app.RepairCardBlockOrder(blockID, userID)
+	if err != nil {
+		a.errorResponse(w, r, err)
+		return
+	}
+
+	a.logger.Debug("RepairBlockOrder", mlog.String("blockID", blockID))
+	jsonStringResponse(w, http.StatusOK, "{}")
 
 	auditRec.Success()
 }
