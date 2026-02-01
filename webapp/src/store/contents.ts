@@ -17,7 +17,15 @@ export const repairCardBlockOrder = createAsyncThunk(
     async (cardId: string, thunkAPI) => {
         const response = await client.repairBlockOrder(cardId)
         if (!response.ok) {
-            return thunkAPI.rejectWithValue({cardId, status: response.status})
+            let errorMessage = 'Unknown error'
+            try {
+                const errorData = await response.json() as {message?: string}
+                errorMessage = errorData.message || errorMessage
+            } catch {
+                // If parsing fails, use status text
+                errorMessage = response.statusText || errorMessage
+            }
+            return thunkAPI.rejectWithValue({cardId, status: response.status, error: errorMessage})
         }
         return {cardId}
     },
@@ -71,8 +79,8 @@ const contentsSlice = createSlice({
         builder.addCase(repairCardBlockOrder.rejected, (state, action) => {
             // Silently log permission failures without updating state
             if (action.payload) {
-                const {cardId, status} = action.payload as {cardId: string, status: number}
-                console.warn(`Failed to repair block order for card ${cardId}: ${status}`)
+                const {cardId, status, error} = action.payload as {cardId: string, status: number, error?: string}
+                console.warn(`Failed to repair block order for card ${cardId}: ${status}${error ? ` - ${error}` : ''}`)
             }
         })
         builder.addCase(initialReadOnlyLoad.fulfilled, (state, action) => {
