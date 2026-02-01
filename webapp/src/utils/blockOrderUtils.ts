@@ -85,6 +85,7 @@ export function repairContentOrder(contentOrder: ContentOrder | undefined, conte
 
     if (validation.isValid) {
         // Ensure we never return undefined - always return a valid ContentOrder
+        // If contentOrder is undefined but valid (no contents exist), return empty array
         return contentOrder ?? []
     }
 
@@ -94,5 +95,6 @@ export function repairContentOrder(contentOrder: ContentOrder | undefined, conte
         repairedOrder.push(missingId)
     }
 
+    // Always return at least an empty array, never undefined
     return repairedOrder.length > 0 ? repairedOrder : []
 }
