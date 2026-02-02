@@ -4,17 +4,21 @@
 
 import {Block, createBlock} from './block'
 
+type GitHubBranchField = {
+    ref: string       // e.g. 'refs/heads/fb-123/my-feature'
+    url: string       // GitHub API URL
+    repo: string      // e.g. 'owner/repo-name'
+    connectedAt?: string // ISO timestamp
+    createdAt?: string   // ISO timestamp (legacy)
+}
+
 type CardFields = {
     icon?: string
     isTemplate?: boolean
     properties: Record<string, string | string[]>
     contentOrder: Array<string | string[]>
-    githubBranch?: {
-        ref: string       // e.g. 'refs/heads/fb-123/my-feature'
-        url: string       // GitHub API URL
-        repo: string      // e.g. 'owner/repo-name'
-        createdAt: string // ISO timestamp
-    }
+    githubBranch?: GitHubBranchField
+    githubBranches?: GitHubBranchField[]
 }
 
 type Card = Block & {
@@ -43,8 +47,10 @@ function createCard(block?: Block): Card {
             contentOrder,
             isTemplate: block?.fields.isTemplate || false,
             githubBranch: block?.fields.githubBranch || undefined,
+            githubBranches: block?.fields.githubBranches || undefined,
         },
     }
 }
 
+export type {GitHubBranchField}
 export {Card, createCard}
