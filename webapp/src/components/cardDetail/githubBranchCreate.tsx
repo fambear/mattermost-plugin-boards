@@ -513,7 +513,7 @@ const GitHubBranchCreate = (props: Props): JSX.Element | null => {
                 <div className='GitHubBranchCreate__connect-prompt'>
                     <FormattedMessage
                         id='GitHubBranchCreate.connectPrompt'
-                        defaultMessage='Run /github connect in Mattermost to create branches'
+                        defaultMessage='Run /github connect private in Mattermost to create branches'
                     />
                 </div>
             </div>
