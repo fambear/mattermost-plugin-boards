@@ -320,9 +320,24 @@ const GitHubBranchCreate = (props: Props): JSX.Element | null => {
         try {
             setCreating(true)
 
+            const newRef = `refs/heads/${existingBranch.name}`
+
+            // Prevent duplicate: same repo + same branch
+            if (connectedBranches.some((b) => b.repo === selectedRepo.full_name && b.ref === newRef)) {
+                sendFlashMessage({
+                    content: intl.formatMessage({
+                        id: 'GitHubBranchCreate.duplicateBranch',
+                        defaultMessage: 'This branch is already connected to the card',
+                    }),
+                    severity: 'low',
+                })
+                setCreating(false)
+                return
+            }
+
             const newEntry: GitHubBranchField = {
-                ref: `refs/heads/${existingBranch.name}`,
-                url: `https://api.github.com/repos/${selectedRepo.owner}/${selectedRepo.name}/git/refs/heads/${encodeURIComponent(existingBranch.name)}`,
+                ref: newRef,
+                url: `https://api.github.com/repos/${selectedRepo.owner}/${selectedRepo.name}/git/refs/heads/${existingBranch.name}`,
                 repo: selectedRepo.full_name,
                 connectedAt: new Date().toISOString(),
             }
@@ -537,12 +552,11 @@ const GitHubBranchCreate = (props: Props): JSX.Element | null => {
                 <div className='GitHubBranchCreate__branches-list'>
                     {connectedBranches.map((b, index) => {
                         const branchDisplayName = b.ref.replace('refs/heads/', '')
-                        const githubUrl = b.url
-                            .replace('api.github.com/repos', 'github.com')
-                            .replace('/git/refs/heads/', '/tree/')
+                        // Build GitHub URL from repo + branch name (avoids URL-encoded chars from API URL)
+                        const githubUrl = `https://github.com/${b.repo}/tree/${branchDisplayName}`
                         return (
                             <div
-                                key={`${b.repo}-${b.ref}`}
+                                key={`${index}-${b.repo}-${b.ref}`}
                                 className='GitHubBranchCreate__branch'
                             >
                                 <div className='GitHubBranchCreate__branch-header'>
