@@ -40,20 +40,33 @@ const StatusTransitionSection = (props: Props): JSX.Element => {
     const [saving, setSaving] = useState(false)
     const [saveError, setSaveError] = useState('')
     const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+    const matrixRef = useRef<TransitionMatrix>({})
+    const mountedRef = useRef(true)
+    const requestIdRef = useRef(0)
 
+    // Keep matrixRef in sync with state
+    useEffect(() => {
+        matrixRef.current = transitionMatrix
+    }, [transitionMatrix])
+
+    // Cleanup on unmount
     useEffect(() => {
         return () => {
+            mountedRef.current = false
             if (saveTimerRef.current) {
                 clearTimeout(saveTimerRef.current)
             }
         }
     }, [])
 
+    // Reload when board ID or card properties change
     useEffect(() => {
         loadStatusTransitionRules()
-    }, [board.id])
+    }, [board.id, board.cardProperties])
 
     const loadStatusTransitionRules = useCallback(async () => {
+        const thisRequestId = ++requestIdRef.current
+
         try {
             setLoading(true)
             setRulesLoadError(false)
@@ -63,6 +76,11 @@ const StatusTransitionSection = (props: Props): JSX.Element => {
                 prop => prop.type === 'select' && prop.name.toLowerCase() === 'status'
             )
             const statusOptions = statusProperty?.options || []
+
+            if (!mountedRef.current || thisRequestId !== requestIdRef.current) {
+                return
+            }
+
             setStatuses(statusOptions)
 
             if (statusOptions.length > 0) {
@@ -70,6 +88,12 @@ const StatusTransitionSection = (props: Props): JSX.Element => {
 
                 try {
                     const rules = await octoClient.getStatusTransitionRules(board.id)
+
+                    // Guard against stale responses after board switch or unmount
+                    if (!mountedRef.current || thisRequestId !== requestIdRef.current) {
+                        return
+                    }
+
                     rules.forEach(rule => {
                         if (matrix[rule.fromStatus] && matrix[rule.fromStatus][rule.toStatus] !== undefined) {
                             matrix[rule.fromStatus][rule.toStatus] = rule.allowed
@@ -77,16 +101,24 @@ const StatusTransitionSection = (props: Props): JSX.Element => {
                     })
                 } catch (err) {
                     Utils.logError('Failed to load status transition rules for board ' + board.id + ': ' + err)
-                    setRulesLoadError(true)
+                    if (mountedRef.current && thisRequestId === requestIdRef.current) {
+                        setRulesLoadError(true)
+                    }
                 }
 
-                setTransitionMatrix(matrix)
+                if (mountedRef.current && thisRequestId === requestIdRef.current) {
+                    setTransitionMatrix(matrix)
+                }
             }
         } catch (err) {
             Utils.logError('Failed to load status transition rules: ' + err)
-            setRulesLoadError(true)
+            if (mountedRef.current && thisRequestId === requestIdRef.current) {
+                setRulesLoadError(true)
+            }
         } finally {
-            setLoading(false)
+            if (mountedRef.current && thisRequestId === requestIdRef.current) {
+                setLoading(false)
+            }
         }
     }, [board.id, board.cardProperties])
 
@@ -100,6 +132,44 @@ const StatusTransitionSection = (props: Props): JSX.Element => {
         })
         return matrix
     }, [])
+
+    const doSave = useCallback(async () => {
+        const currentMatrix = matrixRef.current
+        try {
+            setSaving(true)
+            setSaveError('')
+
+            const rules: StatusTransitionRule[] = []
+            Object.keys(currentMatrix).forEach(fromStatusId => {
+                Object.keys(currentMatrix[fromStatusId]).forEach(toStatusId => {
+                    rules.push({
+                        id: '',
+                        boardId: board.id,
+                        fromStatus: fromStatusId,
+                        toStatus: toStatusId,
+                        allowed: currentMatrix[fromStatusId][toStatusId],
+                        createAt: 0,
+                        updateAt: 0
+                    })
+                })
+            })
+
+            const response = await octoClient.saveStatusTransitionRules(board.id, rules)
+            if (!response.ok) {
+                const errorText = await response.text().catch(() => 'Unknown error')
+                throw new Error(response.status + ': ' + errorText)
+            }
+        } catch (err) {
+            if (mountedRef.current) {
+                setSaveError('Failed to save status transition rules: ' + err)
+            }
+            Utils.logError('Failed to save status transition rules: ' + err)
+        } finally {
+            if (mountedRef.current) {
+                setSaving(false)
+            }
+        }
+    }, [board.id])
 
     const handleMatrixChange = useCallback((fromStatusId: string, toStatusId: string, allowed: boolean) => {
         setTransitionMatrix(prev => ({
@@ -115,42 +185,9 @@ const StatusTransitionSection = (props: Props): JSX.Element => {
         }
 
         saveTimerRef.current = setTimeout(() => {
-            saveStatusTransitionRules()
+            doSave()
         }, 500)
-    }, [])
-
-    const saveStatusTransitionRules = useCallback(async () => {
-        try {
-            setSaving(true)
-            setSaveError('')
-
-            const rules: StatusTransitionRule[] = []
-            Object.keys(transitionMatrix).forEach(fromStatusId => {
-                Object.keys(transitionMatrix[fromStatusId]).forEach(toStatusId => {
-                    rules.push({
-                        id: '',
-                        boardId: board.id,
-                        fromStatus: fromStatusId,
-                        toStatus: toStatusId,
-                        allowed: transitionMatrix[fromStatusId][toStatusId],
-                        createAt: 0,
-                        updateAt: 0
-                    })
-                })
-            })
-
-            const response = await octoClient.saveStatusTransitionRules(board.id, rules)
-            if (!response.ok) {
-                const errorText = await response.text().catch(() => 'Unknown error')
-                throw new Error(response.status + ': ' + errorText)
-            }
-        } catch (err) {
-            setSaveError('Failed to save status transition rules: ' + err)
-            Utils.logError('Failed to save status transition rules: ' + err)
-        } finally {
-            setSaving(false)
-        }
-    }, [board.id, transitionMatrix])
+    }, [doSave])
 
     if (loading) {
         return (
