@@ -175,7 +175,7 @@ func (s *Service) GetRepositories(userID, channelID string) ([]Repository, error
 		return nil, ErrNotConnected
 	}
 
-	reqURL := fmt.Sprintf("%s%s?per_page=100&sort=full_name", githubAPIBase, githubAPIUserRepos)
+	reqURL := fmt.Sprintf("%s%s?per_page=100&sort=full_name&type=all", githubAPIBase, githubAPIUserRepos)
 
 	req, err := http.NewRequest(http.MethodGet, reqURL, nil)
 	if err != nil {
