@@ -43,11 +43,26 @@ const StatusTransitionSection = (props: Props): JSX.Element => {
     const matrixRef = useRef<TransitionMatrix>({})
     const mountedRef = useRef(true)
     const requestIdRef = useRef(0)
+    const boardRef = useRef(board)
+    const statusOptionsHashRef = useRef('')
 
-    // Keep matrixRef in sync with state
+    // Keep refs in sync with latest values
+    useEffect(() => {
+        boardRef.current = board
+    }, [board])
+
     useEffect(() => {
         matrixRef.current = transitionMatrix
     }, [transitionMatrix])
+
+    // Get a stable hash of the status options to detect when they change
+    const getStatusOptionsHash = useCallback((b: Board): string => {
+        const statusProperty = b.cardProperties.find(
+            prop => prop.type === 'select' && prop.name.toLowerCase() === 'status'
+        )
+        const options = statusProperty?.options || []
+        return options.map(o => `${o.id}:${o.value}:${o.color}`).join('|')
+    }, [])
 
     // Cleanup on unmount
     useEffect(() => {
@@ -59,20 +74,29 @@ const StatusTransitionSection = (props: Props): JSX.Element => {
         }
     }, [])
 
-    // Reload when board ID or card properties change
-    useEffect(() => {
-        loadStatusTransitionRules()
-    }, [board.id, board.cardProperties])
+    // Initialize transition matrix helper
+    const initializeTransitionMatrix = useCallback((statusOptions: IPropertyOption[]): TransitionMatrix => {
+        const matrix: TransitionMatrix = {}
+        statusOptions.forEach(fromStatus => {
+            matrix[fromStatus.id] = {}
+            statusOptions.forEach(toStatus => {
+                matrix[fromStatus.id][toStatus.id] = true
+            })
+        })
+        return matrix
+    }, [])
 
+    // Load status transition rules - uses boardRef to avoid stale closure
     const loadStatusTransitionRules = useCallback(async () => {
         const thisRequestId = ++requestIdRef.current
+        const currentBoard = boardRef.current
 
         try {
             setLoading(true)
             setRulesLoadError(false)
             setSaveError('')
 
-            const statusProperty = board.cardProperties.find(
+            const statusProperty = currentBoard.cardProperties.find(
                 prop => prop.type === 'select' && prop.name.toLowerCase() === 'status'
             )
             const statusOptions = statusProperty?.options || []
@@ -87,7 +111,7 @@ const StatusTransitionSection = (props: Props): JSX.Element => {
                 const matrix = initializeTransitionMatrix(statusOptions)
 
                 try {
-                    const rules = await octoClient.getStatusTransitionRules(board.id)
+                    const rules = await octoClient.getStatusTransitionRules(currentBoard.id)
 
                     // Guard against stale responses after board switch or unmount
                     if (!mountedRef.current || thisRequestId !== requestIdRef.current) {
@@ -100,7 +124,7 @@ const StatusTransitionSection = (props: Props): JSX.Element => {
                         }
                     })
                 } catch (err) {
-                    Utils.logError('Failed to load status transition rules for board ' + board.id + ': ' + err)
+                    Utils.logError('Failed to load status transition rules for board ' + currentBoard.id + ': ' + err)
                     if (mountedRef.current && thisRequestId === requestIdRef.current) {
                         setRulesLoadError(true)
                     }
@@ -120,21 +144,22 @@ const StatusTransitionSection = (props: Props): JSX.Element => {
                 setLoading(false)
             }
         }
-    }, [board.id, board.cardProperties])
+    }, [initializeTransitionMatrix])
 
-    const initializeTransitionMatrix = useCallback((statusOptions: IPropertyOption[]): TransitionMatrix => {
-        const matrix: TransitionMatrix = {}
-        statusOptions.forEach(fromStatus => {
-            matrix[fromStatus.id] = {}
-            statusOptions.forEach(toStatus => {
-                matrix[fromStatus.id][toStatus.id] = true
-            })
-        })
-        return matrix
-    }, [])
+    // Reload when board ID changes or status options change
+    useEffect(() => {
+        // Check if status options have changed by comparing hashes
+        const currentHash = getStatusOptionsHash(board)
+        if (currentHash !== statusOptionsHashRef.current) {
+            statusOptionsHashRef.current = currentHash
+            loadStatusTransitionRules()
+        }
+    }, [board.id, getStatusOptionsHash, loadStatusTransitionRules])
 
+    // Stable doSave function that always accesses latest board via ref
     const doSave = useCallback(async () => {
         const currentMatrix = matrixRef.current
+        const currentBoard = boardRef.current
         try {
             setSaving(true)
             setSaveError('')
@@ -144,7 +169,7 @@ const StatusTransitionSection = (props: Props): JSX.Element => {
                 Object.keys(currentMatrix[fromStatusId]).forEach(toStatusId => {
                     rules.push({
                         id: '',
-                        boardId: board.id,
+                        boardId: currentBoard.id,
                         fromStatus: fromStatusId,
                         toStatus: toStatusId,
                         allowed: currentMatrix[fromStatusId][toStatusId],
@@ -154,7 +179,7 @@ const StatusTransitionSection = (props: Props): JSX.Element => {
                 })
             })
 
-            const response = await octoClient.saveStatusTransitionRules(board.id, rules)
+            const response = await octoClient.saveStatusTransitionRules(currentBoard.id, rules)
             if (!response.ok) {
                 const errorText = await response.text().catch(() => 'Unknown error')
                 throw new Error(response.status + ': ' + errorText)
@@ -169,7 +194,13 @@ const StatusTransitionSection = (props: Props): JSX.Element => {
                 setSaving(false)
             }
         }
-    }, [board.id])
+    }, [])
+
+    // Ref-based callback to avoid stale closure issues with setTimeout
+    const doSaveRef = useRef(doSave)
+    useEffect(() => {
+        doSaveRef.current = doSave
+    }, [doSave])
 
     const handleMatrixChange = useCallback((fromStatusId: string, toStatusId: string, allowed: boolean) => {
         setTransitionMatrix(prev => ({
@@ -185,9 +216,9 @@ const StatusTransitionSection = (props: Props): JSX.Element => {
         }
 
         saveTimerRef.current = setTimeout(() => {
-            doSave()
+            doSaveRef.current()
         }, 500)
-    }, [doSave])
+    }, [])
 
     if (loading) {
         return (
