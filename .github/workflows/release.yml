@@ -11,7 +11,7 @@ on:
 
 jobs:
   build-and-release:
-    runs-on: self-hosted
+    runs-on: [self-hosted, Linux]
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     permissions:
       contents: write
@@ -104,7 +104,7 @@ jobs:
 
   deploy-to-mattermost:
     needs: build-and-release
-    runs-on: self-hosted
+    runs-on: [self-hosted, Linux]
     if: success()
 
     steps:
