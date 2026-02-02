@@ -13,7 +13,7 @@ permissions: read-all
 jobs:
   analysis:
     name: Scorecards analysis
-    runs-on: self-hosted
+    runs-on: [self-hosted, Linux]
     permissions:
       # Needed to upload the results to code-scanning dashboard.
       id-token: write
