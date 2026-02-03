@@ -35,6 +35,7 @@ type Props = {
     isMulti: boolean
     closeMenuOnSelect?: boolean
     showMe?: boolean
+    usePortal?: boolean
     onChange: (items: any, action: ActionMeta<IUser>) => void
 }
 
@@ -72,7 +73,7 @@ const selectStyles = {
 }
 
 const PersonSelector = (props: Props): JSX.Element => {
-    const {readOnly, userIDs, allowAddUsers, isMulti, closeMenuOnSelect = true, emptyDisplayValue, showMe = false, onChange} = props
+    const {readOnly, userIDs, allowAddUsers, isMulti, closeMenuOnSelect = true, emptyDisplayValue, showMe = false, usePortal = false, onChange} = props
 
     const clientConfig = useAppSelector<ClientConfig>(getClientConfig)
     const intl = useIntl()
@@ -193,12 +194,16 @@ const PersonSelector = (props: Props): JSX.Element => {
                 className={`${primaryClass}${secondaryClass}`}
                 classNamePrefix={'react-select'}
                 formatOptionLabel={formatOptionLabel}
-                styles={selectStyles}
+                styles={{
+                    ...selectStyles,
+                    ...(usePortal ? {menuPortal: (base: CSSObject) => ({...base, zIndex: 9999})} : {}),
+                }}
                 placeholder={emptyDisplayValue}
                 getOptionLabel={(o: IUser) => o.username}
                 getOptionValue={(a: IUser) => a.id}
                 value={users}
                 onChange={onChange}
+                {...(usePortal ? {menuPortalTarget: document.body} : {})}
             />
         </>
     )

@@ -31,6 +31,7 @@ type BoardViewFields = {
     kanbanCalculations: Record<string, KanbanCalculationFields>
     defaultTemplateId: string
     visibility?: ViewVisibility
+    ownerUserId?: string
 }
 
 type BoardView = Block & {
@@ -57,6 +58,7 @@ function createBoardView(block?: Block): BoardView {
             kanbanCalculations: {...(block?.fields.kanbanCalculations) || {}},
             defaultTemplateId: block?.fields.defaultTemplateId || '',
             visibility: block?.fields.visibility || 'everyone',
+            ownerUserId: block?.fields.ownerUserId,
         },
     }
 }
