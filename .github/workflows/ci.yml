@@ -36,7 +36,7 @@ jobs:
       run: make webapp-ci
 
     - name: set up golangci-lint
-      run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.64.8
+      run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/v1.64.8/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.64.8
 
     - name: Lint & test server
       run: make server-ci
