@@ -203,7 +203,7 @@ const PersonSelector = (props: Props): JSX.Element => {
                 getOptionValue={(a: IUser) => a.id}
                 value={users}
                 onChange={onChange}
-                {...(usePortal ? {menuPortalTarget: document.body} : {})}
+                {...(usePortal && typeof document !== 'undefined' ? {menuPortalTarget: document.body} : {})}
             />
         </>
     )
