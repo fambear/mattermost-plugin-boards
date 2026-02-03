@@ -10,8 +10,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/mattermost/mattermost-plugin-boards/server/model"
-
-	mm_model "github.com/mattermost/mattermost/server/public/model"
 )
 
 func (a *API) registerActionsRoutes(r *mux.Router) {
@@ -61,16 +59,4 @@ func (a *API) handleCreateTaskFromPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jsonBytesResponse(w, http.StatusOK, data)
-}
-
-// jsonBytesResponse writes a JSON response from pre-marshaled bytes.
-func jsonBytesResponse(w http.ResponseWriter, code int, data []byte) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	_, _ = w.Write(data)
-}
-
-// NewErrBadRequest is a convenience for creating a bad request error.
-func newErrBadRequest(msg string) *mm_model.AppError {
-	return mm_model.NewAppError("boards", "api.bad_request", nil, msg, http.StatusBadRequest)
 }
