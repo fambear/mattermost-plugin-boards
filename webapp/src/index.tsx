@@ -388,11 +388,15 @@ export default class Plugin {
                         return
                     }
                     try {
-                        const result = await octoClient.createTaskFromPost(postId, currentTeamId)
-                        if (result?.channelId) {
-                            // Navigate to the DM channel via Mattermost router (not Boards router)
-                            const teamName = mmStore.getState().entities.teams.teams[currentTeamId]?.name
-                            if (teamName) {
+                        await octoClient.createTaskFromPost(postId, currentTeamId)
+
+                        // Navigate to DM with @clawdbot via Mattermost Channels SPA router (no full page reload)
+                        const teamName = mmStore.getState().entities.teams.teams[currentTeamId]?.name
+                        if (teamName) {
+                            const webappHistory = (window as any).WebappUtils?.browserHistory
+                            if (webappHistory) {
+                                webappHistory.push(`/${teamName}/messages/@clawdbot`)
+                            } else {
                                 window.location.href = `/${teamName}/messages/@clawdbot`
                             }
                         }
