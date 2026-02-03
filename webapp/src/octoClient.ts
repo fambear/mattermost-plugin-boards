@@ -1299,13 +1299,13 @@ class OctoClient {
     }
 
     async createTaskFromPost(postId: string, teamId: string): Promise<{channelId: string} | undefined> {
-        const path = this.teamPath() + '/actions/create-task-from-post'
+        const path = this.getBaseURL() + this.teamPath() + '/actions/create-task-from-post'
         const body = JSON.stringify({postId, teamId})
-        const response = await fetch(path, {
+        const response = await fetch(path, Client4.getOptions({
             method: 'POST',
             headers: this.headers(),
             body,
-        })
+        }))
         if (response.status !== 200) {
             return undefined
         }
