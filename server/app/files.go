@@ -113,33 +113,20 @@ func (a *App) ValidateFileOwnership(teamID, boardID, filename string) error {
 // Files use different storage patterns (teamID/boardID/filename for templates, boards/YYYYMMDD/filename for regular files).
 // Path mismatches don't indicate malicious files, just different storage patterns.
 func (a *App) validateFileReferencedByBoard(boardID, filename string) error {
-	imageBlocks, err := a.store.GetBlocksWithType(boardID, model.TypeImage)
+	blocks, err := a.store.GetBlocksForBoard(boardID)
 	if err != nil {
 		return err
 	}
 
-	attachmentBlocks, err := a.store.GetBlocksWithType(boardID, model.TypeAttachment)
-	if err != nil {
-		return err
-	}
-
-	// Check image blocks
-	for _, block := range imageBlocks {
-		if fileID, ok := block.Fields[model.BlockFieldFileId].(string); ok && fileID == filename {
-			return nil
-		}
-		if attachmentID, ok := block.Fields[model.BlockFieldAttachmentId].(string); ok && attachmentID == filename {
-			return nil
-		}
-	}
-
-	// Check attachment blocks
-	for _, block := range attachmentBlocks {
-		if fileID, ok := block.Fields[model.BlockFieldFileId].(string); ok && fileID == filename {
-			return nil
-		}
-		if attachmentID, ok := block.Fields[model.BlockFieldAttachmentId].(string); ok && attachmentID == filename {
-			return nil
+	for _, block := range blocks {
+		switch block.Type {
+		case model.TypeImage, model.TypeAttachment, model.TypeVideo:
+			if fileID, ok := block.Fields[model.BlockFieldFileId].(string); ok && fileID == filename {
+				return nil
+			}
+			if attachmentID, ok := block.Fields[model.BlockFieldAttachmentId].(string); ok && attachmentID == filename {
+				return nil
+			}
 		}
 	}
 
