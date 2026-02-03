@@ -25,6 +25,7 @@ import BoardTemplateSelector from '../../components/boardTemplateSelector/boardT
 import GeneralSection from './generalSection'
 import ViewsSection from './viewsSection'
 import PropertiesSection from './propertiesSection'
+import StatusTransitionSection from './statusTransitionSection'
 import BoardSettingsFooter from './boardSettingsFooter'
 
 import './boardSettingsPage.scss'
@@ -267,6 +268,19 @@ const BoardSettingsPage = (): JSX.Element => {
                             <PropertiesSection
                                 board={board}
                                 onBoardChange={handleBoardChange}
+                            />
+                        </div>
+
+                        {/* Section 4: Status Transition Rules (IT-381) */}
+                        <div className='BoardSettingsPage__section'>
+                            <h2>
+                                <FormattedMessage
+                                    id='BoardSettings.status-transition-section'
+                                    defaultMessage='Status Transition Rules'
+                                />
+                            </h2>
+                            <StatusTransitionSection
+                                board={board}
                             />
                         </div>
                     </div>

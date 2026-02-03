@@ -1,10 +1,11 @@
 // Copyright (c) 2020-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState, useEffect, useCallback} from 'react'
+import React, {useState, useEffect, useCallback, useRef, useMemo} from 'react'
 import {FormattedMessage, useIntl} from 'react-intl'
 
 import {Card} from '../../blocks/card'
+import type {GitHubBranchField} from '../../blocks/card'
 import {GitHubRepository, GitHubConnectedResponse, GitHubBranch, GitHubBranchInfo} from '../../github'
 import octoClient from '../../octoClient'
 import {sendFlashMessage} from '../flashMessages'
@@ -22,6 +23,123 @@ type Props = {
     onBranchCreated?: (branch: GitHubBranch | null) => void
 }
 
+// Helper: resolve all branches from card fields (supports both legacy single + new multi)
+function getCardBranches(card: Card): GitHubBranchField[] {
+    const branches: GitHubBranchField[] = []
+    if (card.fields.githubBranches && card.fields.githubBranches.length > 0) {
+        return [...card.fields.githubBranches]
+    }
+    // Legacy: single branch
+    if (card.fields.githubBranch) {
+        branches.push(card.fields.githubBranch)
+    }
+    return branches
+}
+
+// Searchable dropdown component
+type SearchableSelectProps = {
+    items: {value: string; label: string}[]
+    value: string
+    onChange: (value: string) => void
+    placeholder?: string
+    loading?: boolean
+    loadingText?: string
+    id?: string
+}
+
+const SearchableSelect = (props: SearchableSelectProps): JSX.Element => {
+    const {items, value, onChange, placeholder, loading, loadingText, id} = props
+    const [search, setSearch] = useState('')
+    const [open, setOpen] = useState(false)
+    const wrapperRef = useRef<HTMLDivElement>(null)
+
+    const selectedLabel = items.find((i) => i.value === value)?.label || value
+
+    const filtered = useMemo(() => {
+        if (!search) {
+            return items
+        }
+        const q = search.toLowerCase()
+        return items.filter((i) => i.label.toLowerCase().includes(q))
+    }, [items, search])
+
+    // Close on outside click
+    useEffect(() => {
+        const handleClick = (e: MouseEvent) => {
+            if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+                setOpen(false)
+                setSearch('')
+            }
+        }
+        document.addEventListener('mousedown', handleClick)
+        return () => document.removeEventListener('mousedown', handleClick)
+    }, [])
+
+    if (loading) {
+        return (
+            <div className='SearchableSelect SearchableSelect--loading'>
+                {loadingText || 'Loading...'}
+            </div>
+        )
+    }
+
+    return (
+        <div
+            className='SearchableSelect'
+            ref={wrapperRef}
+            id={id}
+        >
+            {!open ? (
+                <button
+                    type='button'
+                    className='SearchableSelect__trigger'
+                    onClick={() => setOpen(true)}
+                >
+                    <span className='SearchableSelect__value'>{selectedLabel || placeholder}</span>
+                    <CompassIcon icon='chevron-down'/>
+                </button>
+            ) : (
+                <>
+                    <input
+                        type='text'
+                        className='SearchableSelect__input'
+                        placeholder={placeholder || 'Search...'}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Escape') {
+                                setOpen(false)
+                                setSearch('')
+                            }
+                        }}
+                        autoFocus={true}
+                    />
+                    <div className='SearchableSelect__dropdown'>
+                        {filtered.length === 0 ? (
+                            <div className='SearchableSelect__empty'>No matches</div>
+                        ) : (
+                            filtered.map((item) => (
+                                <button
+                                    key={item.value}
+                                    type='button'
+                                    className={`SearchableSelect__item ${item.value === value ? 'SearchableSelect__item--selected' : ''}`}
+                                    onClick={() => {
+                                        onChange(item.value)
+                                        setOpen(false)
+                                        setSearch('')
+                                    }}
+                                >
+                                    {item.label}
+                                </button>
+                            ))
+                        )}
+                    </div>
+                </>
+            )}
+        </div>
+    )
+}
+
 const GitHubBranchCreate = (props: Props): JSX.Element | null => {
     const {card, readonly, onBranchCreated} = props
     const intl = useIntl()
@@ -34,24 +152,23 @@ const GitHubBranchCreate = (props: Props): JSX.Element | null => {
     const [selectedRepo, setSelectedRepo] = useState<GitHubRepository | null>(null)
     const [branchName, setBranchName] = useState('')
     const [creating, setCreating] = useState(false)
-    const [createdBranch, setCreatedBranch] = useState<GitHubBranch | null>(null)
+    const [connectedBranches, setConnectedBranches] = useState<GitHubBranchField[]>([])
     const [branches, setBranches] = useState<GitHubBranchInfo[]>([])
     const [loadingBranches, setLoadingBranches] = useState(false)
     const [baseBranch, setBaseBranch] = useState<string>('')
     const [showBaseBranchPicker, setShowBaseBranchPicker] = useState(false)
+    const [branchSearch, setBranchSearch] = useState('')
     const [showBranchPicker, setShowBranchPicker] = useState(false)
     const [chooseExistingMode, setChooseExistingMode] = useState(false)
 
     // Generate default branch name from card code
     const getDefaultBranchName = useCallback(() => {
         if (card.code) {
-            // Convert card code to lowercase and create branch-friendly slug
             let slug = card.title
                 .toLowerCase()
                 .replace(/[^a-z0-9]+/g, '-')
                 .replace(/^-|-$/g, '')
                 .substring(0, 40)
-            // Fallback if slug is empty (title was blank or all non-alphanumerics)
             if (!slug) {
                 slug = 'task'
             }
@@ -65,31 +182,36 @@ const GitHubBranchCreate = (props: Props): JSX.Element | null => {
         loadConnectionStatus()
     }, [])
 
-    // Load saved branch from card fields on mount/card change
+    // Load branches from card fields on mount/card change
     useEffect(() => {
-        const saved = card.fields.githubBranch
-        if (saved && typeof saved.ref === 'string' && typeof saved.url === 'string') {
+        const saved = getCardBranches(card)
+        setConnectedBranches(saved)
+        if (saved.length > 0) {
+            const first = saved[0]
             const branch: GitHubBranch = {
-                ref: saved.ref,
-                url: saved.url,
+                ref: first.ref,
+                url: first.url,
                 object: {sha: '', type: 'commit'},
             }
-            setCreatedBranch(branch)
             onBranchCreated?.(branch)
         }
-    }, [card.id, card.fields.githubBranch, onBranchCreated])
+    }, [card.id, card.fields.githubBranch, card.fields.githubBranches, onBranchCreated])
 
-    // Reset all state when card changes to prevent data leaking between cards
+    // Reset state when card changes
     useEffect(() => {
         setShowForm(false)
         setSelectedRepo(null)
         setBranchName('')
-        // Only clear if card doesn't have a saved branch
-        if (!card.fields.githubBranch) {
-            setCreatedBranch(null)
-            onBranchCreated?.(null)
+        setBranchSearch('')
+    }, [card.id])
+
+    const filteredBranches = useMemo(() => {
+        if (!branchSearch) {
+            return branches
         }
-    }, [card.id, card.fields.githubBranch, onBranchCreated])
+        const q = branchSearch.toLowerCase()
+        return branches.filter((b) => b.name.toLowerCase().includes(q))
+    }, [branches, branchSearch])
 
     const loadConnectionStatus = async () => {
         try {
@@ -109,7 +231,6 @@ const GitHubBranchCreate = (props: Props): JSX.Element | null => {
             const repos = await octoClient.getGitHubRepositories()
             setRepositories(repos)
             if (repos.length > 0 && !selectedRepo) {
-                // Try to restore last selected repository from localStorage
                 const lastRepoFullName = UserSettings.lastGitHubRepo
                 const lastRepo = lastRepoFullName ? repos.find((r) => r.full_name === lastRepoFullName) : null
                 setSelectedRepo(lastRepo || repos[0])
@@ -133,8 +254,6 @@ const GitHubBranchCreate = (props: Props): JSX.Element | null => {
             setLoadingBranches(true)
             const branchList = await octoClient.getGitHubBranches(repo.owner, repo.name)
             setBranches(branchList)
-            // Always reset base branch when repository changes to avoid
-            // carrying over a branch name that doesn't exist in the new repo.
             setBaseBranch(repo.default_branch || '')
         } catch (error) {
             console.error('Failed to load branches:', error)
@@ -150,7 +269,6 @@ const GitHubBranchCreate = (props: Props): JSX.Element | null => {
         }
     }
 
-    // Load branches when repository changes
     useEffect(() => {
         if (selectedRepo) {
             loadBranches(selectedRepo)
@@ -160,6 +278,7 @@ const GitHubBranchCreate = (props: Props): JSX.Element | null => {
     const handleOpenForm = () => {
         setShowForm(true)
         setBranchName(getDefaultBranchName())
+        setBranchSearch('')
         loadRepositories()
     }
 
@@ -172,15 +291,26 @@ const GitHubBranchCreate = (props: Props): JSX.Element | null => {
         setShowBaseBranchPicker(false)
         setShowBranchPicker(false)
         setChooseExistingMode(false)
+        setBranchSearch('')
     }
 
-    // Check if the current branch name matches an existing branch
     const isExistingBranch = useCallback(
         (name: string): GitHubBranchInfo | undefined => {
             return branches.find((b) => b.name === name.trim())
         },
         [branches],
     )
+
+    // Save branches to card (always writes both githubBranch + githubBranches for compat)
+    const saveBranchesToCard = async (newBranches: GitHubBranchField[]) => {
+        const blockPatch: {updatedFields: Record<string, unknown>} = {
+            updatedFields: {
+                githubBranches: newBranches,
+                githubBranch: newBranches.length > 0 ? newBranches[0] : null,
+            },
+        }
+        await octoClient.patchBlock(card.boardId, card.id, blockPatch)
+    }
 
     const connectExistingBranch = async (existingBranch: GitHubBranchInfo) => {
         if (!selectedRepo) {
@@ -190,27 +320,32 @@ const GitHubBranchCreate = (props: Props): JSX.Element | null => {
         try {
             setCreating(true)
 
-            // Build a GitHubBranch object from the existing branch info
-            const branch: GitHubBranch = {
-                ref: `refs/heads/${existingBranch.name}`,
-                url: `https://api.github.com/repos/${selectedRepo.owner}/${selectedRepo.name}/git/refs/heads/${encodeURIComponent(existingBranch.name)}`,
-                object: {sha: existingBranch.sha, type: 'commit'},
+            const newRef = `refs/heads/${existingBranch.name}`
+
+            // Prevent duplicate: same repo + same branch
+            if (connectedBranches.some((b) => b.repo === selectedRepo.full_name && b.ref === newRef)) {
+                sendFlashMessage({
+                    content: intl.formatMessage({
+                        id: 'GitHubBranchCreate.duplicateBranch',
+                        defaultMessage: 'This branch is already connected to the card',
+                    }),
+                    severity: 'low',
+                })
+                setCreating(false)
+                return
             }
 
-            // Save branch info to card fields
-            const blockPatch = {
-                updatedFields: {
-                    githubBranch: {
-                        ref: branch.ref,
-                        url: branch.url,
-                        repo: selectedRepo.full_name,
-                        connectedAt: new Date().toISOString(),
-                    },
-                },
+            const newEntry: GitHubBranchField = {
+                ref: newRef,
+                url: `https://api.github.com/repos/${selectedRepo.owner}/${selectedRepo.name}/git/refs/heads/${existingBranch.name}`,
+                repo: selectedRepo.full_name,
+                connectedAt: new Date().toISOString(),
             }
+
+            const updated = [...connectedBranches, newEntry]
 
             try {
-                await octoClient.patchBlock(card.boardId, card.id, blockPatch)
+                await saveBranchesToCard(updated)
             } catch (saveError) {
                 console.error('Failed to save branch to card:', saveError)
                 sendFlashMessage({
@@ -223,8 +358,14 @@ const GitHubBranchCreate = (props: Props): JSX.Element | null => {
                 return
             }
 
-            setCreatedBranch(branch)
-            onBranchCreated?.(branch)
+            setConnectedBranches(updated)
+            if (updated.length === 1) {
+                onBranchCreated?.({
+                    ref: newEntry.ref,
+                    url: newEntry.url,
+                    object: {sha: existingBranch.sha, type: 'commit'},
+                })
+            }
             setShowForm(false)
             setChooseExistingMode(false)
 
@@ -254,15 +395,12 @@ const GitHubBranchCreate = (props: Props): JSX.Element | null => {
             return
         }
 
-        // In "choose existing" mode, check if branch name matches an existing branch
         if (chooseExistingMode) {
             const existing = isExistingBranch(branchName)
             if (existing) {
-                // Connect existing branch — no GitHub API create call
                 await connectExistingBranch(existing)
                 return
             }
-            // Name was edited and no longer matches — fall through to create
         }
 
         try {
@@ -275,20 +413,17 @@ const GitHubBranchCreate = (props: Props): JSX.Element | null => {
             })
 
             if (branch) {
-                // Save branch info to card fields before updating UI
-                const blockPatch = {
-                    updatedFields: {
-                        githubBranch: {
-                            ref: branch.ref,
-                            url: branch.url,
-                            repo: selectedRepo.full_name,
-                            createdAt: new Date().toISOString(),
-                        },
-                    },
+                const newEntry: GitHubBranchField = {
+                    ref: branch.ref,
+                    url: branch.url,
+                    repo: selectedRepo.full_name,
+                    connectedAt: new Date().toISOString(),
                 }
 
+                const updated = [...connectedBranches, newEntry]
+
                 try {
-                    await octoClient.patchBlock(card.boardId, card.id, blockPatch)
+                    await saveBranchesToCard(updated)
                 } catch (saveError) {
                     console.error('Failed to save branch to card:', saveError)
                     sendFlashMessage({
@@ -300,8 +435,10 @@ const GitHubBranchCreate = (props: Props): JSX.Element | null => {
                     })
                 }
 
-                setCreatedBranch(branch)
-                onBranchCreated?.(branch)
+                setConnectedBranches(updated)
+                if (updated.length === 1) {
+                    onBranchCreated?.(branch)
+                }
                 setShowForm(false)
                 setChooseExistingMode(false)
 
@@ -335,6 +472,26 @@ const GitHubBranchCreate = (props: Props): JSX.Element | null => {
         }
     }
 
+    const handleRemoveBranch = async (index: number) => {
+        const updated = connectedBranches.filter((_, i) => i !== index)
+        try {
+            await saveBranchesToCard(updated)
+            setConnectedBranches(updated)
+            if (updated.length === 0) {
+                onBranchCreated?.(null)
+            }
+        } catch (error) {
+            console.error('Failed to remove branch:', error)
+            sendFlashMessage({
+                content: intl.formatMessage({
+                    id: 'GitHubBranchCreate.removeError',
+                    defaultMessage: 'Failed to remove branch',
+                }),
+                severity: 'low',
+            })
+        }
+    }
+
     // Don't show anything while loading
     if (loading) {
         return null
@@ -356,12 +513,14 @@ const GitHubBranchCreate = (props: Props): JSX.Element | null => {
                 <div className='GitHubBranchCreate__connect-prompt'>
                     <FormattedMessage
                         id='GitHubBranchCreate.connectPrompt'
-                        defaultMessage='Run /github connect in Mattermost to create branches'
+                        defaultMessage='Run /github connect private in Mattermost to create branches'
                     />
                 </div>
             </div>
         )
     }
+
+    const hasBranches = connectedBranches.length > 0
 
     return (
         <div className='GitHubBranchCreate'>
@@ -373,277 +532,326 @@ const GitHubBranchCreate = (props: Props): JSX.Element | null => {
                         defaultMessage='GitHub Branch'
                     />
                 </div>
+                {/* [+] button to add more branches */}
+                {hasBranches && !readonly && !showForm && (
+                    <IconButton
+                        className='GitHubBranchCreate__add-button'
+                        onClick={handleOpenForm}
+                        icon={<CompassIcon icon='plus'/>}
+                        title={intl.formatMessage({
+                            id: 'GitHubBranchCreate.addAnother',
+                            defaultMessage: 'Add another branch',
+                        })}
+                        size='small'
+                    />
+                )}
             </div>
 
-            {/* Created Branch Display */}
-            {createdBranch && (
-                <div className='GitHubBranchCreate__created'>
-                    <div className='GitHubBranchCreate__branch'>
-                        <div className='GitHubBranchCreate__branch-header'>
-                            <CompassIcon icon='source-branch'/>
-                            <span className='GitHubBranchCreate__branch-name'>
-                                {createdBranch.ref.replace('refs/heads/', '')}
-                            </span>
-                        </div>
-                        <a
-                            href={createdBranch.url.replace('api.github.com/repos', 'github.com').replace('/git/refs/heads/', '/tree/')}
-                            target='_blank'
-                            rel='noopener noreferrer'
-                            className='GitHubBranchCreate__branch-link'
-                        >
-                            <FormattedMessage
-                                id='GitHubBranchCreate.viewOnGitHub'
-                                defaultMessage='View on GitHub'
-                            />
-                        </a>
-                    </div>
+            {/* Connected Branches Display */}
+            {hasBranches && (
+                <div className='GitHubBranchCreate__branches-list'>
+                    {connectedBranches.map((b, index) => {
+                        const branchDisplayName = b.ref.replace('refs/heads/', '')
+                        // Build GitHub URL from repo + branch name (avoids URL-encoded chars from API URL)
+                        const githubUrl = `https://github.com/${b.repo}/tree/${branchDisplayName}`
+                        return (
+                            <div
+                                key={`${index}-${b.repo}-${b.ref}`}
+                                className='GitHubBranchCreate__branch'
+                            >
+                                <div className='GitHubBranchCreate__branch-header'>
+                                    <CompassIcon icon='source-branch'/>
+                                    <span className='GitHubBranchCreate__branch-name'>
+                                        {branchDisplayName}
+                                    </span>
+                                    {!readonly && (
+                                        <IconButton
+                                            className='GitHubBranchCreate__branch-remove'
+                                            onClick={() => handleRemoveBranch(index)}
+                                            icon={<CloseIcon/>}
+                                            title={intl.formatMessage({
+                                                id: 'GitHubBranchCreate.removeBranch',
+                                                defaultMessage: 'Remove branch',
+                                            })}
+                                            size='small'
+                                        />
+                                    )}
+                                </div>
+                                <div className='GitHubBranchCreate__branch-meta'>
+                                    <span className='GitHubBranchCreate__branch-repo'>{b.repo}</span>
+                                    <a
+                                        href={githubUrl}
+                                        target='_blank'
+                                        rel='noopener noreferrer'
+                                        className='GitHubBranchCreate__branch-link'
+                                    >
+                                        <FormattedMessage
+                                            id='GitHubBranchCreate.viewOnGitHub'
+                                            defaultMessage='View on GitHub'
+                                        />
+                                    </a>
+                                </div>
+                            </div>
+                        )
+                    })}
                 </div>
             )}
 
-            {/* Create Branch Button/Form */}
-            {!createdBranch && !readonly && (
-                <div className='GitHubBranchCreate__create'>
-                    {!showForm ? (
-                        <button
-                            type='button'
-                            className='GitHubBranchCreate__create-button'
-                            onClick={handleOpenForm}
-                        >
-                            <CompassIcon icon='plus'/>
+            {/* Create/Connect Branch Form */}
+            {showForm && (
+                <div className='GitHubBranchCreate__form'>
+                    <div className='GitHubBranchCreate__form-header'>
+                        <FormattedMessage
+                            id={hasBranches ? 'GitHubBranchCreate.addBranchTitle' : 'GitHubBranchCreate.formTitle'}
+                            defaultMessage={hasBranches ? 'Add Branch' : 'Create GitHub Branch'}
+                        />
+                        <IconButton
+                            className='GitHubBranchCreate__form-close'
+                            onClick={handleCloseForm}
+                            icon={<CloseIcon/>}
+                            title={intl.formatMessage({
+                                id: 'GitHubBranchCreate.closeForm',
+                                defaultMessage: 'Close',
+                            })}
+                            size='small'
+                        />
+                    </div>
+
+                    {loadingRepos ? (
+                        <div className='GitHubBranchCreate__form-loading'>
                             <FormattedMessage
-                                id='GitHubBranchCreate.createButton'
-                                defaultMessage='Create branch for this card'
+                                id='GitHubBranchCreate.loadingRepos'
+                                defaultMessage='Loading repositories...'
                             />
-                        </button>
+                        </div>
                     ) : (
-                        <div className='GitHubBranchCreate__form'>
-                            <div className='GitHubBranchCreate__form-header'>
-                                <FormattedMessage
-                                    id='GitHubBranchCreate.formTitle'
-                                    defaultMessage='Create GitHub Branch'
-                                />
-                                <IconButton
-                                    className='GitHubBranchCreate__form-close'
-                                    onClick={handleCloseForm}
-                                    icon={<CloseIcon/>}
-                                    title={intl.formatMessage({
-                                        id: 'GitHubBranchCreate.closeForm',
-                                        defaultMessage: 'Close',
+                        <>
+                            <div className='GitHubBranchCreate__form-field'>
+                                <label>
+                                    <FormattedMessage
+                                        id='GitHubBranchCreate.repository'
+                                        defaultMessage='Repository'
+                                    />
+                                </label>
+                                <SearchableSelect
+                                    id='repo-select'
+                                    items={repositories.map((r) => ({value: r.full_name, label: r.full_name}))}
+                                    value={selectedRepo?.full_name || ''}
+                                    placeholder={intl.formatMessage({
+                                        id: 'GitHubBranchCreate.searchRepos',
+                                        defaultMessage: 'Search repositories...',
                                     })}
-                                    size='small'
+                                    onChange={(val) => {
+                                        const repo = repositories.find((r) => r.full_name === val)
+                                        setSelectedRepo(repo || null)
+                                        if (repo) {
+                                            UserSettings.lastGitHubRepo = repo.full_name
+                                        }
+                                    }}
                                 />
                             </div>
 
-                            {loadingRepos ? (
-                                <div className='GitHubBranchCreate__form-loading'>
-                                    <FormattedMessage
-                                        id='GitHubBranchCreate.loadingRepos'
-                                        defaultMessage='Loading repositories...'
-                                    />
-                                </div>
-                            ) : (
-                                <>
-                                    <div className='GitHubBranchCreate__form-field'>
-                                        <label htmlFor='repo-select'>
-                                            <FormattedMessage
-                                                id='GitHubBranchCreate.repository'
-                                                defaultMessage='Repository'
-                                            />
-                                        </label>
-                                        <select
-                                            id='repo-select'
-                                            className='GitHubBranchCreate__form-select'
-                                            value={selectedRepo?.full_name || ''}
-                                            onChange={(e) => {
-                                                const repo = repositories.find((r) => r.full_name === e.target.value)
-                                                setSelectedRepo(repo || null)
-                                                // Save selected repository to localStorage
-                                                if (repo) {
-                                                    UserSettings.lastGitHubRepo = repo.full_name
+                            <div className='GitHubBranchCreate__form-field'>
+                                <div className='GitHubBranchCreate__form-field-header'>
+                                    <label htmlFor='branch-name'>
+                                        <FormattedMessage
+                                            id='GitHubBranchCreate.branchName'
+                                            defaultMessage='Branch Name'
+                                        />
+                                    </label>
+                                    {selectedRepo && !loadingBranches && branches.length > 0 && (
+                                        <button
+                                            type='button'
+                                            className='GitHubBranchCreate__choose-existing-link'
+                                            onClick={() => {
+                                                const newState = !showBranchPicker
+                                                setShowBranchPicker(newState)
+                                                setBranchSearch('')
+                                                if (!newState) {
+                                                    setChooseExistingMode(false)
                                                 }
                                             }}
                                         >
-                                            {repositories.map((repo) => (
-                                                <option key={repo.id} value={repo.full_name}>
-                                                    {repo.full_name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    <div className='GitHubBranchCreate__form-field'>
-                                        <div className='GitHubBranchCreate__form-field-header'>
-                                            <label htmlFor='branch-name'>
-                                                <FormattedMessage
-                                                    id='GitHubBranchCreate.branchName'
-                                                    defaultMessage='Branch Name'
-                                                />
-                                            </label>
-                                            {selectedRepo && !loadingBranches && branches.length > 0 && (
-                                                <button
-                                                    type='button'
-                                                    className='GitHubBranchCreate__choose-existing-link'
-                                                    onClick={() => {
-                                                        const newState = !showBranchPicker
-                                                        setShowBranchPicker(newState)
-                                                        if (!newState) {
-                                                            // Closing picker — exit choose existing mode if branch was not selected
-                                                            setChooseExistingMode(false)
-                                                        }
-                                                    }}
-                                                >
+                                            <FormattedMessage
+                                                id={showBranchPicker ? 'GitHubBranchCreate.newBranch' : 'GitHubBranchCreate.chooseExisting'}
+                                                defaultMessage={showBranchPicker ? 'new branch' : 'choose existing'}
+                                            />
+                                        </button>
+                                    )}
+                                </div>
+                                <input
+                                    id='branch-name'
+                                    type='text'
+                                    className='GitHubBranchCreate__form-input'
+                                    placeholder={intl.formatMessage({
+                                        id: 'GitHubBranchCreate.branchPlaceholder',
+                                        defaultMessage: 'e.g., feature/my-branch',
+                                    })}
+                                    value={branchName}
+                                    onChange={(e) => {
+                                        setBranchName(e.target.value)
+                                        if (chooseExistingMode) {
+                                            const exists = branches.some((b) => b.name === e.target.value.trim())
+                                            setChooseExistingMode(exists)
+                                        }
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && !creating) {
+                                            handleCreateOrConnectBranch()
+                                        } else if (e.key === 'Escape') {
+                                            handleCloseForm()
+                                        }
+                                    }}
+                                    autoFocus={true}
+                                />
+                                {showBranchPicker && selectedRepo && branches.length > 0 && (
+                                    <div className='GitHubBranchCreate__branch-picker'>
+                                        <div className='GitHubBranchCreate__branch-picker-search'>
+                                            <input
+                                                type='text'
+                                                placeholder={intl.formatMessage({
+                                                    id: 'GitHubBranchCreate.searchBranches',
+                                                    defaultMessage: 'Search branches...',
+                                                })}
+                                                value={branchSearch}
+                                                onChange={(e) => setBranchSearch(e.target.value)}
+                                                className='GitHubBranchCreate__branch-picker-input'
+                                                autoFocus={true}
+                                            />
+                                        </div>
+                                        <div className='GitHubBranchCreate__branch-list'>
+                                            {filteredBranches.length === 0 ? (
+                                                <div className='GitHubBranchCreate__branch-empty'>
                                                     <FormattedMessage
-                                                        id={showBranchPicker ? 'GitHubBranchCreate.newBranch' : 'GitHubBranchCreate.chooseExisting'}
-                                                        defaultMessage={showBranchPicker ? 'new branch' : 'choose existing'}
+                                                        id='GitHubBranchCreate.noBranchesFound'
+                                                        defaultMessage='No branches match'
                                                     />
-                                                </button>
+                                                </div>
+                                            ) : (
+                                                filteredBranches.map((branch) => (
+                                                    <button
+                                                        key={branch.name}
+                                                        type='button'
+                                                        className='GitHubBranchCreate__branch-item'
+                                                        onClick={() => {
+                                                            setBranchName(branch.name)
+                                                            setShowBranchPicker(false)
+                                                            setChooseExistingMode(true)
+                                                            setBranchSearch('')
+                                                        }}
+                                                    >
+                                                        {branch.name}
+                                                    </button>
+                                                ))
                                             )}
                                         </div>
-                                        <input
-                                            id='branch-name'
-                                            type='text'
-                                            className='GitHubBranchCreate__form-input'
-                                            placeholder={intl.formatMessage({
-                                                id: 'GitHubBranchCreate.branchPlaceholder',
-                                                defaultMessage: 'e.g., feature/my-branch',
-                                            })}
-                                            value={branchName}
-                                            onChange={(e) => {
-                                                setBranchName(e.target.value)
-                                                // Update chooseExistingMode based on whether typed name matches an existing branch
-                                                if (chooseExistingMode) {
-                                                    const exists = branches.some((b) => b.name === e.target.value.trim())
-                                                    setChooseExistingMode(exists)
-                                                }
-                                            }}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter' && !creating) {
-                                                    handleCreateOrConnectBranch()
-                                                } else if (e.key === 'Escape') {
-                                                    handleCloseForm()
-                                                }
-                                            }}
-                                            autoFocus={true}
+                                    </div>
+                                )}
+                                {selectedRepo && !showBaseBranchPicker && !chooseExistingMode && (
+                                    <div className='GitHubBranchCreate__form-hint'>
+                                        <FormattedMessage
+                                            id='GitHubBranchCreate.baseBranchLabel'
+                                            defaultMessage='Base: '
                                         />
-                                        {showBranchPicker && selectedRepo && branches.length > 0 && (
-                                            <div className='GitHubBranchCreate__branch-picker'>
-                                                <div className='GitHubBranchCreate__branch-picker-header'>
-                                                    <FormattedMessage
-                                                        id='GitHubBranchCreate.selectBranch'
-                                                        defaultMessage='Select an existing branch'
-                                                    />
-                                                </div>
-                                                <div className='GitHubBranchCreate__branch-list'>
-                                                    {branches.map((branch) => (
-                                                        <button
-                                                            key={branch.name}
-                                                            type='button'
-                                                            className='GitHubBranchCreate__branch-item'
-                                                            onClick={() => {
-                                                                setBranchName(branch.name)
-                                                                setShowBranchPicker(false)
-                                                                setChooseExistingMode(true)
-                                                            }}
-                                                        >
-                                                            {branch.name}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-                                        {selectedRepo && !showBaseBranchPicker && (
-                                            <div className='GitHubBranchCreate__form-hint'>
-                                                <FormattedMessage
-                                                    id='GitHubBranchCreate.baseBranchLabel'
-                                                    defaultMessage='Base: '
-                                                />
-                                                <button
-                                                    type='button'
-                                                    className='GitHubBranchCreate__base-branch-link'
-                                                    onClick={() => setShowBaseBranchPicker(true)}
-                                                >
-                                                    {baseBranch || selectedRepo.default_branch}
-                                                </button>
-                                            </div>
-                                        )}
-                                        {showBaseBranchPicker && selectedRepo && branches.length > 0 && (
-                                            <div className='GitHubBranchCreate__form-hint'>
-                                                <label htmlFor='base-branch-select'>
-                                                    <FormattedMessage
-                                                        id='GitHubBranchCreate.baseBranchSelect'
-                                                        defaultMessage='BASE BRANCH'
-                                                    />
-                                                </label>
-                                                <select
-                                                    id='base-branch-select'
-                                                    className='GitHubBranchCreate__base-branch-select'
-                                                    value={baseBranch || selectedRepo.default_branch}
-                                                    onChange={(e) => {
-                                                        setBaseBranch(e.target.value)
-                                                        setShowBaseBranchPicker(false)
-                                                    }}
-                                                    autoFocus={true}
-                                                >
-                                                    {branches.map((branch) => (
-                                                        <option key={branch.name} value={branch.name}>
-                                                            {branch.name}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className='GitHubBranchCreate__form-actions'>
-                                        <Button
-                                            onClick={handleCloseForm}
-                                            emphasis='tertiary'
+                                        <button
+                                            type='button'
+                                            className='GitHubBranchCreate__base-branch-link'
+                                            onClick={() => setShowBaseBranchPicker(true)}
                                         >
+                                            {baseBranch || selectedRepo.default_branch}
+                                        </button>
+                                    </div>
+                                )}
+                                {showBaseBranchPicker && selectedRepo && branches.length > 0 && (
+                                    <div className='GitHubBranchCreate__form-hint'>
+                                        <label htmlFor='base-branch-select'>
                                             <FormattedMessage
-                                                id='GitHubBranchCreate.cancel'
-                                                defaultMessage='Cancel'
+                                                id='GitHubBranchCreate.baseBranchSelect'
+                                                defaultMessage='BASE BRANCH'
                                             />
-                                        </Button>
-                                        <Button
-                                            onClick={handleCreateOrConnectBranch}
-                                            filled={true}
-                                            disabled={!selectedRepo || !branchName.trim() || creating}
-                                        >
-                                            {creating ? (
-                                                chooseExistingMode && isExistingBranch(branchName) ? (
-                                                    <FormattedMessage
-                                                        id='GitHubBranchCreate.connecting'
-                                                        defaultMessage='Connecting...'
-                                                    />
-                                                ) : (
-                                                    <FormattedMessage
-                                                        id='GitHubBranchCreate.creating'
-                                                        defaultMessage='Creating...'
-                                                    />
-                                                )
-                                            ) : (
-                                                chooseExistingMode && isExistingBranch(branchName) ? (
-                                                    <FormattedMessage
-                                                        id='GitHubBranchCreate.connect'
-                                                        defaultMessage='Connect Branch'
-                                                    />
-                                                ) : (
-                                                    <FormattedMessage
-                                                        id='GitHubBranchCreate.create'
-                                                        defaultMessage='Create Branch'
-                                                    />
-                                                )
-                                            )}
-                                        </Button>
+                                        </label>
+                                        <SearchableSelect
+                                            id='base-branch-select'
+                                            items={branches.map((b) => ({value: b.name, label: b.name}))}
+                                            value={baseBranch || selectedRepo.default_branch}
+                                            placeholder={intl.formatMessage({
+                                                id: 'GitHubBranchCreate.searchBaseBranch',
+                                                defaultMessage: 'Search base branch...',
+                                            })}
+                                            onChange={(val) => {
+                                                setBaseBranch(val)
+                                                setShowBaseBranchPicker(false)
+                                            }}
+                                        />
                                     </div>
-                                </>
-                            )}
-                        </div>
+                                )}
+                            </div>
+
+                            <div className='GitHubBranchCreate__form-actions'>
+                                <Button
+                                    onClick={handleCloseForm}
+                                    emphasis='tertiary'
+                                >
+                                    <FormattedMessage
+                                        id='GitHubBranchCreate.cancel'
+                                        defaultMessage='Cancel'
+                                    />
+                                </Button>
+                                <Button
+                                    onClick={handleCreateOrConnectBranch}
+                                    filled={true}
+                                    disabled={!selectedRepo || !branchName.trim() || creating}
+                                >
+                                    {creating ? (
+                                        chooseExistingMode && isExistingBranch(branchName) ? (
+                                            <FormattedMessage
+                                                id='GitHubBranchCreate.connecting'
+                                                defaultMessage='Connecting...'
+                                            />
+                                        ) : (
+                                            <FormattedMessage
+                                                id='GitHubBranchCreate.creating'
+                                                defaultMessage='Creating...'
+                                            />
+                                        )
+                                    ) : (
+                                        chooseExistingMode && isExistingBranch(branchName) ? (
+                                            <FormattedMessage
+                                                id='GitHubBranchCreate.connect'
+                                                defaultMessage='Connect Branch'
+                                            />
+                                        ) : (
+                                            <FormattedMessage
+                                                id='GitHubBranchCreate.create'
+                                                defaultMessage='Create Branch'
+                                            />
+                                        )
+                                    )}
+                                </Button>
+                            </div>
+                        </>
                     )}
                 </div>
             )}
 
-            {!createdBranch && readonly && (
+            {/* Initial "Create branch" button when no branches yet */}
+            {!hasBranches && !readonly && !showForm && (
+                <div className='GitHubBranchCreate__create'>
+                    <button
+                        type='button'
+                        className='GitHubBranchCreate__create-button'
+                        onClick={handleOpenForm}
+                    >
+                        <CompassIcon icon='plus'/>
+                        <FormattedMessage
+                            id='GitHubBranchCreate.createButton'
+                            defaultMessage='Create branch for this card'
+                        />
+                    </button>
+                </div>
+            )}
+
+            {!hasBranches && readonly && (
                 <div className='GitHubBranchCreate__empty'>
                     <FormattedMessage
                         id='GitHubBranchCreate.noBranch'
