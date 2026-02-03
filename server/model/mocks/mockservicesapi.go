@@ -68,6 +68,36 @@ func (mr *MockServicesAPIMockRecorder) CreatePost(arg0 interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePost", reflect.TypeOf((*MockServicesAPI)(nil).CreatePost), arg0)
 }
 
+// GetPost mocks base method.
+func (m *MockServicesAPI) GetPost(arg0 string) (*model.Post, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPost", arg0)
+	ret0, _ := ret[0].(*model.Post)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPost indicates an expected call of GetPost.
+func (mr *MockServicesAPIMockRecorder) GetPost(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPost", reflect.TypeOf((*MockServicesAPI)(nil).GetPost), arg0)
+}
+
+// GetPostThread mocks base method.
+func (m *MockServicesAPI) GetPostThread(arg0 string) (*model.PostList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPostThread", arg0)
+	ret0, _ := ret[0].(*model.PostList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPostThread indicates an expected call of GetPostThread.
+func (mr *MockServicesAPIMockRecorder) GetPostThread(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPostThread", reflect.TypeOf((*MockServicesAPI)(nil).GetPostThread), arg0)
+}
+
 // DeletePreferencesForUser mocks base method.
 func (m *MockServicesAPI) DeletePreferencesForUser(arg0 string, arg1 model.Preferences) error {
 	m.ctrl.T.Helper()
