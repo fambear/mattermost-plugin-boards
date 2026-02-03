@@ -63,9 +63,6 @@ const ViewsSection = (props: Props): JSX.Element => {
     }, [dispatch])
 
     const handleOwnerChange = useCallback(async (view: BoardView, newOwner: IUser | null, action: ActionMeta<IUser>) => {
-        // eslint-disable-next-line no-console
-        console.log('[ViewsSection] handleOwnerChange called', {action: action.action, newOwner: newOwner?.username, viewId: view.id})
-
         if (action.action === 'clear') {
             // Don't allow clearing the owner
             return
@@ -74,8 +71,6 @@ const ViewsSection = (props: Props): JSX.Element => {
         const newOwnerId = newOwner?.id
         const currentOwnerId = view.fields.ownerUserId || view.createdBy
         if (!newOwnerId || currentOwnerId === newOwnerId) {
-            // eslint-disable-next-line no-console
-            console.log('[ViewsSection] skipping: same owner or no newOwnerId', {newOwnerId, currentOwnerId})
             return
         }
 
@@ -84,24 +79,15 @@ const ViewsSection = (props: Props): JSX.Element => {
         // field that the patch API ignores).
         const updatedView = {...view, fields: {...view.fields, ownerUserId: newOwnerId}}
 
-        try {
-            await mutator.updateBlock(
-                view.boardId,
-                updatedView,
-                view,
-                'change view owner',
-            )
-            // eslint-disable-next-line no-console
-            console.log('[ViewsSection] mutator.updateBlock succeeded')
-        } catch (err) {
-            // eslint-disable-next-line no-console
-            console.error('[ViewsSection] mutator.updateBlock FAILED', err)
-        }
+        await mutator.updateBlock(
+            view.boardId,
+            updatedView,
+            view,
+            'change view owner',
+        )
 
         // Update Redux store immediately
         dispatch(updateViews([updatedView]))
-        // eslint-disable-next-line no-console
-        console.log('[ViewsSection] dispatch(updateViews) done', {ownerUserId: newOwnerId})
     }, [dispatch])
 
     const handleVisibilityChange = useCallback(async (view: BoardView, isOwnerOnly: boolean) => {
