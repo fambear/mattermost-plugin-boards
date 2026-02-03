@@ -202,6 +202,7 @@ const ViewsSection = (props: Props): JSX.Element => {
                             </div>
                             <div className='ViewsSection__table-cell ViewsSection__table-cell--owner'>
                                 <PersonSelector
+                                    key={`owner-${view.id}-${view.fields.ownerUserId || view.createdBy}`}
                                     readOnly={false}
                                     userIDs={owner ? [owner.id] : []}
                                     allowAddUsers={false}
