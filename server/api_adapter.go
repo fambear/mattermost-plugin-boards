@@ -85,6 +85,16 @@ func (a *pluginAPIAdapter) CreatePost(post *mm_model.Post) (*mm_model.Post, erro
 	return post, normalizeAppErr(appErr)
 }
 
+func (a *pluginAPIAdapter) GetPost(postID string) (*mm_model.Post, error) {
+	post, appErr := a.api.GetPost(postID)
+	return post, normalizeAppErr(appErr)
+}
+
+func (a *pluginAPIAdapter) GetPostThread(postID string) (*mm_model.PostList, error) {
+	postList, appErr := a.api.GetPostThread(postID)
+	return postList, normalizeAppErr(appErr)
+}
+
 //
 // User service.
 //

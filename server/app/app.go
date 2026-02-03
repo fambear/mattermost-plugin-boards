@@ -34,8 +34,11 @@ type servicesAPI interface {
 	GetUsersFromProfiles(options *mm_model.UserGetOptions) ([]*mm_model.User, error)
 	GetConfig() *mm_model.Config
 	GetUserByUsername(name string) (*mm_model.User, error)
+	GetUserByID(userID string) (*mm_model.User, error)
 	GetDirectChannelOrCreate(userID1, userID2 string) (*mm_model.Channel, error)
 	CreatePost(post *mm_model.Post) (*mm_model.Post, error)
+	GetPost(postID string) (*mm_model.Post, error)
+	GetPostThread(postID string) (*mm_model.PostList, error)
 }
 
 type ReadCloseSeeker = filestore.ReadCloseSeeker

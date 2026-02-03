@@ -6,21 +6,26 @@ package app
 import (
 	"errors"
 	"fmt"
+	"sort"
+	"strings"
 
 	mm_model "github.com/mattermost/mattermost/server/public/model"
 	"github.com/mattermost/mattermost/server/public/shared/mlog"
 )
 
 const (
-	// botUsername is the Mattermost username of the bot that handles task creation.
+	// taskBotUsername is the Mattermost username of the bot that handles task creation.
 	taskBotUsername = "clawdbot"
+
+	// maxThreadMessages is the maximum number of thread messages to include.
+	maxThreadMessages = 50
 )
 
 // ErrSiteURLNotConfigured is returned when SiteURL is not set in the server config.
 var ErrSiteURLNotConfigured = errors.New("SiteURL is not configured")
 
 // CreateTaskFromPost opens a DM with the task bot and posts a message
-// containing a permalink to the specified post, triggering task creation.
+// containing the thread context from the specified post, triggering task creation.
 // Returns the DM channel ID for navigation.
 func (a *App) CreateTaskFromPost(userID, postID, teamID string) (string, error) {
 	// Get site URL from config
@@ -45,14 +50,23 @@ func (a *App) CreateTaskFromPost(userID, postID, teamID string) (string, error) 
 		return "", fmt.Errorf("could not create DM channel: %w", err)
 	}
 
-	// Build the permalink
-	permalink := fmt.Sprintf("%s/_redirect/pl/%s", siteURL, postID)
+	// Get the clicked post
+	clickedPost, err := a.servicesAPI.GetPost(postID)
+	if err != nil {
+		return "", fmt.Errorf("could not get post: %w", err)
+	}
+
+	// Build the message with thread context
+	message, err := a.buildThreadContextMessage(clickedPost, postID, siteURL)
+	if err != nil {
+		return "", fmt.Errorf("could not build thread context: %w", err)
+	}
 
 	// Post the message
 	post := &mm_model.Post{
 		UserId:    userID,
 		ChannelId: dmChannel.Id,
-		Message:   fmt.Sprintf("Create task from discussion: %s", permalink),
+		Message:   message,
 	}
 
 	if _, err := a.servicesAPI.CreatePost(post); err != nil {
@@ -66,4 +80,73 @@ func (a *App) CreateTaskFromPost(userID, postID, teamID string) (string, error) 
 	)
 
 	return dmChannel.Id, nil
+}
+
+// buildThreadContextMessage builds a message containing the full thread context.
+// If the post is part of a thread, includes all messages from root to the clicked post.
+// If it's a standalone message, includes just that message.
+func (a *App) buildThreadContextMessage(clickedPost *mm_model.Post, clickedPostID, siteURL string) (string, error) {
+	var sb strings.Builder
+
+	// Determine the root post ID
+	rootID := clickedPost.RootId
+	if rootID == "" {
+		// The clicked post IS the root (or standalone message)
+		rootID = clickedPost.Id
+	}
+
+	// Build permalink to the root post
+	permalink := fmt.Sprintf("%s/_redirect/pl/%s", siteURL, rootID)
+	sb.WriteString(fmt.Sprintf("Create task from discussion: %s\n\n", permalink))
+
+	// Get the thread
+	thread, err := a.servicesAPI.GetPostThread(rootID)
+	if err != nil {
+		// Fallback: just use the clicked post
+		author := a.getUsername(clickedPost.UserId)
+		sb.WriteString(fmt.Sprintf("**@%s:** %s", author, clickedPost.Message))
+		return sb.String(), nil
+	}
+
+	// Sort posts by create time
+	posts := make([]*mm_model.Post, 0, len(thread.Posts))
+	for _, p := range thread.Posts {
+		posts = append(posts, p)
+	}
+	sort.Slice(posts, func(i, j int) bool {
+		return posts[i].CreateAt < posts[j].CreateAt
+	})
+
+	// Limit to maxThreadMessages and only up to the clicked post
+	sb.WriteString("**Thread context:**\n")
+	count := 0
+	for _, p := range posts {
+		if count >= maxThreadMessages {
+			sb.WriteString("\n_(thread truncated)_\n")
+			break
+		}
+		if p.Message == "" {
+			continue
+		}
+
+		author := a.getUsername(p.UserId)
+		sb.WriteString(fmt.Sprintf("> **@%s:** %s\n", author, p.Message))
+		count++
+
+		// Stop after the clicked post
+		if p.Id == clickedPostID {
+			break
+		}
+	}
+
+	return sb.String(), nil
+}
+
+// getUsername returns the username for a user ID, or "unknown" if not found.
+func (a *App) getUsername(userID string) string {
+	user, err := a.servicesAPI.GetUserByID(userID)
+	if err != nil {
+		return "unknown"
+	}
+	return user.Username
 }

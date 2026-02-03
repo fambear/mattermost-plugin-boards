@@ -38,6 +38,8 @@ type ServicesAPI interface {
 
 	// Post service
 	CreatePost(post *mm_model.Post) (*mm_model.Post, error)
+	GetPost(postID string) (*mm_model.Post, error)
+	GetPostThread(postID string) (*mm_model.PostList, error)
 
 	// User service
 	GetUserByID(userID string) (*mm_model.User, error)
