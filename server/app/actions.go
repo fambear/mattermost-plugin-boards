@@ -4,6 +4,7 @@
 package app
 
 import (
+	"errors"
 	"fmt"
 
 	mm_model "github.com/mattermost/mattermost/server/public/model"
@@ -14,6 +15,9 @@ const (
 	// botUsername is the Mattermost username of the bot that handles task creation.
 	taskBotUsername = "clawdbot"
 )
+
+// ErrSiteURLNotConfigured is returned when SiteURL is not set in the server config.
+var ErrSiteURLNotConfigured = errors.New("SiteURL is not configured")
 
 // CreateTaskFromPost opens a DM with the task bot and posts a message
 // containing a permalink to the specified post, triggering task creation.
@@ -26,7 +30,7 @@ func (a *App) CreateTaskFromPost(userID, postID, teamID string) (string, error) 
 		siteURL = *cfg.ServiceSettings.SiteURL
 	}
 	if siteURL == "" {
-		return "", fmt.Errorf("SiteURL is not configured")
+		return "", ErrSiteURLNotConfigured
 	}
 
 	// Find the bot user
