@@ -1025,6 +1025,25 @@ func TestValidateFileOwnership(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
+	t.Run("Should allow access to video file referenced by video block", func(t *testing.T) {
+		fileInfo := &mm_model.FileInfo{
+			Id:   "validfile1234567890123456",
+			Path: filepath.Join(utils.GetBaseFilePath(), filename),
+		}
+		th.Store.EXPECT().GetFileInfo("validfile1234567890123456").Return(fileInfo, nil)
+
+		block := &model.Block{
+			ID:      "blockid1234567890123456789",
+			BoardID: validBoardID,
+			Type:    model.TypeVideo,
+			Fields:  map[string]interface{}{model.BlockFieldFileId: filename},
+		}
+		th.Store.EXPECT().GetBlocksForBoard(validBoardID).Return([]*model.Block{block}, nil)
+
+		err := th.App.ValidateFileOwnership(validTeamID, validBoardID, filename)
+		assert.NoError(t, err)
+	})
+
 	t.Run("Should handle file info not found", func(t *testing.T) {
 		th.Store.EXPECT().GetFileInfo("validfile1234567890123456").Return(nil, model.NewErrNotFound("file not found"))
 
