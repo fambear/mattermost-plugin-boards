@@ -390,8 +390,11 @@ export default class Plugin {
                     try {
                         const result = await octoClient.createTaskFromPost(postId, currentTeamId)
                         if (result?.channelId) {
-                            // Navigate to the DM channel with the bot
-                            browserHistory.push(`/${currentTeamId}/messages/@clawdbot`)
+                            // Navigate to the DM channel via Mattermost router (not Boards router)
+                            const teamName = mmStore.getState().entities.teams.teams[currentTeamId]?.name
+                            if (teamName) {
+                                window.location.href = `/${teamName}/messages/@clawdbot`
+                            }
                         }
                     } catch (e) {
                         Utils.logError('CreateTaskFromPost failed: ' + e)
