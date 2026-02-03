@@ -101,6 +101,7 @@ const PersonSelector = (props: Props): JSX.Element => {
                     <img
                         alt='Person-avatar'
                         src={profileImg}
+                        style={{borderRadius: '50%', width: '24px', height: '24px', marginRight: '6px'}}
                     />
                 )}
                 {Utils.getUserDisplayName(user, clientConfig.teammateNameDisplay)}
