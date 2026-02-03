@@ -1297,7 +1297,6 @@ class OctoClient {
 
         return (await this.getJson(response, {})) as GitHubPRDetails
     }
-}
 
     async createTaskFromPost(postId: string, teamId: string): Promise<{channelId: string} | undefined> {
         const path = this.teamPath() + '/actions/create-task-from-post'
