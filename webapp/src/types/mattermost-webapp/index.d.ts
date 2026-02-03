@@ -26,6 +26,7 @@ export interface PluginRegistry {
     registerActionAfterChannelCreation(component: React.Element)
     registerReconnectHandler?(handler: () => void)
     registerAdminConsoleCustomSetting?(key: string, component: React.ElementType)
+    registerPostDropdownMenuAction?(text: string, action: (postId: string) => void, filter?: (postId: string) => boolean)
 
     // Add more if needed from https://developers.mattermost.com/extend/plugins/webapp/reference
 }

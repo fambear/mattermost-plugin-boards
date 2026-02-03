@@ -378,6 +378,28 @@ export default class Plugin {
             }
         }
 
+        // Register "Create Task with Polly" post dropdown menu action (IT-271)
+        if (this.registry?.registerPostDropdownMenuAction) {
+            this.registry.registerPostDropdownMenuAction(
+                intl.formatMessage({id: 'PostAction.CreateTaskWithPolly', defaultMessage: '📋 Create Task with Polly'}),
+                async (postId: string) => {
+                    const currentTeamId = mmStore.getState().entities.teams.currentTeamId
+                    if (!currentTeamId) {
+                        return
+                    }
+                    try {
+                        const result = await octoClient.createTaskFromPost(postId, currentTeamId)
+                        if (result?.channelId) {
+                            // Navigate to the DM channel with the bot
+                            browserHistory.push(`/${currentTeamId}/messages/@clawdbot`)
+                        }
+                    } catch (e) {
+                        Utils.logError('CreateTaskFromPost failed: ' + e)
+                    }
+                },
+            )
+        }
+
         this.boardSelectorId = this.registry.registerRootComponent((props: {webSocketClient: MMWebSocketClient}) => (
             <ReduxProvider store={store}>
                 <WithWebSockets manifest={manifest} webSocketClient={props.webSocketClient}>
