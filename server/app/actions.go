@@ -57,10 +57,7 @@ func (a *App) CreateTaskFromPost(userID, postID, teamID string) (string, error) 
 	}
 
 	// Build the message with thread context
-	message, err := a.buildThreadContextMessage(clickedPost, postID, siteURL)
-	if err != nil {
-		return "", fmt.Errorf("could not build thread context: %w", err)
-	}
+	message := a.buildThreadContextMessage(clickedPost, postID, siteURL)
 
 	// Post the message
 	post := &mm_model.Post{
@@ -85,7 +82,7 @@ func (a *App) CreateTaskFromPost(userID, postID, teamID string) (string, error) 
 // buildThreadContextMessage builds a message containing the full thread context.
 // If the post is part of a thread, includes all messages from root to the clicked post.
 // If it's a standalone message, includes just that message.
-func (a *App) buildThreadContextMessage(clickedPost *mm_model.Post, clickedPostID, siteURL string) (string, error) {
+func (a *App) buildThreadContextMessage(clickedPost *mm_model.Post, clickedPostID, siteURL string) string {
 	var sb strings.Builder
 
 	// Determine the root post ID
@@ -105,7 +102,7 @@ func (a *App) buildThreadContextMessage(clickedPost *mm_model.Post, clickedPostI
 		// Fallback: just use the clicked post
 		author := a.getUsername(clickedPost.UserId)
 		sb.WriteString(fmt.Sprintf("**@%s:** %s", author, clickedPost.Message))
-		return sb.String(), nil
+		return sb.String()
 	}
 
 	// Sort posts by create time
@@ -139,7 +136,7 @@ func (a *App) buildThreadContextMessage(clickedPost *mm_model.Post, clickedPostI
 		}
 	}
 
-	return sb.String(), nil
+	return sb.String()
 }
 
 // getUsername returns the username for a user ID, or "unknown" if not found.
