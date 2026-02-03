@@ -13,7 +13,7 @@ import (
 )
 
 func (a *API) registerActionsRoutes(r *mux.Router) {
-	r.HandleFunc("/actions/create-task-from-post", a.sessionRequired(a.handleCreateTaskFromPost)).Methods(http.MethodPost)
+	r.HandleFunc("/teams/{teamID}/actions/create-task-from-post", a.sessionRequired(a.handleCreateTaskFromPost)).Methods(http.MethodPost)
 }
 
 // CreateTaskFromPostRequest is the request body for the create-task-from-post action.
