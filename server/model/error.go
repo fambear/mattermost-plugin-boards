@@ -57,6 +57,6 @@ func IsErrNotFound(err error) bool {
 }
 
 type ErrorResponse struct {
-	Error      string `json:"error"`
-	ErrorCode  int    `json:"error_code"`
+	Error     string `json:"error"`
+	ErrorCode int    `json:"error_code"`
 }

@@ -12,8 +12,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/costexplorer"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ecs"
-	"github.com/aws/aws-sdk-go-v2/service/elasticfilesystem"
-	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/rds"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -64,14 +62,6 @@ func (c *Client) GetLambdaClient() *lambda.Client {
 
 func (c *Client) GetRDSClient() *rds.Client {
 	return rds.NewFromConfig(c.config)
-}
-
-func (c *Client) GetEFSClient() *elasticfilesystem.Client {
-	return elasticfilesystem.NewFromConfig(c.config)
-}
-
-func (c *Client) GetELBClient() *elasticloadbalancing.Client {
-	return elasticloadbalancing.NewFromConfig(c.config)
 }
 
 func (c *Client) GetECSClient() *ecs.Client {

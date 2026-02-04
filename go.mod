@@ -8,8 +8,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/costexplorer v1.33.0
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.162.0
 	github.com/aws/aws-sdk-go-v2/service/ecs v1.56.1
-	github.com/aws/aws-sdk-go-v2/service/elasticfilesystem v1.47.1
-	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing v1.42.2
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.60.0
 	github.com/aws/aws-sdk-go-v2/service/rds v1.89.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.64.0

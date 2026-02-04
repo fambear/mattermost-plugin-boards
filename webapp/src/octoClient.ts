@@ -3,6 +3,12 @@
 
 import {ResourceGroup, CostData} from './blocks/aws';
 
+declare global {
+	interface Window {
+		basename?: string;
+	}
+}
+
 class OctoClient {
 	private getBaseURL(): string {
 		return window.basename?.replace(/\/$/, '') || '';

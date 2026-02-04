@@ -8,7 +8,8 @@ import AWSResourcesRHSHeader from './components/awsRHS/awsResourcesRHSHeader';
 
 class Plugin {
 	registry: PluginRegistry;
-	rhsId: string;
+	rhsId: string = '';
+	toggleRHSPlugin?: () => void;
 
 	constructor(registry: PluginRegistry) {
 		this.registry = registry;
@@ -16,18 +17,19 @@ class Plugin {
 
 	initialize() {
 		if (this.registry.registerRightHandSidebarComponent) {
-			const {rhsId} = this.registry.registerRightHandSidebarComponent(
+			const registered = this.registry.registerRightHandSidebarComponent(
 				AWSResourcesRHS,
 				AWSResourcesRHSHeader,
 			);
-			this.rhsId = rhsId;
+			this.rhsId = registered.rhsId;
+			this.toggleRHSPlugin = registered.toggleRHSPlugin;
 		}
 
 		if (this.registry.registerAppBarComponent) {
 			this.registry.registerAppBarComponent(
 				'/plugins/aws-explorer/assets/aws-icon.png',
 				() => {
-					this.rhsId && this.registry.toggleRHSPlugin(this.rhsId);
+					this.toggleRHSPlugin?.();
 				},
 				'AWS Explorer',
 			);

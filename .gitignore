@@ -36,6 +36,8 @@ build/bin/
 # Dependencies
 node_modules/
 *.log
+package-lock.json
+.eslintcache
 
 # OS files
 .DS_Store

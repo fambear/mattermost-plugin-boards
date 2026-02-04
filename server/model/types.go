@@ -4,8 +4,8 @@
 package model
 
 type ResourceGroup struct {
-	Service  string      `json:"service"`
-	Count    int         `json:"count"`
+	Service   string     `json:"service"`
+	Count     int        `json:"count"`
 	Resources []Resource `json:"resources"`
 }
 
