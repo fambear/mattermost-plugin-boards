@@ -64,7 +64,9 @@
             cursor: pointer;
             color: rgba(var(--center-channel-color-rgb), 0.4);
             font-size: 16px;
-            transition: color 0.15s ease, background 0.15s ease;
+            transition:
+                color 0.15s ease,
+                background 0.15s ease;
 
             &:hover {
                 color: rgba(var(--center-channel-color-rgb), 0.72);

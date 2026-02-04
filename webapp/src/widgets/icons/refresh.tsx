@@ -1,15 +1,10 @@
 // Copyright (c) 2020-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react'
+import React from "react"
 
-import CompassIcon from './compassIcon'
+import CompassIcon from "./compassIcon"
 
 export default function RefreshIcon(): JSX.Element {
-    return (
-        <CompassIcon
-            icon='refresh'
-            className='RefreshIcon'
-        />
-    )
+    return <CompassIcon icon="refresh" className="RefreshIcon" />
 }
