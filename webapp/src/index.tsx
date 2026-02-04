@@ -168,6 +168,7 @@ export default class Plugin {
     rhsId?: string
     boardSelectorId?: string
     registry?: PluginRegistry
+    boardsLinkHandler?: (e: MouseEvent) => void
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
     async initialize(registry: PluginRegistry, mmStore: Store<GlobalState, Action<Record<string, unknown>>>): Promise<void> {
@@ -420,9 +421,28 @@ export default class Plugin {
             // @ts-ignore
             return mmStore.getState().entities.teams.currentTeamId
         }
+
+        // Open /boards/ links in new tab instead of SPA navigation
+        this.boardsLinkHandler = (e: MouseEvent) => {
+            const target = (e.target as HTMLElement)?.closest?.('a') as HTMLAnchorElement | null
+            if (!target) {
+                return
+            }
+            const href = target.getAttribute('href') || ''
+            // Match links to boards (task links, board links, etc.)
+            if (href.includes('/boards/') && !target.getAttribute('target')) {
+                e.preventDefault()
+                e.stopPropagation()
+                window.open(href, '_blank', 'noopener')
+            }
+        }
+        document.addEventListener('click', this.boardsLinkHandler, true)
     }
 
     uninitialize(): void {
+        if (this.boardsLinkHandler) {
+            document.removeEventListener('click', this.boardsLinkHandler, true)
+        }
         if (this.channelHeaderButtonId) {
             this.registry?.unregisterComponent(this.channelHeaderButtonId)
         }
