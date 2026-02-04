@@ -1,155 +1,103 @@
-// Copyright (c) 2020-present Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2025 Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
 package main
 
 import (
-	"errors"
-	"fmt"
 	"net/http"
+	"sync"
 
-	"github.com/mattermost/mattermost-plugin-boards/server/boards"
-	"github.com/mattermost/mattermost-plugin-boards/server/model"
+	"github.com/gorilla/mux"
 
-	pluginapi "github.com/mattermost/mattermost/server/public/pluginapi"
+	"github.com/mattermost/mattermost-plugin-aws-explorer/server/api"
+	"github.com/mattermost/mattermost-plugin-aws-explorer/server/aws"
 
-	mm_model "github.com/mattermost/mattermost/server/public/model"
 	"github.com/mattermost/mattermost/server/public/plugin"
-	"github.com/mattermost/mattermost/server/public/shared/mlog"
 )
 
-var ErrPluginNotAllowed = errors.New("boards plugin not allowed while Boards product enabled")
-
-// Plugin implements the interface expected by the Mattermost server to communicate between the server and plugin processes.
 type Plugin struct {
 	plugin.MattermostPlugin
-	boardsApp *boards.BoardsApp
+
+	configurationLock sync.RWMutex
+	configuration     *configuration
+
+	server *plugin.API
+	logger *plugin.Logger
+
+	awsClient *aws.Client
+	api       *api.API
 }
 
 func (p *Plugin) OnActivate() error {
-	client := pluginapi.NewClient(p.MattermostPlugin.API, p.MattermostPlugin.Driver)
+	p.server = p.API
+	p.logger = &p.Logger
 
-	logger, _ := mlog.NewLogger()
-	pluginTargetFactory := newPluginTargetFactory(&client.Log)
-	factories := &mlog.Factories{
-		TargetFactory: pluginTargetFactory.createTarget,
-	}
-	cfgJSON := defaultLoggingConfig()
-	err := logger.Configure("", cfgJSON, factories)
-	if err != nil {
+	if err := p.OnConfigurationChange(); err != nil {
 		return err
 	}
 
-	adapter := newServiceAPIAdapter(p.MattermostPlugin.API, client.Store, logger)
+	p.api = api.NewAPI(p)
 
-	boardsApp, err := boards.NewBoardsApp(adapter, manifest)
-	if err != nil {
-		return fmt.Errorf("cannot activate plugin: %w", err)
-	}
-
-	model.LogServerInfo(logger)
-
-	p.boardsApp = boardsApp
-
-	// Load initial configuration before starting the server
-	p.API.LogInfo("Plugin.OnActivate: About to call OnConfigurationChange")
-	if err := p.boardsApp.OnConfigurationChange(); err != nil {
-		return fmt.Errorf("failed to load initial configuration: %w", err)
-	}
-	p.API.LogInfo("Plugin.OnActivate: OnConfigurationChange completed successfully")
-
-	return p.boardsApp.Start()
-}
-
-// OnConfigurationChange is invoked when configuration changes may have been made.
-func (p *Plugin) OnConfigurationChange() error {
-	// Have we been setup by OnActivate?
-	if p.boardsApp == nil {
-		return nil
-	}
-
-	p.API.LogInfo("Plugin.OnConfigurationChange called")
-	return p.boardsApp.OnConfigurationChange()
-}
-
-func (p *Plugin) OnWebSocketConnect(webConnID, userID string) {
-	p.boardsApp.OnWebSocketConnect(webConnID, userID)
-}
-
-func (p *Plugin) OnWebSocketDisconnect(webConnID, userID string) {
-	p.boardsApp.OnWebSocketDisconnect(webConnID, userID)
-}
-
-func (p *Plugin) WebSocketMessageHasBeenPosted(webConnID, userID string, req *mm_model.WebSocketRequest) {
-	p.boardsApp.WebSocketMessageHasBeenPosted(webConnID, userID, req)
+	return nil
 }
 
 func (p *Plugin) OnDeactivate() error {
-	return p.boardsApp.Stop()
+	p.awsClient = nil
+	return nil
 }
 
-func (p *Plugin) OnPluginClusterEvent(ctx *plugin.Context, ev mm_model.PluginClusterEvent) {
-	p.boardsApp.OnPluginClusterEvent(ctx, ev)
+func (p *Plugin) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *http.Request) {
+	router := mux.NewRouter()
+	p.api.RegisterRoutes(router)
+	router.ServeHTTP(w, r)
 }
 
-func (p *Plugin) MessageWillBePosted(ctx *plugin.Context, post *mm_model.Post) (*mm_model.Post, string) {
-	return p.boardsApp.MessageWillBePosted(ctx, post)
+func (p *Plugin) GetAWSResources() ([]interface{}, error) {
+	config := p.getConfiguration()
+
+	client, err := aws.NewClient(config.AWSRegion, config.AWSAccessKeyID, config.AWSSecretAccessKey)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := client.VerifyCredentials(); err != nil {
+		return nil, err
+	}
+
+	resources, err := client.GetAllResources()
+	if err != nil {
+		return nil, err
+	}
+
+	var result []interface{}
+	for _, r := range resources {
+		result = append(result, r)
+	}
+
+	return result, nil
 }
 
-func (p *Plugin) MessageWillBeUpdated(ctx *plugin.Context, newPost, oldPost *mm_model.Post) (*mm_model.Post, string) {
-	return p.boardsApp.MessageWillBeUpdated(ctx, newPost, oldPost)
-}
+func (p *Plugin) GetAWSCosts() ([]interface{}, error) {
+	config := p.getConfiguration()
 
-func (p *Plugin) RunDataRetention(nowTime, batchSize int64) (int64, error) {
-	return p.boardsApp.RunDataRetention(nowTime, batchSize)
-}
+	client, err := aws.NewClient(config.AWSRegion, config.AWSAccessKeyID, config.AWSSecretAccessKey)
+	if err != nil {
+		return nil, err
+	}
 
-func (p *Plugin) GenerateSupportData(ctx *plugin.Context) ([]*mm_model.FileData, error) {
-	return p.boardsApp.GenerateSupportData(ctx)
-}
+	if err := client.VerifyCredentials(); err != nil {
+		return nil, err
+	}
 
-// ServeHTTP demonstrates a plugin that handles HTTP requests by greeting the world.
-func (p *Plugin) ServeHTTP(ctx *plugin.Context, w http.ResponseWriter, r *http.Request) {
-	p.boardsApp.ServeHTTP(ctx, w, r)
-}
+	costs, err := client.GetCosts()
+	if err != nil {
+		return nil, err
+	}
 
-func defaultLoggingConfig() string {
-	return `
-	{
-		"def": {
-			"type": "focalboard_plugin_adapter",
-			"options": {},
-			"format": "plain",
-			"format_options": {
-				"delim": " ",
-				"min_level_len": 0,
-				"min_msg_len": 0,
-				"enable_color": false,
-				"enable_caller": true
-			},
-			"levels": [
-				{"id": 5, "name": "debug"},
-				{"id": 4, "name": "info", "color": 36},
-				{"id": 3, "name": "warn"},
-				{"id": 2, "name": "error", "color": 31},
-				{"id": 1, "name": "fatal", "stacktrace": true},
-				{"id": 0, "name": "panic", "stacktrace": true}
-			]
-		},
-		"errors_file": {
-			"Type": "file",
-			"Format": "plain",
-			"Levels": [
-				{"ID": 2, "Name": "error", "Stacktrace": true}
-			],
-			"Options": {
-				"Compress": true,
-				"Filename": "focalboard_errors.log",
-				"MaxAgeDays": 0,
-				"MaxBackups": 5,
-				"MaxSizeMB": 10
-			},
-			"MaxQueueSize": 1000
-		}
-	}`
+	var result []interface{}
+	for _, c := range costs {
+		result = append(result, c)
+	}
+
+	return result, nil
 }

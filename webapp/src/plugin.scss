@@ -1,37 +1,211 @@
-.boards-rhs-icon {
-    font-size: 20px;
+.aws-resources-rhs {
+	padding: 20px;
+
+	.loading-spinner {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding: 40px;
+		color: rgba(255, 255, 255, 0.6);
+	}
+
+	.error-message {
+		padding: 20px;
+		text-align: center;
+
+		p {
+			margin-bottom: 16px;
+			color: rgba(255, 255, 255, 0.8);
+		}
+
+		button {
+			padding: 8px 16px;
+			border: none;
+			border-radius: 4px;
+			background: var(--button-bg);
+			color: var(--button-color);
+			cursor: pointer;
+
+			&:hover {
+				opacity: 0.9;
+			}
+		}
+	}
 }
 
-.focalboard-body .RightControlsContainer-eacbOh {
-    flex-basis: auto;
+.resource-section {
+	margin-bottom: 32px;
+
+	h3 {
+		margin-bottom: 16px;
+		font-size: 16px;
+		font-weight: 600;
+		color: var(--center-channel-color);
+	}
+
+	.empty-state {
+		padding: 20px;
+		text-align: center;
+		color: rgba(255, 255, 255, 0.5);
+	}
+
+	.service-group {
+		margin-bottom: 20px;
+		border: 1px solid var(--center-channel-border);
+		border-radius: 8px;
+		overflow: hidden;
+	}
+
+	.service-header {
+		display: flex;
+		align-items: center;
+		padding: 12px 16px;
+		background: rgba(255, 255, 255, 0.05);
+		border-bottom: 1px solid var(--center-channel-border);
+
+		.service-icon {
+			font-size: 20px;
+			margin-right: 12px;
+		}
+
+		.service-name {
+			flex: 1;
+			font-weight: 600;
+			color: var(--center-channel-color);
+		}
+
+		.service-count {
+			padding: 2px 8px;
+			background: rgba(255, 255, 255, 0.1);
+			border-radius: 12px;
+			font-size: 12px;
+			color: var(--center-channel-color);
+		}
+	}
+
+	.resource-list {
+		max-height: 300px;
+		overflow-y: auto;
+	}
+
+	.resource-item {
+		display: flex;
+		align-items: center;
+		padding: 10px 16px;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+		&:last-child {
+			border-bottom: none;
+		}
+
+		.resource-id {
+			flex: 1;
+			font-family: monospace;
+			font-size: 13px;
+			color: var(--center-channel-color);
+			word-break: break-all;
+		}
+
+		.resource-type {
+			margin: 0 12px;
+			font-size: 12px;
+			color: rgba(255, 255, 255, 0.6);
+		}
+
+		.resource-state {
+			padding: 2px 8px;
+			border-radius: 4px;
+			font-size: 11px;
+			font-weight: 600;
+			text-transform: uppercase;
+
+			&.state-running,
+			&.state-available,
+			&.state-active {
+				background: rgba(63, 145, 65, 0.2);
+				color: rgb(129, 199, 132);
+			}
+
+			&.state-stopped,
+			&.state-inactive {
+				background: rgba(211, 47, 47, 0.2);
+				color: rgb(239, 154, 154);
+			}
+
+			&.state-pending {
+				background: rgba(255, 193, 7, 0.2);
+				color: rgb(255, 224, 130);
+			}
+		}
+	}
 }
 
-.focalboard-body .feature-global-header>header {
-    /* stylelint-disable */
-    z-index: 1000;
-    /* stylelint-enable */
+.cost-section {
+	h3 {
+		margin-bottom: 16px;
+		font-size: 16px;
+		font-weight: 600;
+		color: var(--center-channel-color);
+	}
 
-    .Menu {
-        a,
-        button {
-            color: inherit;
+	.empty-state {
+		padding: 20px;
+		text-align: center;
+		color: rgba(255, 255, 255, 0.5);
+	}
 
-            &:hover {
-                background: rgba(var(--center-channel-color-rgb), 0.08);
-
-                div {
-                    color: rgb(var(--link-color-rgb));
-                }
-            }
-        }
-    }
+	.cost-card-list {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
 }
 
-img.boards-rhs-header-logo {
-    color: #fff;
-    background: var(--button-bg);
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    margin-right: 8px;
+.cost-card {
+	display: flex;
+	align-items: center;
+	padding: 16px;
+	background: rgba(255, 255, 255, 0.03);
+	border: 1px solid var(--center-channel-border);
+	border-radius: 8px;
+
+	.cost-service {
+		flex: 1;
+		font-weight: 500;
+		color: var(--center-channel-color);
+	}
+
+	.cost-amount {
+		margin: 0 16px;
+		font-size: 16px;
+		font-weight: 600;
+		color: var(--center-channel-color);
+	}
+
+	.cost-delta {
+		padding: 4px 8px;
+		border-radius: 4px;
+		font-size: 13px;
+		font-weight: 600;
+
+		&.cost-delta-green {
+			background: rgba(63, 145, 65, 0.2);
+			color: rgb(129, 199, 132);
+		}
+
+		&.cost-delta-red {
+			background: rgba(211, 47, 47, 0.2);
+			color: rgb(239, 154, 154);
+		}
+	}
+}
+
+.aws-rhs-header {
+	padding: 20px 20px 0;
+
+	.aws-rhs-header-title {
+		font-size: 18px;
+		font-weight: 600;
+		color: var(--center-channel-color);
+	}
 }

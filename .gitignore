@@ -1,59 +1,46 @@
-# Created by https://www.gitignore.io/api/node
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+dist/
 
-### Node ###
-# Logs
-logs
-*.log
-npm-debug.log*
+# Test binary, built with `go test -c`
+*.test
 
-# Runtime data
-pids
-*.pid
-*.seed
+# Output of the go coverage tool
+*.out
 
-# OS Files
-.DS_Store
+# Vendor directory
+vendor/
 
-# VSCode project files
-.vscode
-*.code-workspace
-.augment
-
-# golang
+# Go workspace file
 go.work
-go.work.sum
 
-# Coverage directory used by tools like istanbul
-coverage
-.nyc_output
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
 
+# Build output
+dist/
+webapp/dist/
+webapp/pack/
+server/dist/
+build/bin/
 
-# Compiled binary addons (http://nodejs.org/api/addons.html)
-build/Release
+# Dependencies
+node_modules/
+*.log
 
-# Environment files
-.env
+# OS files
+.DS_Store
+Thumbs.db
 
-# Dependency directory
-# https://docs.npmjs.com/misc/faq#should-i-check-my-node-modules-folder-into-git
-webapp/node_modules
-webapp/dist
-webapp/pack
-dist
-package
-bin
-debug
-__debug_bin
-files
-*.boardarchive
-.eslintcache
-.vscode/settings.json
-# config.json is copied from app-config.json in the Makefile
-server/swagger/clients
-server/vendor
-.idea
-server/**/*.coverage
-./dist
-
-# notice
-.notice-work
+# Temporary files
+*.tmp
+*.temp

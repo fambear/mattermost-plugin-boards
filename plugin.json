@@ -1,13 +1,13 @@
 {
-    "id": "focalboard",
-    "name": "FamBear Boards",
-    "description": "The Mattermost Boards plugin (FamBear Edition)",
-    "homepage_url": "https://github.com/fambear/mattermost-plugin-boards",
-    "support_url": "https://github.com/fambear/mattermost-plugin-boards/issues",
-    "release_notes_url": "https://github.com/fambear/mattermost-plugin-boards/releases",
-    "icon_path": "assets/starter-template-icon.svg",
-    "version": "9.2.2",
-    "min_server_version": "10.7.0",
+    "id": "aws-explorer",
+    "name": "AWS Resources and Costs Explorer",
+    "description": "View AWS account resources and costs in a Mattermost RHS panel",
+    "homepage_url": "https://github.com/mattermost/mattermost-plugin-aws-explorer",
+    "support_url": "https://github.com/mattermost/mattermost-plugin-aws-explorer/issues",
+    "release_notes_url": "https://github.com/mattermost/mattermost-plugin-aws-explorer/releases",
+    "icon_path": "assets/aws-icon.png",
+    "version": "1.0.0",
+    "min_server_version": "10.0.0",
     "server": {
         "executables": {
             "linux-amd64": "server/dist/plugin-linux-amd64",
@@ -25,30 +25,58 @@
         "footer": "",
         "settings": [
             {
-                "key": "EnablePublicSharedBoards",
-                "type": "bool",
-                "display_name": "Enable Publicly-Shared Boards:",
-                "default": false,
-                "help_text": "This allows board editors to share boards that can be accessed by anyone with the link."
-            },
-            {
-                "key": "Integrations",
-                "type": "header",
-                "display_name": "Integrations"
-            },
-            {
-                "key": "FigmaPersonalAccessToken",
+                "key": "AWSAccessKeyID",
                 "type": "text",
-                "display_name": "Figma Personal Access Token:",
+                "display_name": "AWS Access Key ID:",
                 "default": "",
-                "help_text": "Enter your Figma Personal Access Token for integration with Figma. This token is stored securely and used for accessing Figma API. Learn how to generate a token at https://help.figma.com/hc/en-us/articles/8085703771159-Manage-personal-access-tokens",
-                "placeholder": "figd_..."
+                "help_text": "Enter your AWS Access Key ID for programmatic access."
             },
             {
-                "key": "AllowedBotUserIDs",
-                "type": "custom",
-                "display_name": "Bots Allowed as Assignees:",
-                "help_text": "Select which bots can be assigned to cards in Boards. By default, all bots are excluded from the assignee selector."
+                "key": "AWSSecretAccessKey",
+                "type": "text",
+                "display_name": "AWS Secret Access Key:",
+                "default": "",
+                "help_text": "Enter your AWS Secret Access Key. This will be stored securely and never displayed after saving.",
+                "placeholder": "••••••••••••••••"
+            },
+            {
+                "key": "AWSRegion",
+                "type": "dropdown",
+                "display_name": "AWS Region:",
+                "default": "us-east-1",
+                "help_text": "Select the AWS region to query for resources and costs.",
+                "options": [
+                    {"display_name": "US East (N. Virginia)", "value": "us-east-1"},
+                    {"display_name": "US East (Ohio)", "value": "us-east-2"},
+                    {"display_name": "US West (N. California)", "value": "us-west-1"},
+                    {"display_name": "US West (Oregon)", "value": "us-west-2"},
+                    {"display_name": "Africa (Cape Town)", "value": "af-south-1"},
+                    {"display_name": "Asia Pacific (Hong Kong)", "value": "ap-east-1"},
+                    {"display_name": "Asia Pacific (Jakarta)", "value": "ap-southeast-3"},
+                    {"display_name": "Asia Pacific (Melbourne)", "value": "ap-southeast-4"},
+                    {"display_name": "Asia Pacific (Mumbai)", "value": "ap-south-1"},
+                    {"display_name": "Asia Pacific (Osaka)", "value": "ap-northeast-3"},
+                    {"display_name": "Asia Pacific (Seoul)", "value": "ap-northeast-2"},
+                    {"display_name": "Asia Pacific (Singapore)", "value": "ap-southeast-1"},
+                    {"display_name": "Asia Pacific (Sydney)", "value": "ap-southeast-2"},
+                    {"display_name": "Asia Pacific (Tokyo)", "value": "ap-northeast-1"},
+                    {"display_name": "Asia Pacific (Thailand)", "value": "ap-southeast-7"},
+                    {"display_name": "Canada (Central)", "value": "ca-central-1"},
+                    {"display_name": "Canada West (Calgary)", "value": "ca-west-1"},
+                    {"display_name": "Europe (Frankfurt)", "value": "eu-central-1"},
+                    {"display_name": "Europe (Ireland)", "value": "eu-west-1"},
+                    {"display_name": "Europe (London)", "value": "eu-west-2"},
+                    {"display_name": "Europe (Milan)", "value": "eu-south-1"},
+                    {"display_name": "Europe (Paris)", "value": "eu-west-3"},
+                    {"display_name": "Europe (Spain)", "value": "eu-south-2"},
+                    {"display_name": "Europe (Stockholm)", "value": "eu-north-1"},
+                    {"display_name": "Europe (Zurich)", "value": "eu-central-2"},
+                    {"display_name": "Middle East (Bahrain)", "value": "me-south-1"},
+                    {"display_name": "Middle East (UAE)", "value": "me-central-1"},
+                    {"display_name": "South America (Sao Paulo)", "value": "sa-east-1"},
+                    {"display_name": "AWS GovCloud (US-East)", "value": "us-gov-east-1"},
+                    {"display_name": "AWS GovCloud (US-West)", "value": "us-gov-west-1"}
+                ]
             }
         ]
     }
