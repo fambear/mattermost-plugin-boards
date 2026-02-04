@@ -358,6 +358,15 @@ exports[`src/components/workspace return workspace and showcard 1`] = `
                   </button>
                 </div>
               </div>
+              <button
+                aria-label="Refresh page"
+                title="Refresh page"
+                type="button"
+              >
+                <i
+                  class="CompassIcon icon-refresh RefreshIcon"
+                />
+              </button>
             </div>
             <div
               class="octo-spacer"
@@ -824,6 +833,15 @@ exports[`src/components/workspace return workspace readonly and showcard 1`] = `
                 title="view title"
                 value="view title"
               />
+              <button
+                aria-label="Refresh page"
+                title="Refresh page"
+                type="button"
+              >
+                <i
+                  class="CompassIcon icon-refresh RefreshIcon"
+                />
+              </button>
             </div>
             <div
               class="octo-spacer"
@@ -1375,6 +1393,15 @@ exports[`src/components/workspace should match snapshot 1`] = `
                   </button>
                 </div>
               </div>
+              <button
+                aria-label="Refresh page"
+                title="Refresh page"
+                type="button"
+              >
+                <i
+                  class="CompassIcon icon-refresh RefreshIcon"
+                />
+              </button>
             </div>
             <div
               class="octo-spacer"
@@ -1841,6 +1868,15 @@ exports[`src/components/workspace should match snapshot with readonly 1`] = `
                 title="view title"
                 value="view title"
               />
+              <button
+                aria-label="Refresh page"
+                title="Refresh page"
+                type="button"
+              >
+                <i
+                  class="CompassIcon icon-refresh RefreshIcon"
+                />
+              </button>
             </div>
             <div
               class="octo-spacer"

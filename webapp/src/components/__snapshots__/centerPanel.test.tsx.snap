@@ -100,6 +100,16 @@ exports[`components/centerPanel Clicking on the Hidden card count should open a 
               </button>
             </div>
           </div>
+          <button
+            aria-label="Refresh page"
+            class="IconButton refresh-button"
+            title="Refresh page"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-refresh RefreshIcon"
+            />
+          </button>
         </div>
         <div
           class="octo-spacer"
@@ -718,6 +728,16 @@ exports[`components/centerPanel return centerPanel and click on card to show car
               </button>
             </div>
           </div>
+          <button
+            aria-label="Refresh page"
+            class="IconButton refresh-button"
+            title="Refresh page"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-refresh RefreshIcon"
+            />
+          </button>
         </div>
         <div
           class="octo-spacer"
@@ -1220,6 +1240,16 @@ exports[`components/centerPanel return centerPanel and click on new card to edit
               </button>
             </div>
           </div>
+          <button
+            aria-label="Refresh page"
+            class="IconButton refresh-button"
+            title="Refresh page"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-refresh RefreshIcon"
+            />
+          </button>
         </div>
         <div
           class="octo-spacer"
@@ -1770,6 +1800,16 @@ exports[`components/centerPanel return centerPanel and press touch 1 with readon
             title="view title"
             value="view title"
           />
+          <button
+            aria-label="Refresh page"
+            class="IconButton refresh-button"
+            title="Refresh page"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-refresh RefreshIcon"
+            />
+          </button>
         </div>
         <div
           class="octo-spacer"
@@ -2151,6 +2191,16 @@ exports[`components/centerPanel return centerPanel and press touch ctrl+d for on
               </button>
             </div>
           </div>
+          <button
+            aria-label="Refresh page"
+            class="IconButton refresh-button"
+            title="Refresh page"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-refresh RefreshIcon"
+            />
+          </button>
         </div>
         <div
           class="octo-spacer"
@@ -2719,6 +2769,16 @@ exports[`components/centerPanel return centerPanel and press touch del for one c
               </button>
             </div>
           </div>
+          <button
+            aria-label="Refresh page"
+            class="IconButton refresh-button"
+            title="Refresh page"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-refresh RefreshIcon"
+            />
+          </button>
         </div>
         <div
           class="octo-spacer"
@@ -3287,6 +3347,16 @@ exports[`components/centerPanel return centerPanel and press touch esc for one c
               </button>
             </div>
           </div>
+          <button
+            aria-label="Refresh page"
+            class="IconButton refresh-button"
+            title="Refresh page"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-refresh RefreshIcon"
+            />
+          </button>
         </div>
         <div
           class="octo-spacer"
@@ -3855,6 +3925,16 @@ exports[`components/centerPanel return centerPanel and press touch esc for one c
               </button>
             </div>
           </div>
+          <button
+            aria-label="Refresh page"
+            class="IconButton refresh-button"
+            title="Refresh page"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-refresh RefreshIcon"
+            />
+          </button>
         </div>
         <div
           class="octo-spacer"
@@ -4423,6 +4503,16 @@ exports[`components/centerPanel return centerPanel and press touch esc for two c
               </button>
             </div>
           </div>
+          <button
+            aria-label="Refresh page"
+            class="IconButton refresh-button"
+            title="Refresh page"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-refresh RefreshIcon"
+            />
+          </button>
         </div>
         <div
           class="octo-spacer"
@@ -4991,6 +5081,16 @@ exports[`components/centerPanel return centerPanel and press touch esc for two c
               </button>
             </div>
           </div>
+          <button
+            aria-label="Refresh page"
+            class="IconButton refresh-button"
+            title="Refresh page"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-refresh RefreshIcon"
+            />
+          </button>
         </div>
         <div
           class="octo-spacer"
@@ -5559,6 +5659,16 @@ exports[`components/centerPanel return centerPanel and press touch esc for two c
               </button>
             </div>
           </div>
+          <button
+            aria-label="Refresh page"
+            class="IconButton refresh-button"
+            title="Refresh page"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-refresh RefreshIcon"
+            />
+          </button>
         </div>
         <div
           class="octo-spacer"
@@ -6127,6 +6237,16 @@ exports[`components/centerPanel return centerPanel and select one card and click
               </button>
             </div>
           </div>
+          <button
+            aria-label="Refresh page"
+            class="IconButton refresh-button"
+            title="Refresh page"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-refresh RefreshIcon"
+            />
+          </button>
         </div>
         <div
           class="octo-spacer"
@@ -6695,6 +6815,16 @@ exports[`components/centerPanel return centerPanel and select one card and click
               </button>
             </div>
           </div>
+          <button
+            aria-label="Refresh page"
+            class="IconButton refresh-button"
+            title="Refresh page"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-refresh RefreshIcon"
+            />
+          </button>
         </div>
         <div
           class="octo-spacer"
@@ -7263,6 +7393,16 @@ exports[`components/centerPanel should match snapshot for Gallery 1`] = `
               </button>
             </div>
           </div>
+          <button
+            aria-label="Refresh page"
+            class="IconButton refresh-button"
+            title="Refresh page"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-refresh RefreshIcon"
+            />
+          </button>
         </div>
         <div
           class="octo-spacer"
@@ -7497,6 +7637,16 @@ exports[`components/centerPanel should match snapshot for Kanban 1`] = `
               </button>
             </div>
           </div>
+          <button
+            aria-label="Refresh page"
+            class="IconButton refresh-button"
+            title="Refresh page"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-refresh RefreshIcon"
+            />
+          </button>
         </div>
         <div
           class="octo-spacer"
@@ -7970,6 +8120,16 @@ exports[`components/centerPanel should match snapshot for Kanban, not shared 1`]
               </button>
             </div>
           </div>
+          <button
+            aria-label="Refresh page"
+            class="IconButton refresh-button"
+            title="Refresh page"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-refresh RefreshIcon"
+            />
+          </button>
         </div>
         <div
           class="octo-spacer"
@@ -8443,6 +8603,16 @@ exports[`components/centerPanel should match snapshot for Table 1`] = `
               </button>
             </div>
           </div>
+          <button
+            aria-label="Refresh page"
+            class="IconButton refresh-button"
+            title="Refresh page"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-refresh RefreshIcon"
+            />
+          </button>
         </div>
         <div
           class="octo-spacer"

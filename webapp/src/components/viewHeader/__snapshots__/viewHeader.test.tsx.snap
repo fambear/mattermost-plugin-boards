@@ -31,6 +31,16 @@ exports[`components/viewHeader/viewHeader return viewHeader 1`] = `
           </button>
         </div>
       </div>
+      <button
+        aria-label="Refresh page"
+        class="IconButton refresh-button"
+        title="Refresh page"
+        type="button"
+      >
+        <i
+          class="CompassIcon icon-refresh RefreshIcon"
+        />
+      </button>
     </div>
     <div
       class="octo-spacer"
@@ -166,6 +176,16 @@ exports[`components/viewHeader/viewHeader return viewHeader readonly 1`] = `
         title="view title"
         value="view title"
       />
+      <button
+        aria-label="Refresh page"
+        class="IconButton refresh-button"
+        title="Refresh page"
+        type="button"
+      >
+        <i
+          class="CompassIcon icon-refresh RefreshIcon"
+        />
+      </button>
     </div>
     <div
       class="octo-spacer"
@@ -218,6 +238,16 @@ exports[`components/viewHeader/viewHeader return viewHeader without permissions 
           </button>
         </div>
       </div>
+      <button
+        aria-label="Refresh page"
+        class="IconButton refresh-button"
+        title="Refresh page"
+        type="button"
+      >
+        <i
+          class="CompassIcon icon-refresh RefreshIcon"
+        />
+      </button>
     </div>
     <div
       class="octo-spacer"

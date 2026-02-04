@@ -42,6 +42,8 @@ import BoardPermissionGate from '../permissions/boardPermissionGate'
 import ViewVisibilityDialog from '../viewVisibilityDialog'
 import RootPortal from '../rootPortal'
 
+import RefreshIcon from '../../widgets/icons/refresh'
+
 import NewCardButton from './newCardButton'
 import ViewHeaderPropertiesMenu from './viewHeaderPropertiesMenu'
 import ViewHeaderGroupByMenu from './viewHeaderGroupByMenu'
@@ -239,6 +241,12 @@ const ViewHeader = (props: Props) => {
                     {showAddViewTourStep && <AddViewTourStep/>}
                 </div>)}
 
+                <IconButton
+                    className='refresh-button'
+                    icon={<RefreshIcon/>}
+                    title={intl.formatMessage({id: 'ViewHeader.refresh-page', defaultMessage: 'Refresh page'})}
+                    onClick={() => window.location.reload()}
+                />
             </div>
 
             <div className='octo-spacer'/>
