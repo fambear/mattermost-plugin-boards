@@ -65,6 +65,15 @@ exports[`components/boardTemplateSelector/boardTemplateSelectorPreview should ma
               </button>
             </div>
           </div>
+          <button
+            aria-label="Refresh page"
+            title="Refresh page"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-refresh RefreshIcon"
+            />
+          </button>
         </div>
         <div
           class="octo-spacer"
