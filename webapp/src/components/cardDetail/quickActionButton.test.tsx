@@ -5,7 +5,6 @@ import 'isomorphic-fetch'
 import {act, render, screen, waitFor} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
-import {Provider as ReduxProvider} from 'react-redux'
 
 import {mocked} from 'jest-mock'
 

@@ -84,7 +84,7 @@ describe('pages/boardSettingsPage/QuickActionRow', () => {
             propertyId: '',
         }
 
-        const {container} = render(wrapIntl(
+        render(wrapIntl(
             <QuickActionRow
                 action={action}
                 board={board}
@@ -103,7 +103,7 @@ describe('pages/boardSettingsPage/QuickActionRow', () => {
             text: '',
         }
 
-        const {container} = render(wrapIntl(
+        render(wrapIntl(
             <QuickActionRow
                 action={action}
                 board={board}
@@ -123,7 +123,7 @@ describe('pages/boardSettingsPage/QuickActionRow', () => {
             value: '',
         }
 
-        const {container} = render(wrapIntl(
+        render(wrapIntl(
             <QuickActionRow
                 action={action}
                 board={board}
@@ -143,7 +143,7 @@ describe('pages/boardSettingsPage/QuickActionRow', () => {
             value: 'opt-1',
         }
 
-        const {container} = render(wrapIntl(
+        render(wrapIntl(
             <QuickActionRow
                 action={action}
                 board={board}
@@ -275,7 +275,7 @@ describe('pages/boardSettingsPage/QuickActionRow', () => {
             text: '',
         }
 
-        const {container} = render(wrapIntl(
+        render(wrapIntl(
             <QuickActionRow
                 action={action}
                 board={board}

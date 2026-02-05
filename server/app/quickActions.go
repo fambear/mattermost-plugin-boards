@@ -98,16 +98,18 @@ func (a *App) setCardProperty(cardBlock *model.Block, propertyID, value, userID 
 	if cardBlock.Fields == nil {
 		cardBlock.Fields = map[string]interface{}{}
 	}
-	if cardBlock.Fields.Properties == nil {
-		cardBlock.Fields.Properties = map[string]string{}
+	props, ok := cardBlock.Fields["properties"].(map[string]interface{})
+	if !ok {
+		props = map[string]interface{}{}
+		cardBlock.Fields["properties"] = props
 	}
 
-	cardBlock.Fields.Properties[propertyID] = value
+	props[propertyID] = value
 	cardBlock.ModifiedBy = userID
 
 	patch := &model.BlockPatch{
-		UpdatedProperties: map[string]string{
-			propertyID: value,
+		UpdatedFields: map[string]interface{}{
+			"properties": cardBlock.Fields["properties"],
 		},
 	}
 
@@ -120,12 +122,17 @@ func (a *App) clearCardProperty(cardBlock *model.Block, propertyID, userID strin
 	if cardBlock.Fields == nil {
 		return nil
 	}
-	if cardBlock.Fields.Properties == nil {
+	props, ok := cardBlock.Fields["properties"].(map[string]interface{})
+	if !ok {
 		return nil
 	}
 
+	delete(props, propertyID)
+
 	patch := &model.BlockPatch{
-		DeletedProperties: []string{propertyID},
+		UpdatedFields: map[string]interface{}{
+			"properties": cardBlock.Fields["properties"],
+		},
 	}
 
 	_, err := a.PatchBlockAndNotify(cardBlock.ID, patch, userID, false)
@@ -136,7 +143,7 @@ func (a *App) clearCardProperty(cardBlock *model.Block, propertyID, userID strin
 func (a *App) addCardComment(cardBlock *model.Block, boardID, text, userID string) error {
 	now := utils.GetMillis()
 	commentBlock := model.Block{
-		ID:         utils.NewID(utils.IDTypeComment),
+		ID:         utils.NewID(utils.IDTypeBlock),
 		ParentID:   cardBlock.ID,
 		BoardID:    boardID,
 		CreatedBy:  userID,
@@ -149,7 +156,7 @@ func (a *App) addCardComment(cardBlock *model.Block, boardID, text, userID strin
 		Fields:     map[string]interface{}{},
 	}
 
-	_, err := a.InsertBlockAndNotify(&commentBlock, userID, false)
+	err := a.InsertBlockAndNotify(&commentBlock, userID, false)
 	return err
 }
 

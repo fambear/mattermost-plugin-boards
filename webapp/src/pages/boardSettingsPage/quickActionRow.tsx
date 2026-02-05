@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react'
-import {FormattedMessage, useIntl} from 'react-intl'
+import {useIntl} from 'react-intl'
 
 import {Board, IPropertyTemplate} from '../../blocks/board'
 import {QuickActionAction, QuickActionActionType} from '../../blocks/quickAction'

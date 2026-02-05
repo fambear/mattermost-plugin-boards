@@ -3,7 +3,7 @@
 
 import {Card} from '../blocks/card'
 import {Board, IPropertyTemplate} from '../blocks/board'
-import {QuickActionCondition, QuickActionConditionOperator} from '../blocks/quickAction'
+import {QuickActionCondition} from '../blocks/quickAction'
 
 const SpecialValueCurrentUser = '{current_user}'
 const SpecialValueNow = '{now}'

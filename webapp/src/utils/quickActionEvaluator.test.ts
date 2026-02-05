@@ -1,11 +1,11 @@
 // Copyright (c) 2020-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Card} from '../blocks/card'
-import {Board} from '../blocks/board'
 import {TestBlockFactory} from '../test/testBlockFactory'
-import {evaluateConditions} from './quickActionEvaluator'
+
 import {QuickActionCondition} from '../blocks/quickAction'
+
+import {evaluateConditions} from './quickActionEvaluator'
 
 describe('quickActionEvaluator', () => {
     const board = TestBlockFactory.createBoard()

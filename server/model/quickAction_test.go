@@ -330,7 +330,7 @@ func TestQuickActionAction_IsValid(t *testing.T) {
 		{
 			name: "Invalid setProperty with missing propertyId",
 			action: QuickActionAction{
-				Type: QuickActionSetProperty,
+				Type:  QuickActionSetProperty,
 				Value: "value",
 			},
 			expectErr: true,

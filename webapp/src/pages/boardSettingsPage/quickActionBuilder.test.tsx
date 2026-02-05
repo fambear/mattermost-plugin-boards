@@ -66,7 +66,7 @@ describe('pages/boardSettingsPage/QuickActionBuilder', () => {
     test('should call onChange with new action when add button is clicked', async () => {
         const onChange = jest.fn()
 
-        const {container} = render(wrapIntl(
+        render(wrapIntl(
             <QuickActionBuilder
                 board={board}
                 actions={[]}
@@ -93,7 +93,7 @@ describe('pages/boardSettingsPage/QuickActionBuilder', () => {
     test('should add action to existing list', async () => {
         const onChange = jest.fn()
 
-        const {container} = render(wrapIntl(
+        render(wrapIntl(
             <QuickActionBuilder
                 board={board}
                 actions={mockActions}
@@ -131,6 +131,7 @@ describe('pages/boardSettingsPage/QuickActionBuilder', () => {
         ))
 
         // Simulate a row calling its onChange callback
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const rowOnChange = (callback: (index: number, action: typeof mockActions[0]) => void) => {
             // The QuickActionRow component receives onChange prop that calls handleUpdate
             // which updates the action at the specific index

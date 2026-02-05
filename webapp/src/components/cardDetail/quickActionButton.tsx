@@ -2,14 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useState, useCallback} from 'react'
-import {FormattedMessage} from 'react-intl'
 
 import {Card} from '../../blocks/card'
 import {Board} from '../../blocks/board'
 import {QuickAction} from '../../blocks/quickAction'
 import octoClient from '../../octoClient'
 import {Utils} from '../../utils'
-import {ConfirmationDialogBox, ConfirmationDialogBoxProps} from '../confirmationDialogBox'
+import {ConfirmationDialogBox} from '../confirmationDialogBox'
 
 import './quickActionButton.scss'
 

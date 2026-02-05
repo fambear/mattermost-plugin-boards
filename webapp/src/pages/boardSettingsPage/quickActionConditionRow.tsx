@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo, useCallback} from 'react'
-import {FormattedMessage, useIntl} from 'react-intl'
+import {useIntl} from 'react-intl'
 
-import {Board, IPropertyTemplate, PropertyTypeEnum} from '../../blocks/board'
+import {Board, IPropertyTemplate} from '../../blocks/board'
 import {QuickActionCondition, QuickActionConditionOperator} from '../../blocks/quickAction'
 import Button from '../../widgets/buttons/button'
 import Menu from '../../widgets/menu'
@@ -24,7 +24,7 @@ type Props = {
 }
 
 const QuickActionConditionRow = (props: Props): JSX.Element => {
-    const {condition, board, isFirstRow} = props
+    const {condition, board} = props
     const intl = useIntl()
 
     const propertyTemplate = useMemo(() => {

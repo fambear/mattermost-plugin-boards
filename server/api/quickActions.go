@@ -4,10 +4,10 @@
 package api
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/mattermost/mattermost-plugin-boards/server/model"
 	"github.com/mattermost/mattermost-plugin-boards/server/services/audit"
 
 	"github.com/mattermost/mattermost/server/public/shared/mlog"
@@ -79,12 +79,6 @@ func (a *API) handleExecuteQuickAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	board, err := a.app.GetBoard(boardID)
-	if err != nil {
-		a.errorResponse(w, r, err)
-		return
-	}
-
 	a.logger.Debug("Executed quick action",
 		mlog.String("boardID", boardID),
 		mlog.String("cardID", cardID),
@@ -92,7 +86,12 @@ func (a *API) handleExecuteQuickAction(w http.ResponseWriter, r *http.Request) {
 	)
 
 	// Return the updated card
-	a.updateCardResponse(w, r, userID, boardID, cardID)
+	data, err := json.Marshal(card)
+	if err != nil {
+		a.errorResponse(w, r, err)
+		return
+	}
+	jsonBytesResponse(w, http.StatusOK, data)
 
 	auditRec.Success()
 }

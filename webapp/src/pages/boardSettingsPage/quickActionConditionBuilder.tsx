@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react'
-import {FormattedMessage, useIntl} from 'react-intl'
+import {FormattedMessage} from 'react-intl'
 
 import {Board} from '../../blocks/board'
 import {QuickActionCondition} from '../../blocks/quickAction'
@@ -20,7 +20,6 @@ type Props = {
 
 const QuickActionConditionBuilder = (props: Props): JSX.Element => {
     const {board, conditions} = props
-    const intl = useIntl()
 
     const handleAdd = useCallback(() => {
         const newCondition: QuickActionCondition = {
