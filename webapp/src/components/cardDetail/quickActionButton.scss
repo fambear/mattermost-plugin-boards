@@ -1,0 +1,41 @@
+.QuickActionButton {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s ease, transform 0.1s ease;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+
+    &:hover:not(:disabled) {
+        opacity: 0.85;
+        transform: translateY(-1px);
+    }
+
+    &:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    &.propColorDefault {
+        background: rgba(var(--center-channel-color-rgb), 0.15);
+        color: rgba(var(--center-channel-color-rgb), 1);
+        text-shadow: none;
+    }
+
+    &.propColorGray { background: #606060; }
+    &.propColorBrown { background: #8D6E63; }
+    &.propColorOrange { background: #FF8800; }
+    &.propColorYellow { background: #FCB900; }
+    &.propColorGreen { background: #00E676; }
+    &.propColorBlue { background: #0066CC; }
+    &.propColorPurple { background: #6D4098; }
+    &.propColorPink { background: #E91E63; }
+    &.propColorRed { background: #D32F2F; }
+}

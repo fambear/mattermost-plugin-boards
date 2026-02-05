@@ -26,6 +26,7 @@ import GeneralSection from './generalSection'
 import ViewsSection from './viewsSection'
 import PropertiesSection from './propertiesSection'
 import StatusTransitionSection from './statusTransitionSection'
+import QuickActionsSection from './quickActionsSection'
 import BoardSettingsFooter from './boardSettingsFooter'
 
 import './boardSettingsPage.scss'
@@ -281,6 +282,20 @@ const BoardSettingsPage = (): JSX.Element => {
                             </h2>
                             <StatusTransitionSection
                                 board={board}
+                            />
+                        </div>
+
+                        {/* Section 5: Quick Actions (IT-468) */}
+                        <div className='BoardSettingsPage__section'>
+                            <h2>
+                                <FormattedMessage
+                                    id='BoardSettings.quick-actions-section'
+                                    defaultMessage='Quick Actions'
+                                />
+                            </h2>
+                            <QuickActionsSection
+                                board={board}
+                                onBoardChange={handleBoardChange}
                             />
                         </div>
                     </div>

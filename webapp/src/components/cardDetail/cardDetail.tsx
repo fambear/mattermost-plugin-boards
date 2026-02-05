@@ -45,6 +45,7 @@ import AttachmentList from './attachment'
 import CardRelations from './cardRelations'
 import GitHubBranchCreate from './githubBranchCreate'
 import GitHubPRStatus from './githubPRStatus'
+import CardQuickActions from './cardQuickActions'
 
 import './cardDetail.scss'
 
@@ -436,6 +437,13 @@ const CardDetail = (props: Props): JSX.Element|null => {
                             cards={props.cards}
                             activeView={props.activeView}
                             views={props.views}
+                            readonly={props.readonly}
+                        />
+
+                        {/* Quick Actions */}
+                        <CardQuickActions
+                            board={props.board}
+                            card={props.card}
                             readonly={props.readonly}
                         />
 
