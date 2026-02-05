@@ -1,0 +1,142 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`pages/boardSettingsPage/QuickActionRow should match snapshot for addComment action 1`] = `
+<div>
+  <div
+    class="QuickActionRow"
+  >
+    <button
+      class="Button QuickActionRow__remove-btn"
+      type="button"
+    >
+      <span>
+        [-]
+      </span>
+    </button>
+    <div
+      aria-label="menuwrapper"
+      class="MenuWrapper"
+      role="button"
+    >
+      <button
+        class="Button QuickActionRow__type-select"
+        type="button"
+      >
+        <span>
+          Add comment
+        </span>
+      </button>
+    </div>
+    <input
+      class="Editable "
+      placeholder="Comment text"
+      title="Work started"
+      value="Work started"
+    />
+  </div>
+</div>
+`;
+
+exports[`pages/boardSettingsPage/QuickActionRow should match snapshot for clearProperty action 1`] = `
+<div>
+  <div
+    class="QuickActionRow"
+  >
+    <button
+      class="Button QuickActionRow__remove-btn"
+      type="button"
+    >
+      <span>
+        [-]
+      </span>
+    </button>
+    <div
+      aria-label="menuwrapper"
+      class="MenuWrapper"
+      role="button"
+    >
+      <button
+        class="Button QuickActionRow__type-select"
+        type="button"
+      >
+        <span>
+          Clear property
+        </span>
+      </button>
+    </div>
+    <div
+      aria-label="menuwrapper"
+      class="MenuWrapper"
+      role="button"
+    >
+      <button
+        class="Button QuickActionRow__property-select"
+        type="button"
+      >
+        <span>
+          Assignee
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`pages/boardSettingsPage/QuickActionRow should match snapshot for setProperty action 1`] = `
+<div>
+  <div
+    class="QuickActionRow"
+  >
+    <button
+      class="Button QuickActionRow__remove-btn"
+      type="button"
+    >
+      <span>
+        [-]
+      </span>
+    </button>
+    <div
+      aria-label="menuwrapper"
+      class="MenuWrapper"
+      role="button"
+    >
+      <button
+        class="Button QuickActionRow__type-select"
+        type="button"
+      >
+        <span>
+          Set property
+        </span>
+      </button>
+    </div>
+    <div
+      aria-label="menuwrapper"
+      class="MenuWrapper"
+      role="button"
+    >
+      <button
+        class="Button QuickActionRow__property-select"
+        type="button"
+      >
+        <span>
+          Status
+        </span>
+      </button>
+    </div>
+    <div
+      aria-label="menuwrapper"
+      class="MenuWrapper"
+      role="button"
+    >
+      <button
+        class="Button"
+        type="button"
+      >
+        <span>
+          Todo
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+`;

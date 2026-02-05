@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`components/cardDetail/QuickActionButton should match snapshot 1`] = `
+<div>
+  <button
+    class="QuickActionButton propColorRed"
+  >
+    Start Work
+  </button>
+</div>
+`;
+
+exports[`components/cardDetail/QuickActionButton should match snapshot with confirmation 1`] = `
+<div>
+  <button
+    class="QuickActionButton propColorRed"
+  >
+    Start Work
+  </button>
+</div>
+`;
+
+exports[`components/cardDetail/QuickActionButton should match snapshot with different color 1`] = `
+<div>
+  <button
+    class="QuickActionButton propColorBlue"
+  >
+    Start Work
+  </button>
+</div>
+`;

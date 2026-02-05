@@ -1,0 +1,112 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`pages/boardSettingsPage/QuickActionBuilder should match snapshot with actions 1`] = `
+<div>
+  <div
+    class="QuickActionBuilder"
+  >
+    <div
+      class="QuickActionRow"
+    >
+      <button
+        class="Button QuickActionRow__remove-btn"
+        type="button"
+      >
+        <span>
+          [-]
+        </span>
+      </button>
+      <div
+        aria-label="menuwrapper"
+        class="MenuWrapper"
+        role="button"
+      >
+        <button
+          class="Button QuickActionRow__type-select"
+          type="button"
+        >
+          <span>
+            Set property
+          </span>
+        </button>
+      </div>
+      <div
+        aria-label="menuwrapper"
+        class="MenuWrapper"
+        role="button"
+      >
+        <button
+          class="Button QuickActionRow__property-select"
+          type="button"
+        >
+          <span>
+            Select property
+          </span>
+        </button>
+      </div>
+    </div>
+    <div
+      class="QuickActionRow"
+    >
+      <button
+        class="Button QuickActionRow__remove-btn"
+        type="button"
+      >
+        <span>
+          [-]
+        </span>
+      </button>
+      <div
+        aria-label="menuwrapper"
+        class="MenuWrapper"
+        role="button"
+      >
+        <button
+          class="Button QuickActionRow__type-select"
+          type="button"
+        >
+          <span>
+            Add comment
+          </span>
+        </button>
+      </div>
+      <input
+        class="Editable "
+        placeholder="Comment text"
+        title="Work started"
+        value="Work started"
+      />
+    </div>
+    <button
+      class="Button"
+      type="button"
+    >
+      <span>
+        + Add Action
+      </span>
+    </button>
+  </div>
+</div>
+`;
+
+exports[`pages/boardSettingsPage/QuickActionBuilder should match snapshot with empty actions 1`] = `
+<div>
+  <div
+    class="QuickActionBuilder"
+  >
+    <p
+      class="QuickActionBuilder__empty"
+    >
+      Add at least one action.
+    </p>
+    <button
+      class="Button"
+      type="button"
+    >
+      <span>
+        + Add Action
+      </span>
+    </button>
+  </div>
+</div>
+`;

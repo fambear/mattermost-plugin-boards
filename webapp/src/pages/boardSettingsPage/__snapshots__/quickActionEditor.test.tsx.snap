@@ -1,0 +1,381 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`pages/boardSettingsPage/QuickActionEditor should match snapshot when collapsed 1`] = `
+<div>
+  <div
+    class="QuickActionEditor"
+  >
+    <div
+      class="QuickActionEditor__header"
+    >
+      <button
+        class="IconButton"
+        type="button"
+      >
+        <i
+          class="CompassIcon icon-chevron-right ChevronRightIcon"
+        />
+      </button>
+      <span
+        class="QuickActionEditor__name-badge propColorBlue"
+      >
+        Start Work
+      </span>
+      <div
+        class="QuickActionEditor__actions"
+      >
+        <button
+          class="IconButton"
+          type="button"
+        >
+          <i
+            class="CompassIcon icon-trash-can-outline DeleteIcon trash-can-outline"
+          />
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`pages/boardSettingsPage/QuickActionEditor should match snapshot when expanded with confirmation 1`] = `
+<div>
+  <div
+    class="QuickActionEditor"
+  >
+    <div
+      class="QuickActionEditor__header"
+    >
+      <button
+        class="IconButton"
+        type="button"
+      >
+        <i
+          class="CompassIcon icon-chevron-down ChevronDownIcon"
+        />
+      </button>
+      <span
+        class="QuickActionEditor__name-badge propColorBlue"
+      >
+        Start Work
+      </span>
+      <div
+        class="QuickActionEditor__actions"
+      >
+        <button
+          class="IconButton"
+          type="button"
+        >
+          <i
+            class="CompassIcon icon-trash-can-outline DeleteIcon trash-can-outline"
+          />
+        </button>
+      </div>
+    </div>
+    <div
+      class="QuickActionEditor__content"
+    >
+      <div
+        class="QuickActionEditor__field"
+      >
+        <label
+          class="QuickActionEditor__label"
+        >
+          Name
+        </label>
+        <input
+          class="Editable "
+          placeholder="Button label"
+          title="Start Work"
+          value="Start Work"
+        />
+      </div>
+      <div
+        class="QuickActionEditor__field"
+      >
+        <label
+          class="QuickActionEditor__label"
+        >
+          Color
+        </label>
+        <div
+          aria-label="menuwrapper"
+          class="MenuWrapper"
+          role="button"
+        >
+          <button
+            class="QuickActionEditor__color-button propColorBlue"
+          >
+            <span
+              class="QuickActionEditor__color-swatch propColorBlue"
+            />
+            Blue
+          </button>
+        </div>
+      </div>
+      <div
+        class="QuickActionEditor__field"
+      >
+        <label
+          class="QuickActionEditor__checkbox-label"
+        >
+          <input
+            checked=""
+            type="checkbox"
+          />
+          Require confirmation
+        </label>
+      </div>
+      <div
+        class="QuickActionEditor__field"
+      >
+        <label
+          class="QuickActionEditor__label"
+        >
+          Confirmation text
+        </label>
+        <input
+          class="Editable "
+          placeholder="Message shown when user clicks the button"
+          title="Are you sure you want to proceed?"
+          value="Are you sure you want to proceed?"
+        />
+      </div>
+      <div
+        class="QuickActionEditor__section"
+      >
+        <h4
+          class="QuickActionEditor__section-title"
+        >
+          Conditions (ALL must match)
+        </h4>
+        <div
+          class="QuickActionConditionBuilder"
+        >
+          <p
+            class="QuickActionConditionBuilder__empty"
+          >
+            No conditions. This action will always be visible.
+          </p>
+          <button
+            class="Button"
+            type="button"
+          >
+            <span>
+              + Add Condition
+            </span>
+          </button>
+        </div>
+      </div>
+      <div
+        class="QuickActionEditor__section"
+      >
+        <h4
+          class="QuickActionEditor__section-title"
+        >
+          Actions
+        </h4>
+        <div
+          class="QuickActionBuilder"
+        >
+          <p
+            class="QuickActionBuilder__empty"
+          >
+            Add at least one action.
+          </p>
+          <button
+            class="Button"
+            type="button"
+          >
+            <span>
+              + Add Action
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`pages/boardSettingsPage/QuickActionEditor should match snapshot when expanded without confirmation 1`] = `
+<div>
+  <div
+    class="QuickActionEditor"
+  >
+    <div
+      class="QuickActionEditor__header"
+    >
+      <button
+        class="IconButton"
+        type="button"
+      >
+        <i
+          class="CompassIcon icon-chevron-down ChevronDownIcon"
+        />
+      </button>
+      <span
+        class="QuickActionEditor__name-badge propColorBlue"
+      >
+        Start Work
+      </span>
+      <div
+        class="QuickActionEditor__actions"
+      >
+        <button
+          class="IconButton"
+          type="button"
+        >
+          <i
+            class="CompassIcon icon-trash-can-outline DeleteIcon trash-can-outline"
+          />
+        </button>
+      </div>
+    </div>
+    <div
+      class="QuickActionEditor__content"
+    >
+      <div
+        class="QuickActionEditor__field"
+      >
+        <label
+          class="QuickActionEditor__label"
+        >
+          Name
+        </label>
+        <input
+          class="Editable "
+          placeholder="Button label"
+          title="Start Work"
+          value="Start Work"
+        />
+      </div>
+      <div
+        class="QuickActionEditor__field"
+      >
+        <label
+          class="QuickActionEditor__label"
+        >
+          Color
+        </label>
+        <div
+          aria-label="menuwrapper"
+          class="MenuWrapper"
+          role="button"
+        >
+          <button
+            class="QuickActionEditor__color-button propColorBlue"
+          >
+            <span
+              class="QuickActionEditor__color-swatch propColorBlue"
+            />
+            Blue
+          </button>
+        </div>
+      </div>
+      <div
+        class="QuickActionEditor__field"
+      >
+        <label
+          class="QuickActionEditor__checkbox-label"
+        >
+          <input
+            type="checkbox"
+          />
+          Require confirmation
+        </label>
+      </div>
+      <div
+        class="QuickActionEditor__section"
+      >
+        <h4
+          class="QuickActionEditor__section-title"
+        >
+          Conditions (ALL must match)
+        </h4>
+        <div
+          class="QuickActionConditionBuilder"
+        >
+          <p
+            class="QuickActionConditionBuilder__empty"
+          >
+            No conditions. This action will always be visible.
+          </p>
+          <button
+            class="Button"
+            type="button"
+          >
+            <span>
+              + Add Condition
+            </span>
+          </button>
+        </div>
+      </div>
+      <div
+        class="QuickActionEditor__section"
+      >
+        <h4
+          class="QuickActionEditor__section-title"
+        >
+          Actions
+        </h4>
+        <div
+          class="QuickActionBuilder"
+        >
+          <p
+            class="QuickActionBuilder__empty"
+          >
+            Add at least one action.
+          </p>
+          <button
+            class="Button"
+            type="button"
+          >
+            <span>
+              + Add Action
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`pages/boardSettingsPage/QuickActionEditor should match snapshot with different colors 1`] = `
+<div>
+  <div
+    class="QuickActionEditor"
+  >
+    <div
+      class="QuickActionEditor__header"
+    >
+      <button
+        class="IconButton"
+        type="button"
+      >
+        <i
+          class="CompassIcon icon-chevron-right ChevronRightIcon"
+        />
+      </button>
+      <span
+        class="QuickActionEditor__name-badge propColorRed"
+      >
+        Start Work
+      </span>
+      <div
+        class="QuickActionEditor__actions"
+      >
+        <button
+          class="IconButton"
+          type="button"
+        >
+          <i
+            class="CompassIcon icon-trash-can-outline DeleteIcon trash-can-outline"
+          />
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+`;
