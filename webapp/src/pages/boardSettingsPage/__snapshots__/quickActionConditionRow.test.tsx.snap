@@ -37,7 +37,7 @@ exports[`pages/boardSettingsPage/QuickActionConditionRow should match snapshot f
         type="button"
       >
         <span>
-          is set
+          checked
         </span>
       </button>
     </div>
@@ -82,7 +82,7 @@ exports[`pages/boardSettingsPage/QuickActionConditionRow should match snapshot f
         type="button"
       >
         <span>
-          is
+          &gt;
         </span>
       </button>
     </div>
@@ -133,7 +133,7 @@ exports[`pages/boardSettingsPage/QuickActionConditionRow should match snapshot f
         type="button"
       >
         <span>
-          includes
+          is empty
         </span>
       </button>
     </div>
