@@ -87,7 +87,7 @@ func (qa *QuickAction) IsValid() error {
 	return nil
 }
 
-// IsValid validates the QuickActionAction and returns an error if invalid
+// IsValid validates the QuickActionAction and returns an error if invalid.
 func (a *QuickActionAction) IsValid() error {
 	switch a.Type {
 	case QuickActionSetProperty:
