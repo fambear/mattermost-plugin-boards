@@ -217,10 +217,15 @@ describe('pages/boardSettingsPage/QuickActionsSection', () => {
     test('should expand newly added action after creation', async () => {
         board.properties = {}
 
-        const {container} = render(wrapIntl(
+        let currentBoard = board
+        const handleBoardChange = jest.fn((updatedBoard) => {
+            currentBoard = updatedBoard
+        })
+
+        const {container, rerender} = render(wrapIntl(
             <QuickActionsSection
-                board={board}
-                onBoardChange={mockOnBoardChange}
+                board={currentBoard}
+                onBoardChange={handleBoardChange}
             />,
         ))
 
@@ -230,10 +235,22 @@ describe('pages/boardSettingsPage/QuickActionsSection', () => {
             await userEvent.click(addButton)
         })
 
+        // Re-render with the updated board
+        rerender(wrapIntl(
+            <QuickActionsSection
+                board={currentBoard}
+                onBoardChange={handleBoardChange}
+            />,
+        ))
+
         // After adding, the new action should be expanded
         // This is verified by the presence of the content section
         const editors = container.querySelectorAll('.QuickActionEditor')
         expect(editors.length).toBe(1)
+
+        // Verify the action is expanded by checking for the content section
+        const content = container.querySelector('.QuickActionEditor__content')
+        expect(content).toBeInTheDocument()
     })
 
     test('should match snapshot with empty state', () => {
