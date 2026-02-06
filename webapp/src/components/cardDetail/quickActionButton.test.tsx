@@ -173,11 +173,12 @@ describe('components/cardDetail/QuickActionButton', () => {
         })
 
         // Check that confirmation dialog is shown
-        const dialogTitle = screen.queryByText('Start Work')
-        expect(dialogTitle).toBeInTheDocument()
-
         const dialogText = screen.queryByText('Are you sure you want to start work?')
         expect(dialogText).toBeInTheDocument()
+
+        // Check that the dialog has the action name in the heading
+        const dialogTitle = screen.queryByRole('heading', {name: 'Start Work'})
+        expect(dialogTitle).toBeInTheDocument()
     })
 
     test('should execute action after confirmation is confirmed', async () => {
