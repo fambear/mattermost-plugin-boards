@@ -1,0 +1,116 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`pages/boardSettingsPage/QuickActionsSection should match snapshot with actions 1`] = `
+<div>
+  <div
+    class="QuickActionsSection"
+  >
+    <div
+      class="QuickActionsSection__list"
+    >
+      <div
+        class="QuickActionEditor"
+      >
+        <div
+          class="QuickActionEditor__header"
+        >
+          <button
+            class="IconButton"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-chevron-right ChevronRightIcon"
+            />
+          </button>
+          <span
+            class="QuickActionEditor__name-badge propColorBlue"
+          >
+            Start Work
+          </span>
+          <div
+            class="QuickActionEditor__actions"
+          >
+            <button
+              class="IconButton"
+              type="button"
+            >
+              <i
+                class="CompassIcon icon-trash-can-outline DeleteIcon trash-can-outline"
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+      <div
+        class="QuickActionEditor"
+      >
+        <div
+          class="QuickActionEditor__header"
+        >
+          <button
+            class="IconButton"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-chevron-right ChevronRightIcon"
+            />
+          </button>
+          <span
+            class="QuickActionEditor__name-badge propColorGreen"
+          >
+            Complete Task
+          </span>
+          <div
+            class="QuickActionEditor__actions"
+          >
+            <button
+              class="IconButton"
+              type="button"
+            >
+              <i
+                class="CompassIcon icon-trash-can-outline DeleteIcon trash-can-outline"
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="QuickActionsSection__add"
+    >
+      <button
+        class="Button"
+        type="button"
+      >
+        <span>
+          + Add Quick Action
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`pages/boardSettingsPage/QuickActionsSection should match snapshot with empty state 1`] = `
+<div>
+  <div
+    class="QuickActionsSection"
+  >
+    <div
+      class="QuickActionsSection__list"
+    />
+    <div
+      class="QuickActionsSection__add"
+    >
+      <button
+        class="Button"
+        type="button"
+      >
+        <span>
+          + Add Quick Action
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+`;

@@ -1,0 +1,57 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`components/cardDetail/CardQuickActions should match snapshot 1`] = `
+<div>
+  <div
+    class="CardQuickActions"
+  >
+    <div
+      class="CardQuickActions__title"
+    >
+      Quick Actions
+    </div>
+    <div
+      class="CardQuickActions__buttons"
+    >
+      <button
+        class="QuickActionButton propColorRed"
+      >
+        Start Work
+      </button>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`components/cardDetail/CardQuickActions should match snapshot with multiple actions 1`] = `
+<div>
+  <div
+    class="CardQuickActions"
+  >
+    <div
+      class="CardQuickActions__title"
+    >
+      Quick Actions
+    </div>
+    <div
+      class="CardQuickActions__buttons"
+    >
+      <button
+        class="QuickActionButton propColorRed"
+      >
+        Action 1
+      </button>
+      <button
+        class="QuickActionButton propColorBlue"
+      >
+        Action 2
+      </button>
+      <button
+        class="QuickActionButton propColorGreen"
+      >
+        Action 3
+      </button>
+    </div>
+  </div>
+</div>
+`;

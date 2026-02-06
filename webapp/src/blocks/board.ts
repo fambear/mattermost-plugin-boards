@@ -38,7 +38,8 @@ type Board = {
     showDescription: boolean
     isTemplate: boolean
     templateVersion: number
-    properties: Record<string, string | string[]>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    properties: Record<string, any>
     cardProperties: IPropertyTemplate[]
 
     createAt: number

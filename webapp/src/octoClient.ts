@@ -1311,6 +1311,17 @@ class OctoClient {
         }
         return (await this.getJson(response, {})) as {channelId: string}
     }
+
+    async executeQuickAction(boardId: string, cardId: string, actionId: string): Promise<void> {
+        Utils.log(`executeQuickAction: board ${boardId}, card ${cardId}, action ${actionId}`)
+        const response = await fetch(`${this.getBaseURL()}/api/v2/boards/${boardId}/cards/${cardId}/quickActions/${actionId}`, Client4.getOptions({
+            method: 'POST',
+            headers: this.headers(),
+        }))
+        if (!response.ok) {
+            throw new Error(`Failed to execute quick action: ${response.statusText}`)
+        }
+    }
 }
 
 const octoClient = new OctoClient()

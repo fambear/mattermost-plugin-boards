@@ -1,0 +1,21 @@
+.CardQuickActions {
+    margin-bottom: 16px;
+    padding: 12px;
+    background: rgba(var(--center-channel-color-rgb), 0.03);
+    border-radius: 4px;
+
+    &__title {
+        font-size: 13px;
+        font-weight: 600;
+        color: rgba(var(--center-channel-color-rgb), 0.64);
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    &__buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+}

@@ -1,0 +1,283 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`pages/boardSettingsPage/QuickActionConditionRow should match snapshot for checkbox property 1`] = `
+<div>
+  <div
+    class="QuickActionConditionRow"
+  >
+    <button
+      class="Button QuickActionConditionRow__remove-btn"
+      type="button"
+    >
+      <span>
+        [-]
+      </span>
+    </button>
+    <div
+      aria-label="menuwrapper"
+      class="MenuWrapper"
+      role="button"
+    >
+      <button
+        class="Button QuickActionConditionRow__property-select"
+        type="button"
+      >
+        <span>
+          Approved
+        </span>
+      </button>
+    </div>
+    <div
+      aria-label="menuwrapper"
+      class="MenuWrapper"
+      role="button"
+    >
+      <button
+        class="Button QuickActionConditionRow__operator-select"
+        type="button"
+      >
+        <span>
+          checked
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`pages/boardSettingsPage/QuickActionConditionRow should match snapshot for date property 1`] = `
+<div>
+  <div
+    class="QuickActionConditionRow"
+  >
+    <button
+      class="Button QuickActionConditionRow__remove-btn"
+      type="button"
+    >
+      <span>
+        [-]
+      </span>
+    </button>
+    <div
+      aria-label="menuwrapper"
+      class="MenuWrapper"
+      role="button"
+    >
+      <button
+        class="Button QuickActionConditionRow__property-select"
+        type="button"
+      >
+        <span>
+          Due Date
+        </span>
+      </button>
+    </div>
+    <div
+      aria-label="menuwrapper"
+      class="MenuWrapper"
+      role="button"
+    >
+      <button
+        class="Button QuickActionConditionRow__operator-select"
+        type="button"
+      >
+        <span>
+          &gt;
+        </span>
+      </button>
+    </div>
+    <input
+      class="Editable "
+      placeholder="{now}"
+      title="{now}"
+      value="{now}"
+    />
+  </div>
+</div>
+`;
+
+exports[`pages/boardSettingsPage/QuickActionConditionRow should match snapshot for empty operator 1`] = `
+<div>
+  <div
+    class="QuickActionConditionRow"
+  >
+    <button
+      class="Button QuickActionConditionRow__remove-btn"
+      type="button"
+    >
+      <span>
+        [-]
+      </span>
+    </button>
+    <div
+      aria-label="menuwrapper"
+      class="MenuWrapper"
+      role="button"
+    >
+      <button
+        class="Button QuickActionConditionRow__property-select"
+        type="button"
+      >
+        <span>
+          Status
+        </span>
+      </button>
+    </div>
+    <div
+      aria-label="menuwrapper"
+      class="MenuWrapper"
+      role="button"
+    >
+      <button
+        class="Button QuickActionConditionRow__operator-select"
+        type="button"
+      >
+        <span>
+          is empty
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`pages/boardSettingsPage/QuickActionConditionRow should match snapshot for select property 1`] = `
+<div>
+  <div
+    class="QuickActionConditionRow"
+  >
+    <button
+      class="Button QuickActionConditionRow__remove-btn"
+      type="button"
+    >
+      <span>
+        [-]
+      </span>
+    </button>
+    <div
+      aria-label="menuwrapper"
+      class="MenuWrapper"
+      role="button"
+    >
+      <button
+        class="Button QuickActionConditionRow__property-select"
+        type="button"
+      >
+        <span>
+          Status
+        </span>
+      </button>
+    </div>
+    <div
+      aria-label="menuwrapper"
+      class="MenuWrapper"
+      role="button"
+    >
+      <button
+        class="Button QuickActionConditionRow__operator-select"
+        type="button"
+      >
+        <span>
+          includes
+        </span>
+      </button>
+    </div>
+    <div
+      aria-label="menuwrapper"
+      class="MenuWrapper"
+      role="button"
+    >
+      <button
+        class="Button"
+        type="button"
+      >
+        <span>
+          Todo
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`pages/boardSettingsPage/QuickActionConditionRow should match snapshot for text property 1`] = `
+<div>
+  <div
+    class="QuickActionConditionRow"
+  >
+    <button
+      class="Button QuickActionConditionRow__remove-btn"
+      type="button"
+    >
+      <span>
+        [-]
+      </span>
+    </button>
+    <div
+      aria-label="menuwrapper"
+      class="MenuWrapper"
+      role="button"
+    >
+      <button
+        class="Button QuickActionConditionRow__property-select"
+        type="button"
+      >
+        <span>
+          Description
+        </span>
+      </button>
+    </div>
+    <div
+      aria-label="menuwrapper"
+      class="MenuWrapper"
+      role="button"
+    >
+      <button
+        class="Button QuickActionConditionRow__operator-select"
+        type="button"
+      >
+        <span>
+          contains
+        </span>
+      </button>
+    </div>
+    <input
+      class="Editable "
+      placeholder="Value"
+      title="test"
+      value="test"
+    />
+  </div>
+</div>
+`;
+
+exports[`pages/boardSettingsPage/QuickActionConditionRow should match snapshot with no property selected 1`] = `
+<div>
+  <div
+    class="QuickActionConditionRow"
+  >
+    <button
+      class="Button QuickActionConditionRow__remove-btn"
+      type="button"
+    >
+      <span>
+        [-]
+      </span>
+    </button>
+    <div
+      aria-label="menuwrapper"
+      class="MenuWrapper"
+      role="button"
+    >
+      <button
+        class="Button QuickActionConditionRow__property-select"
+        type="button"
+      >
+        <span>
+          Select property
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+`;

@@ -96,6 +96,7 @@ func (a *API) RegisterRoutes(r *mux.Router) {
 	a.registerGitHubRoutes(apiv2)
 	a.registerStatusTransitionRulesRoutes(apiv2)
 	a.registerActionsRoutes(apiv2)
+	a.registerQuickActionsRoutes(apiv2)
 
 	// V3 routes
 	a.registerCardsRoutes(apiv2)
