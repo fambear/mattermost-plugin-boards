@@ -94,7 +94,7 @@ describe('components/cardDetail/QuickActionButton', () => {
     })
 
     test('should call executeQuickAction when clicked without confirmation', async () => {
-        mockedOctoClient.executeQuickAction.mockResolvedValueOnce({})
+        mockedOctoClient.executeQuickAction.mockResolvedValueOnce(undefined)
 
         const {container} = render(wrapIntl(
             <QuickActionButton
@@ -124,7 +124,7 @@ describe('components/cardDetail/QuickActionButton', () => {
             resolveExecution = resolve
         })
 
-        mockedOctoClient.executeQuickAction.mockReturnValueOnce(executionPromise as unknown as Promise<unknown>)
+        mockedOctoClient.executeQuickAction.mockReturnValueOnce(executionPromise)
 
         const {container} = render(wrapIntl(
             <QuickActionButton
@@ -152,7 +152,7 @@ describe('components/cardDetail/QuickActionButton', () => {
     })
 
     test('should show confirmation dialog when confirmRequired is true', async () => {
-        const actionWithConfirmation = {
+        const actionWithConfirmation: QuickAction = {
             ...baseAction,
             confirmRequired: true,
             confirmText: 'Are you sure you want to start work?',
@@ -182,13 +182,13 @@ describe('components/cardDetail/QuickActionButton', () => {
     })
 
     test('should execute action after confirmation is confirmed', async () => {
-        const actionWithConfirmation = {
+        const actionWithConfirmation: QuickAction = {
             ...baseAction,
             confirmRequired: true,
             confirmText: 'Are you sure?',
         }
 
-        mockedOctoClient.executeQuickAction.mockResolvedValueOnce({})
+        mockedOctoClient.executeQuickAction.mockResolvedValueOnce(undefined)
 
         const {container} = render(wrapIntl(
             <QuickActionButton
@@ -221,7 +221,7 @@ describe('components/cardDetail/QuickActionButton', () => {
     })
 
     test('should not execute action when confirmation is cancelled', async () => {
-        const actionWithConfirmation = {
+        const actionWithConfirmation: QuickAction = {
             ...baseAction,
             confirmRequired: true,
             confirmText: 'Are you sure?',
@@ -294,7 +294,7 @@ describe('components/cardDetail/QuickActionButton', () => {
     })
 
     test('should match snapshot with confirmation', () => {
-        const actionWithConfirmation = {
+        const actionWithConfirmation: QuickAction = {
             ...baseAction,
             confirmRequired: true,
             confirmText: 'Are you sure?',
@@ -312,7 +312,7 @@ describe('components/cardDetail/QuickActionButton', () => {
     })
 
     test('should match snapshot with different color', () => {
-        const actionWithBlueColor = {
+        const actionWithBlueColor: QuickAction = {
             ...baseAction,
             style: {color: 'propColorBlue'},
         }
