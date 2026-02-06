@@ -54,6 +54,11 @@ func (a *App) ExecuteQuickAction(boardID, cardID, actionID, userID string) error
 		return model.NewErrBadRequest("card not found")
 	}
 
+	// Validate that the card belongs to the board
+	if cardBlock.BoardID != boardID {
+		return model.NewErrBadRequest("card does not belong to the specified board")
+	}
+
 	// Validate the action
 	if err := action.IsValid(); err != nil {
 		return fmt.Errorf("invalid quick action: %w", err)

@@ -29,7 +29,7 @@ const QuickActionButton = (props: Props): JSX.Element => {
         } else {
             executeAction()
         }
-    }, [action])
+    }, [action, executeAction])
 
     const executeAction = useCallback(async () => {
         setExecuting(true)

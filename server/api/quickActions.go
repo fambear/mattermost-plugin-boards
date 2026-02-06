@@ -47,7 +47,7 @@ func (a *API) handleExecuteQuickAction(w http.ResponseWriter, r *http.Request) {
 	//   '200':
 	//     description: success
 	//     schema:
-	//       "$ref": '#/definitions/BoardAndBlocks'
+	//       "$ref": '#/definitions/Block'
 	//   default:
 	//     description: internal error
 	//     schema:
