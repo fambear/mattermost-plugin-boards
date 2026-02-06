@@ -82,7 +82,10 @@ const QuickActionEditor = (props: Props): JSX.Element => {
             <div className='QuickActionEditor__header' onClick={props.onToggleExpand}>
                 <IconButton
                     icon={isExpanded ? <ExpandIcon/> : <CollapseIcon/>}
-                    onClick={props.onToggleExpand}
+                    onClick={(e) => {
+                        e.stopPropagation()
+                        props.onToggleExpand()
+                    }}
                 />
                 <span className={`QuickActionEditor__name-badge ${action.style.color}`}>
                     {action.name}
