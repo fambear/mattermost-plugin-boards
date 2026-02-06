@@ -12,6 +12,7 @@ import {TestBlockFactory} from '../../test/testBlockFactory'
 import {mockDOM, wrapIntl} from '../../testUtils'
 
 import octoClient from '../../octoClient'
+import {QuickAction, QuickActionActionType} from '../../blocks/quickAction'
 
 import QuickActionButton from './quickActionButton'
 
