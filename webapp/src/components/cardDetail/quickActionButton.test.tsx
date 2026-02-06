@@ -12,7 +12,7 @@ import {TestBlockFactory} from '../../test/testBlockFactory'
 import {mockDOM, wrapIntl} from '../../testUtils'
 
 import octoClient from '../../octoClient'
-import {QuickAction} from '../../blocks/quickAction'
+import {QuickAction, QuickActionActionType} from '../../blocks/quickAction'
 
 import QuickActionButton from './quickActionButton'
 
@@ -33,7 +33,7 @@ describe('components/cardDetail/QuickActionButton', () => {
     const board = TestBlockFactory.createBoard()
     const card = TestBlockFactory.createCard(board)
 
-    const baseAction = {
+    const baseAction: QuickAction = {
         id: 'action-id-1',
         name: 'Start Work',
         style: {color: 'propColorRed'},
@@ -42,7 +42,7 @@ describe('components/cardDetail/QuickActionButton', () => {
         conditions: [],
         actions: [
             {
-                type: 'setProperty',
+                type: 'setProperty' as QuickActionActionType,
                 propertyId: 'status-prop-id',
                 value: 'in-progress',
             },
