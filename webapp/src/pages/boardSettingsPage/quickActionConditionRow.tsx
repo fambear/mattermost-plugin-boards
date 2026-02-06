@@ -9,9 +9,7 @@ import {QuickActionCondition, QuickActionConditionOperator} from '../../blocks/q
 import Button from '../../widgets/buttons/button'
 import Menu from '../../widgets/menu'
 import MenuWrapper from '../../widgets/menuWrapper'
-import propsRegistry from '../../properties'
 import Editable from '../../widgets/editable'
-import {OctoUtils} from '../../octoUtils'
 
 import './quickActionConditionRow.scss'
 
@@ -64,10 +62,6 @@ const QuickActionConditionRow = (props: Props): JSX.Element => {
     const propertyTemplate = useMemo(() => {
         return board.cardProperties.find(p => p.id === condition.propertyId)
     }, [board.cardProperties, condition.propertyId])
-
-    const propertyType = useMemo(() => {
-        return propertyTemplate ? propsRegistry.get(propertyTemplate.type) : null
-    }, [propertyTemplate])
 
     // Get available operators based on property type
     const availableOperators = useMemo(() => {
