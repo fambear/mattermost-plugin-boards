@@ -15,6 +15,40 @@ import {OctoUtils} from '../../octoUtils'
 
 import './quickActionConditionRow.scss'
 
+// Helper function to get display string for QuickActionConditionOperator
+function quickActionOperatorDisplayString(operator: QuickActionConditionOperator, intl: ReturnType<typeof useIntl>): string {
+    switch (operator) {
+    case 'in':
+        return intl.formatMessage({id: 'Filter.includes', defaultMessage: 'includes'})
+    case 'not in':
+        return intl.formatMessage({id: 'Filter.not-includes', defaultMessage: "doesn't include"})
+    case 'empty':
+        return intl.formatMessage({id: 'Filter.is-empty', defaultMessage: 'is empty'})
+    case 'not empty':
+        return intl.formatMessage({id: 'Filter.is-not-empty', defaultMessage: 'is not empty'})
+    case '>':
+        return '>'
+    case '<':
+        return '<'
+    case '>=':
+        return '>='
+    case '<=':
+        return '<='
+    case 'equal':
+        return intl.formatMessage({id: 'Filter.is', defaultMessage: 'is'})
+    case 'contains':
+        return intl.formatMessage({id: 'Filter.contains', defaultMessage: 'contains'})
+    case 'not contains':
+        return intl.formatMessage({id: 'Filter.not-contains', defaultMessage: "doesn't contain"})
+    case 'checked':
+        return intl.formatMessage({id: 'QuickActionCondition.checked', defaultMessage: 'checked'})
+    case 'not checked':
+        return intl.formatMessage({id: 'QuickActionCondition.not-checked', defaultMessage: 'not checked'})
+    default:
+        return operator
+    }
+}
+
 type Props = {
     condition: QuickActionCondition
     board: Board
@@ -176,7 +210,7 @@ const QuickActionConditionRow = (props: Props): JSX.Element => {
             {propertyTemplate && (
                 <MenuWrapper>
                     <Button className='QuickActionConditionRow__operator-select'>
-                        {OctoUtils.filterConditionDisplayString(condition.operator, intl, propertyType?.filterValueType || 'text')}
+                        {quickActionOperatorDisplayString(condition.operator, intl)}
                     </Button>
                     <Menu>
                         {availableOperators.map((op) => (
