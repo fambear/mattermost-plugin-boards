@@ -18,6 +18,17 @@ beforeAll(() => {
 describe('components/cardDetail/CardQuickActions', () => {
     const board = TestBlockFactory.createBoard()
     board.id = 'boardId'
+    // Add status property to board
+    board.cardProperties.push({
+        id: 'status-prop-id',
+        name: 'Status',
+        type: 'select',
+        options: [
+            {id: 'waiting', value: 'Waiting', color: 'propColorDefault'},
+            {id: 'in-progress', value: 'In Progress', color: 'propColorBlue'},
+            {id: 'done', value: 'Done', color: 'propColorGreen'},
+        ],
+    })
 
     const card = TestBlockFactory.createCard(board)
     card.id = 'cardId'
