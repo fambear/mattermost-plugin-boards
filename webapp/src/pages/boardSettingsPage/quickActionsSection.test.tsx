@@ -202,7 +202,8 @@ describe('pages/boardSettingsPage/QuickActionsSection', () => {
         ))
 
         // Click delete button on first action
-        const deleteButton = container.querySelectorAll('.IconButton')[0]
+        // Each QuickActionEditor has 2 IconButtons: expand/collapse (index 0) and delete (index 1)
+        const deleteButton = container.querySelectorAll('.IconButton')[1]
 
         await act(async () => {
             await userEvent.click(deleteButton)
