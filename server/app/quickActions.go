@@ -16,7 +16,7 @@ const (
 	SpecialValueNow         = "{now}"
 )
 
-// ExecuteQuickAction executes a quick action on a card
+// ExecuteQuickAction executes a quick action on a card.
 func (a *App) ExecuteQuickAction(boardID, cardID, actionID, userID string) error {
 	// Get the board
 	board, err := a.GetBoard(boardID)
@@ -24,7 +24,7 @@ func (a *App) ExecuteQuickAction(boardID, cardID, actionID, userID string) error
 		return fmt.Errorf("failed to get board: %w", err)
 	}
 	if board == nil {
-		return fmt.Errorf("board not found")
+		return model.NewErrNotFound("board")
 	}
 
 	// Check permissions
@@ -69,7 +69,7 @@ func (a *App) ExecuteQuickAction(boardID, cardID, actionID, userID string) error
 	return nil
 }
 
-// executeQuickActionAction executes a single action from a quick action
+// executeQuickActionAction executes a single action from a quick action.
 func (a *App) executeQuickActionAction(boardID string, cardBlock *model.Block, action *model.QuickActionAction, userID string) error {
 	switch action.Type {
 	case model.QuickActionSetProperty:
@@ -89,11 +89,11 @@ func (a *App) executeQuickActionAction(boardID string, cardBlock *model.Block, a
 		return a.addCardComment(cardBlock, boardID, action.Text, userID)
 
 	default:
-		return fmt.Errorf("unknown action type: %s", action.Type)
+		return model.NewErrBadRequest("unknown action type")
 	}
 }
 
-// setCardProperty sets a property on a card
+// setCardProperty sets a property on a card.
 func (a *App) setCardProperty(cardBlock *model.Block, propertyID, value, userID string) error {
 	if cardBlock.Fields == nil {
 		cardBlock.Fields = map[string]interface{}{}
@@ -117,7 +117,7 @@ func (a *App) setCardProperty(cardBlock *model.Block, propertyID, value, userID 
 	return err
 }
 
-// clearCardProperty clears a property on a card
+// clearCardProperty clears a property on a card.
 func (a *App) clearCardProperty(cardBlock *model.Block, propertyID, userID string) error {
 	if cardBlock.Fields == nil {
 		return nil
@@ -139,7 +139,7 @@ func (a *App) clearCardProperty(cardBlock *model.Block, propertyID, userID strin
 	return err
 }
 
-// addCardComment adds a comment to a card
+// addCardComment adds a comment to a card.
 func (a *App) addCardComment(cardBlock *model.Block, boardID, text, userID string) error {
 	now := utils.GetMillis()
 	commentBlock := model.Block{
@@ -160,7 +160,7 @@ func (a *App) addCardComment(cardBlock *model.Block, boardID, text, userID strin
 	return err
 }
 
-// getQuickActionsFromBoard extracts quick actions from board properties
+// getQuickActionsFromBoard extracts quick actions from board properties.
 func getQuickActionsFromBoard(board *model.Board) []model.QuickAction {
 	if board.Properties == nil {
 		return []model.QuickAction{}
