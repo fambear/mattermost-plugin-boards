@@ -23,14 +23,6 @@ const QuickActionButton = (props: Props): JSX.Element => {
     const [showConfirm, setShowConfirm] = useState(false)
     const [executing, setExecuting] = useState(false)
 
-    const handleClick = useCallback(() => {
-        if (action.confirmRequired) {
-            setShowConfirm(true)
-        } else {
-            executeAction()
-        }
-    }, [action, executeAction])
-
     const executeAction = useCallback(async () => {
         setExecuting(true)
         try {
@@ -42,6 +34,14 @@ const QuickActionButton = (props: Props): JSX.Element => {
             setExecuting(false)
         }
     }, [board.id, card.id, action.id])
+
+    const handleClick = useCallback(() => {
+        if (action.confirmRequired) {
+            setShowConfirm(true)
+        } else {
+            executeAction()
+        }
+    }, [action, executeAction])
 
     const colorClass = action.style.color || 'propColorDefault'
 
