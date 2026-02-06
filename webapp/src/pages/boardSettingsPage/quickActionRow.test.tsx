@@ -243,7 +243,7 @@ describe('pages/boardSettingsPage/QuickActionRow', () => {
         ))
 
         // Check that the input with {now} placeholder is shown
-        const editable = container.querySelector('Editable')
+        const editable = container.querySelector('.Editable')
         expect(editable).toBeInTheDocument()
     })
 
@@ -265,7 +265,7 @@ describe('pages/boardSettingsPage/QuickActionRow', () => {
         ))
 
         // Check that the input with {current_user} placeholder is shown
-        const editable = container.querySelector('Editable')
+        const editable = container.querySelector('.Editable')
         expect(editable).toBeInTheDocument()
     })
 
