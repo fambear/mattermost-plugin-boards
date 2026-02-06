@@ -73,7 +73,7 @@ func (a *API) handleExecuteQuickAction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get the updated card to return in response
-	card, err := a.app.GetBlock(cardID)
+	card, err := a.app.GetBlockByID(cardID)
 	if err != nil {
 		a.errorResponse(w, r, err)
 		return
