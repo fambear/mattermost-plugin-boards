@@ -129,12 +129,6 @@ const QuickActionConditionRow = (props: Props): JSX.Element => {
         })
     }, [condition, props])
 
-    // Get the display label for the current operator
-    const operatorLabel = useMemo(() => {
-        const operator = availableOperators.find(op => op.value === condition.operator)
-        return operator ? operator.label : condition.operator
-    }, [availableOperators, condition.operator])
-
     // Determine if we should show value input
     const showValueInput = useMemo(() => {
         if (!propertyTemplate) {
