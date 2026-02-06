@@ -52,7 +52,7 @@ type QuickAction struct {
 	Actions         []QuickActionAction    `json:"actions"`
 }
 
-// IsValid validates the QuickAction and returns an error if invalid
+// IsValid validates the QuickAction and returns an error if invalid.
 func (qa *QuickAction) IsValid() error {
 	if qa.ID == "" {
 		return NewErrBadRequest("quick action ID is required")
