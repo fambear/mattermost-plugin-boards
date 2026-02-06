@@ -2,14 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo, useCallback} from 'react'
-import {useIntl} from 'react-intl'
+import {useIntl, IntlShape} from 'react-intl'
 
 import {Board, IPropertyTemplate} from '../../blocks/board'
 import {QuickActionCondition, QuickActionConditionOperator} from '../../blocks/quickAction'
 import Button from '../../widgets/buttons/button'
 import Menu from '../../widgets/menu'
 import MenuWrapper from '../../widgets/menuWrapper'
-import {OctoUtils} from '../../octoUtils'
 import propsRegistry from '../../properties'
 import Editable from '../../widgets/editable'
 
