@@ -88,7 +88,7 @@ const QuickActionsSection = (props: Props): JSX.Element => {
                             expandedActionId === action.id ? null : action.id
                         )}
                         onUpdate={handleUpdate}
-                        onDelete={handleDelete}
+                        onDelete={() => handleDelete(action.id)}
                     />
                 ))}
             </div>

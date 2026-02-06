@@ -233,7 +233,8 @@ describe('pages/boardSettingsPage/QuickActionEditor', () => {
         const iconButton = container.querySelector('.IconButton')
         expect(iconButton).toBeInTheDocument()
         // Should show collapse icon (chevron right) when collapsed
-        expect(iconButton?.querySelector('svg')).toBeInTheDocument()
+        expect(iconButton?.querySelector('.CompassIcon')).toBeInTheDocument()
+        expect(iconButton?.querySelector('.icon-chevron-right')).toBeInTheDocument()
     })
 
     test('should render collapse icon when expanded', () => {
@@ -251,7 +252,8 @@ describe('pages/boardSettingsPage/QuickActionEditor', () => {
         const iconButton = container.querySelector('.IconButton')
         expect(iconButton).toBeInTheDocument()
         // Should show expand icon (chevron down) when expanded
-        expect(iconButton?.querySelector('svg')).toBeInTheDocument()
+        expect(iconButton?.querySelector('.CompassIcon')).toBeInTheDocument()
+        expect(iconButton?.querySelector('.icon-chevron-down')).toBeInTheDocument()
     })
 
     test('should render QuickActionConditionBuilder when expanded', () => {
