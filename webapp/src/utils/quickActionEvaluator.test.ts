@@ -2,14 +2,32 @@
 // See LICENSE.txt for license information.
 
 import {TestBlockFactory} from '../test/testBlockFactory'
+import {Board, IPropertyTemplate} from '../blocks/board'
 
 import {QuickActionCondition} from '../blocks/quickAction'
 
 import {evaluateConditions} from './quickActionEvaluator'
 
 describe('quickActionEvaluator', () => {
-    const board = TestBlockFactory.createBoard()
+    let board: Board
     const currentUserId = 'user-id-1'
+
+    beforeEach(() => {
+        board = TestBlockFactory.createBoard()
+
+        // Add property templates that tests will use
+        const propertyTemplates: IPropertyTemplate[] = [
+            {id: 'status-prop-id', name: 'Status', type: 'select', options: []},
+            {id: 'priority-prop-id', name: 'Priority', type: 'select', options: []},
+            {id: 'assignee-prop-id', name: 'Assignee', type: 'person', options: []},
+            {id: 'checkbox-prop-id', name: 'Checkbox', type: 'checkbox', options: []},
+            {id: 'count-prop-id', name: 'Count', type: 'number', options: []},
+            {id: 'text-prop-id', name: 'Text', type: 'text', options: []},
+            {id: 'tags-prop-id', name: 'Tags', type: 'multiSelect', options: []},
+        ]
+
+        board.cardProperties.push(...propertyTemplates)
+    })
 
     describe('evaluateConditions', () => {
         test('should return true when there are no conditions', () => {
