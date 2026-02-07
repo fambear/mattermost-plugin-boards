@@ -1,9 +1,8 @@
 // Copyright (c) 2020-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState, useCallback, useMemo} from 'react'
+import React, {useState, useCallback, useMemo, useEffect} from 'react'
 import {useIntl} from 'react-intl'
-import {DateUtils} from 'react-day-picker'
 import DayPicker from 'react-day-picker/DayPicker'
 import MomentLocaleUtils from 'react-day-picker/moment'
 import moment from 'moment'
@@ -37,6 +36,21 @@ const QuickActionDatePicker = (props: Props): JSX.Element => {
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(dateValue)
     const [hours, setHours] = useState<string>(dateValue ? dateValue.getHours().toString().padStart(2, '0') : '12')
     const [minutes, setMinutes] = useState<string>(dateValue ? dateValue.getMinutes().toString().padStart(2, '0') : '00')
+
+    // Sync internal state when value prop changes
+    useEffect(() => {
+        if (isNowVariable) {
+            setSelectedDate(undefined)
+            setHours('12')
+            setMinutes('00')
+        } else if (dateValue) {
+            setSelectedDate(dateValue)
+            setHours(dateValue.getHours().toString().padStart(2, '0'))
+            setMinutes(dateValue.getMinutes().toString().padStart(2, '0'))
+        } else {
+            setSelectedDate(undefined)
+        }
+    }, [value])
 
     const locale = intl.locale.toLowerCase()
     if (locale && locale !== 'en' && !loadedLocales[locale]) {

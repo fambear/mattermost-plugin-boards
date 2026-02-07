@@ -6,14 +6,15 @@ import {useIntl} from 'react-intl'
 import {MultiValue, ActionMeta} from 'react-select'
 
 import {Board, IPropertyTemplate} from '../../blocks/board'
-import {IUser} from '../../user'
-import PersonSelector from '../../components/personSelector'
-import QuickActionDatePicker from './quickActionDatePicker'
 import {QuickActionCondition, QuickActionConditionOperator} from '../../blocks/quickAction'
+import PersonSelector from '../../components/personSelector'
+import {IUser} from '../../user'
 import Button from '../../widgets/buttons/button'
+import Editable from '../../widgets/editable'
 import Menu from '../../widgets/menu'
 import MenuWrapper from '../../widgets/menuWrapper'
-import Editable from '../../widgets/editable'
+
+import QuickActionDatePicker from './quickActionDatePicker'
 
 import './quickActionConditionRow.scss'
 
@@ -328,25 +329,56 @@ const QuickActionConditionValueInput = (props: ValueInputProps): JSX.Element | n
 
     // For person types, show person selector with {current_user} option
     if (['person', 'multiPerson', 'createdBy', 'updatedBy'].includes(propertyTemplate.type)) {
-        const isMulti = propertyTemplate.type === 'multiPerson'
+        const hasCurrentUser = values.includes('{current_user}')
+        const userIDs = values.filter((v) => v !== '{current_user}')
+
         return (
-            <PersonSelector
-                userIDs={values}
-                allowAddUsers={false}
-                isMulti={isMulti}
-                readOnly={false}
-                emptyDisplayValue={intl.formatMessage({id: 'ConfirmPerson.search', defaultMessage: 'Search...'})}
-                showMe={true}
-                closeMenuOnSelect={!isMulti}
-                onChange={(items: MultiValue<IUser>, action: ActionMeta<IUser>) => {
-                    if (action.action === 'select-option' || action.action === 'remove-value') {
-                        const newValues = Array.isArray(items) ? items.map((u) => u.id) : items ? [items.id] : []
-                        props.onChange(newValues)
-                    } else if (action.action === 'clear') {
-                        props.onChange([])
-                    }
-                }}
-            />
+            <div className='QuickActionConditionRow__person-container'>
+                {hasCurrentUser && (
+                    <div className='QuickActionConditionRow__current-user-tag'>
+                        <span>{intl.formatMessage({id: 'QuickActionConditionRow.currentUser', defaultMessage: '{current_user}'})}</span>
+                        <button
+                            type='button'
+                            className='QuickActionConditionRow__remove-tag'
+                            onClick={() => props.onChange(userIDs)}
+                        >
+                            {'×'}
+                        </button>
+                    </div>
+                )}
+                <PersonSelector
+                    userIDs={userIDs}
+                    allowAddUsers={false}
+                    isMulti={true}
+                    readOnly={false}
+                    emptyDisplayValue={intl.formatMessage({id: 'ConfirmPerson.search', defaultMessage: 'Search...'})}
+                    showMe={true}
+                    closeMenuOnSelect={false}
+                    onChange={(items: MultiValue<IUser>, action: ActionMeta<IUser>) => {
+                        // Handle all selection/removal actions
+                        if (action.action === 'select-option' || action.action === 'remove-value' ||
+                            action.action === 'pop-value' || action.action === 'deselect-option') {
+                            const newUserIDs = Array.isArray(items) ? items.map((u) => u.id) : items ? [items.id] : []
+                            // Preserve {current_user} if it was selected
+                            const newValues = hasCurrentUser ? ['{current_user}', ...newUserIDs] : newUserIDs
+                            props.onChange(newValues)
+                        } else if (action.action === 'clear') {
+                            // Preserve {current_user} on clear
+                            props.onChange(hasCurrentUser ? ['{current_user}'] : [])
+                        }
+                    }}
+                />
+                {!hasCurrentUser && (
+                    <Button
+                        emphasis='tertiary'
+                        size='small'
+                        onClick={() => props.onChange(['{current_user}', ...values])}
+                        title={intl.formatMessage({id: 'QuickActionConditionRow.useCurrentUser', defaultMessage: 'Match the user who triggers the action'})}
+                    >
+                        {intl.formatMessage({id: 'QuickActionConditionRow.addCurrentUser', defaultMessage: '+ {current_user}'})}
+                    </Button>
+                )}
+            </div>
         )
     }
 
