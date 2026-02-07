@@ -3,8 +3,11 @@
 
 import React, {useMemo, useCallback} from 'react'
 import {useIntl} from 'react-intl'
+import {MultiValue, ActionMeta} from 'react-select'
 
 import {Board, IPropertyTemplate} from '../../blocks/board'
+import {IUser} from '../../user'
+import PersonSelector from '../../components/personSelector'
 import {QuickActionCondition, QuickActionConditionOperator} from '../../blocks/quickAction'
 import Button from '../../widgets/buttons/button'
 import Menu from '../../widgets/menu'
@@ -324,15 +327,26 @@ const QuickActionConditionValueInput = (props: ValueInputProps): JSX.Element | n
         )
     }
 
-    // For person types, show {current_user} hint
+    // For person types, show person selector with {current_user} option
     if (['person', 'multiPerson', 'createdBy', 'updatedBy'].includes(propertyTemplate.type)) {
+        const isMulti = propertyTemplate.type === 'multiPerson'
         return (
-            <Editable
-                value={values[0] || ''}
-                placeholderText={'{current_user}'}
-                onChange={(v) => handleChange(v)}
-                onSave={() => handleChange(values[0] || '')}
-                saveOnEsc={true}
+            <PersonSelector
+                userIDs={values}
+                allowAddUsers={false}
+                isMulti={isMulti}
+                readOnly={false}
+                emptyDisplayValue={intl.formatMessage({id: 'ConfirmPerson.search', defaultMessage: 'Search...'})}
+                showMe={true}
+                closeMenuOnSelect={!isMulti}
+                onChange={(items: MultiValue<IUser>, action: ActionMeta<IUser>) => {
+                    if (action.action === 'select-option' || action.action === 'remove-value') {
+                        const newValues = Array.isArray(items) ? items.map((u) => u.id) : items ? [items.id] : []
+                        props.onChange(newValues)
+                    } else if (action.action === 'clear') {
+                        props.onChange([])
+                    }
+                }}
             />
         )
     }
