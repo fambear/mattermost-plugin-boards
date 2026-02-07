@@ -5,10 +5,10 @@ import '@testing-library/jest-dom'
 import {act, render, screen} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
+import {Provider as ReduxProvider} from 'react-redux'
 
 import {TestBlockFactory} from '../../test/testBlockFactory'
 import {mockDOM, wrapIntl, mockStateStore} from '../../testUtils'
-import {Provider as ReduxProvider} from 'react-redux'
 
 import QuickActionRow from './quickActionRow'
 
