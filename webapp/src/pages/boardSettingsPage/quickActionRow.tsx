@@ -3,8 +3,11 @@
 
 import React, {useCallback, useMemo} from 'react'
 import {useIntl} from 'react-intl'
+import {MultiValue, ActionMeta} from 'react-select'
 
 import {Board, IPropertyTemplate} from '../../blocks/board'
+import {IUser} from '../../user'
+import PersonSelector from '../../components/personSelector'
 import {QuickActionAction, QuickActionActionType} from '../../blocks/quickAction'
 import Button from '../../widgets/buttons/button'
 import Menu from '../../widgets/menu'
@@ -213,15 +216,36 @@ const QuickActionValueInput = (props: ValueInputProps): JSX.Element | null => {
         )
     }
 
-    // For person types, show placeholder {current_user}
+    // For person types, show person selector
     if (['person', 'multiPerson', 'createdBy', 'updatedBy'].includes(propertyTemplate.type)) {
+        const isMulti = propertyTemplate.type === 'multiPerson'
+        // For single person, value is a user ID string
+        // For multiPerson, value is JSON array of user IDs
+        const userIDs = isMulti && value ? JSON.parse(value) : (value ? [value] : [])
+
         return (
-            <Editable
-                value={value}
-                placeholderText={'{current_user}'}
-                onChange={handleChange}
-                onSave={() => handleChange(value)}
-                saveOnEsc={true}
+            <PersonSelector
+                userIDs={userIDs}
+                allowAddUsers={false}
+                isMulti={isMulti}
+                readOnly={false}
+                emptyDisplayValue={intl.formatMessage({id: 'ConfirmPerson.search', defaultMessage: 'Search...'})}
+                showMe={true}
+                closeMenuOnSelect={!isMulti}
+                onChange={(items: MultiValue<IUser>, action: ActionMeta<IUser>) => {
+                    if (action.action === 'select-option' || action.action === 'remove-value') {
+                        if (isMulti) {
+                            const newValues = Array.isArray(items) ? items.map((u) => u.id) : []
+                            handleChange(JSON.stringify(newValues))
+                        } else {
+                            // Single person — store just the ID
+                            const selected = Array.isArray(items) ? items[0] : items
+                            handleChange(selected ? selected.id : '')
+                        }
+                    } else if (action.action === 'clear') {
+                        handleChange(isMulti ? '[]' : '')
+                    }
+                }}
             />
         )
     }
