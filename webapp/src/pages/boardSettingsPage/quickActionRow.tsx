@@ -8,6 +8,7 @@ import {MultiValue, ActionMeta} from 'react-select'
 import {Board, IPropertyTemplate} from '../../blocks/board'
 import {IUser} from '../../user'
 import PersonSelector from '../../components/personSelector'
+import QuickActionDatePicker from './quickActionDatePicker'
 import {QuickActionAction, QuickActionActionType} from '../../blocks/quickAction'
 import Button from '../../widgets/buttons/button'
 import Menu from '../../widgets/menu'
@@ -180,15 +181,13 @@ const QuickActionValueInput = (props: ValueInputProps): JSX.Element | null => {
         )
     }
 
-    // For date types, show placeholder {now}
+    // For date types, show date picker with {now} option
     if (['date', 'createdTime', 'updatedTime'].includes(propertyTemplate.type)) {
         return (
-            <Editable
+            <QuickActionDatePicker
                 value={value}
-                placeholderText={'{now}'}
                 onChange={handleChange}
-                onSave={() => handleChange(value)}
-                saveOnEsc={true}
+                includeTime={propertyTemplate.type !== 'date'}
             />
         )
     }

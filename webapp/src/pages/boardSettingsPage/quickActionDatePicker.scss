@@ -1,0 +1,57 @@
+.QuickActionDatePicker {
+    &__button {
+        min-width: 150px;
+        text-align: left;
+        justify-content: flex-start;
+    }
+
+    &__modal {
+        padding: 16px;
+        min-width: 300px;
+    }
+
+    &__header {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(var(--center-channel-color-rgb), 0.1);
+    }
+
+    &__time {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid rgba(var(--center-channel-color-rgb), 0.1);
+
+        label {
+            font-weight: 500;
+        }
+    }
+
+    &__time-input {
+        width: 50px;
+        padding: 4px 8px;
+        border: 1px solid rgba(var(--center-channel-color-rgb), 0.2);
+        border-radius: 4px;
+        text-align: center;
+        background: rgb(var(--center-channel-bg-rgb));
+        color: rgb(var(--center-channel-color-rgb));
+
+        &:focus {
+            outline: none;
+            border-color: rgb(var(--button-bg-rgb));
+        }
+    }
+
+    &__footer {
+        display: flex;
+        gap: 8px;
+        margin-top: 16px;
+        padding-top: 12px;
+        border-top: 1px solid rgba(var(--center-channel-color-rgb), 0.1);
+        justify-content: flex-end;
+    }
+}
