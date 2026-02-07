@@ -86,12 +86,18 @@ exports[`pages/boardSettingsPage/QuickActionConditionRow should match snapshot f
         </span>
       </button>
     </div>
-    <input
-      class="Editable "
-      placeholder="{now}"
-      title="{now}"
-      value="{now}"
-    />
+    <div
+      class="QuickActionDatePicker"
+    >
+      <button
+        class="Button QuickActionDatePicker__button"
+        type="button"
+      >
+        <span>
+          {now} (current time)
+        </span>
+      </button>
+    </div>
   </div>
 </div>
 `;

@@ -3,13 +3,18 @@
 
 import React, {useCallback, useMemo} from 'react'
 import {useIntl} from 'react-intl'
+import {MultiValue, ActionMeta} from 'react-select'
 
 import {Board, IPropertyTemplate} from '../../blocks/board'
 import {QuickActionAction, QuickActionActionType} from '../../blocks/quickAction'
+import PersonSelector from '../../components/personSelector'
+import {IUser} from '../../user'
 import Button from '../../widgets/buttons/button'
+import Editable from '../../widgets/editable'
 import Menu from '../../widgets/menu'
 import MenuWrapper from '../../widgets/menuWrapper'
-import Editable from '../../widgets/editable'
+
+import QuickActionDatePicker from './quickActionDatePicker'
 
 import './quickActionRow.scss'
 
@@ -177,15 +182,13 @@ const QuickActionValueInput = (props: ValueInputProps): JSX.Element | null => {
         )
     }
 
-    // For date types, show placeholder {now}
+    // For date types, show date picker with {now} option
     if (['date', 'createdTime', 'updatedTime'].includes(propertyTemplate.type)) {
         return (
-            <Editable
+            <QuickActionDatePicker
                 value={value}
-                placeholderText={'{now}'}
                 onChange={handleChange}
-                onSave={() => handleChange(value)}
-                saveOnEsc={true}
+                includeTime={propertyTemplate.type !== 'date'}
             />
         )
     }
@@ -213,16 +216,83 @@ const QuickActionValueInput = (props: ValueInputProps): JSX.Element | null => {
         )
     }
 
-    // For person types, show placeholder {current_user}
+    // For person types, show person selector with {current_user} support
     if (['person', 'multiPerson', 'createdBy', 'updatedBy'].includes(propertyTemplate.type)) {
+        const isMulti = propertyTemplate.type === 'multiPerson'
+        const isCurrentUser = value === '{current_user}'
+
+        // Parse userIDs with defensive handling for legacy/special values
+        let userIDs: string[] = []
+        if (!isCurrentUser && value) {
+            if (isMulti) {
+                try {
+                    const parsed = JSON.parse(value)
+                    userIDs = Array.isArray(parsed) ? parsed : []
+                } catch {
+                    // Legacy non-JSON value, treat as single ID
+                    userIDs = [value]
+                }
+            } else {
+                userIDs = [value]
+            }
+        }
+
+        // Show {current_user} indicator with option to switch to specific user
+        if (isCurrentUser) {
+            return (
+                <div className='QuickActionRow__current-user'>
+                    <span className='QuickActionRow__current-user-label'>
+                        {intl.formatMessage({id: 'QuickActionRow.currentUser', defaultMessage: '{current_user}'})}
+                    </span>
+                    <Button
+                        emphasis='tertiary'
+                        size='small'
+                        onClick={() => handleChange('')}
+                    >
+                        {intl.formatMessage({id: 'QuickActionRow.pickUser', defaultMessage: 'Pick specific user'})}
+                    </Button>
+                </div>
+            )
+        }
+
         return (
-            <Editable
-                value={value}
-                placeholderText={'{current_user}'}
-                onChange={handleChange}
-                onSave={() => handleChange(value)}
-                saveOnEsc={true}
-            />
+            <div className='QuickActionRow__person-container'>
+                <PersonSelector
+                    userIDs={userIDs}
+                    allowAddUsers={false}
+                    isMulti={isMulti}
+                    readOnly={false}
+                    emptyDisplayValue={intl.formatMessage({id: 'ConfirmPerson.search', defaultMessage: 'Search...'})}
+                    showMe={true}
+                    closeMenuOnSelect={!isMulti}
+                    onChange={(items: MultiValue<IUser>, action: ActionMeta<IUser>) => {
+                        // Handle all removal actions
+                        if (action.action === 'select-option' || action.action === 'remove-value' ||
+                            action.action === 'pop-value' || action.action === 'deselect-option') {
+                            if (isMulti) {
+                                const newValues = Array.isArray(items) ? items.map((u) => u.id) : []
+                                handleChange(JSON.stringify(newValues))
+                            } else {
+                                // Single person — store just the ID
+                                const selected = Array.isArray(items) ? items[0] : items
+                                handleChange(selected ? selected.id : '')
+                            }
+                        } else if (action.action === 'clear') {
+                            handleChange(isMulti ? '[]' : '')
+                        }
+                    }}
+                />
+                {!isMulti && (
+                    <Button
+                        emphasis='tertiary'
+                        size='small'
+                        onClick={() => handleChange('{current_user}')}
+                        title={intl.formatMessage({id: 'QuickActionRow.useCurrentUser', defaultMessage: 'Use the user who triggers the action'})}
+                    >
+                        {intl.formatMessage({id: 'QuickActionRow.currentUserBtn', defaultMessage: 'Use {current_user}'})}
+                    </Button>
+                )}
+            </div>
         )
     }
 

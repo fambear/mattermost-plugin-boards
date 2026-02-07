@@ -5,9 +5,10 @@ import '@testing-library/jest-dom'
 import {act, render, screen} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
+import {Provider as ReduxProvider} from 'react-redux'
 
 import {TestBlockFactory} from '../../test/testBlockFactory'
-import {mockDOM, wrapIntl} from '../../testUtils'
+import {mockDOM, wrapIntl, mockStateStore} from '../../testUtils'
 
 import QuickActionRow from './quickActionRow'
 
@@ -225,7 +226,7 @@ describe('pages/boardSettingsPage/QuickActionRow', () => {
         expect(mockOnRemove).toHaveBeenCalledTimes(1)
     })
 
-    test('should show value input with {now} placeholder for date property', () => {
+    test('should show date picker for date property', () => {
         const action = {
             type: 'setProperty' as const,
             propertyId: 'date-prop-id',
@@ -242,31 +243,44 @@ describe('pages/boardSettingsPage/QuickActionRow', () => {
             />,
         ))
 
-        // Check that the input with {now} placeholder is shown
-        const editable = container.querySelector('.Editable')
-        expect(editable).toBeInTheDocument()
+        // Check that the date picker is shown
+        const datePicker = container.querySelector('.QuickActionDatePicker')
+        expect(datePicker).toBeInTheDocument()
     })
 
-    test('should show value input with {current_user} placeholder for person property', () => {
+    test('should show person selector for person property', () => {
         const action = {
             type: 'setProperty' as const,
             propertyId: 'assignee-prop-id',
             value: '',
         }
 
+        const state = {
+            users: {
+                me: {id: 'user-1', username: 'testuser'},
+                boardUsers: {},
+            },
+            clientConfig: {
+                value: {},
+            },
+        }
+        const store = mockStateStore([], state)
+
         const {container} = render(wrapIntl(
-            <QuickActionRow
-                action={action}
-                board={board}
-                onChange={mockOnChange}
-                onRemove={mockOnRemove}
-                showRemove={false}
-            />,
+            <ReduxProvider store={store}>
+                <QuickActionRow
+                    action={action}
+                    board={board}
+                    onChange={mockOnChange}
+                    onRemove={mockOnRemove}
+                    showRemove={false}
+                />
+            </ReduxProvider>,
         ))
 
-        // Check that the input with {current_user} placeholder is shown
-        const editable = container.querySelector('.Editable')
-        expect(editable).toBeInTheDocument()
+        // Check that the person selector container is shown
+        const personContainer = container.querySelector('.QuickActionRow__person-container')
+        expect(personContainer).toBeInTheDocument()
     })
 
     test('should show comment text input for addComment action', () => {

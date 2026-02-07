@@ -17,4 +17,26 @@
         min-width: 140px;
         text-align: left;
     }
+
+    &__person-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    &__current-user {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    &__current-user-label {
+        padding: 4px 8px;
+        background: rgba(var(--link-color-rgb), 0.1);
+        color: rgb(var(--link-color-rgb));
+        border-radius: 4px;
+        font-size: 12px;
+        font-family: monospace;
+    }
 }
