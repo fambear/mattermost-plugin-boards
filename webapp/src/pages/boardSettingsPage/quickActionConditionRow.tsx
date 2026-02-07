@@ -358,7 +358,7 @@ const QuickActionConditionValueInput = (props: ValueInputProps): JSX.Element | n
                         // Handle all selection/removal actions
                         if (action.action === 'select-option' || action.action === 'remove-value' ||
                             action.action === 'pop-value' || action.action === 'deselect-option') {
-                            const newUserIDs = Array.isArray(items) ? items.map((u) => u.id) : items ? [items.id] : []
+                            const newUserIDs = items.map((u) => u.id)
                             // Preserve {current_user} if it was selected
                             const newValues = hasCurrentUser ? ['{current_user}', ...newUserIDs] : newUserIDs
                             props.onChange(newValues)
