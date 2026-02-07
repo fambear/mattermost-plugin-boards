@@ -7,8 +7,9 @@ import userEvent from '@testing-library/user-event'
 import React from 'react'
 
 import {TestBlockFactory} from '../../test/testBlockFactory'
-import {mockDOM, wrapIntl} from '../../testUtils'
+import {mockDOM, wrapIntl, mockStateStore} from '../../testUtils'
 import {QuickActionCondition} from '../../blocks/quickAction'
+import {Provider as ReduxProvider} from 'react-redux'
 
 import QuickActionConditionRow from './quickActionConditionRow'
 
@@ -309,31 +310,44 @@ describe('pages/boardSettingsPage/QuickActionConditionRow', () => {
             />,
         ))
 
-        // Should have editable input for date
-        const editables = container.querySelectorAll('.Editable')
-        expect(editables.length).toBeGreaterThan(0)
+        // Should have date picker for date
+        const datePicker = container.querySelector('.QuickActionDatePicker')
+        expect(datePicker).toBeInTheDocument()
     })
 
-    test('should show person input with {current_user} placeholder', () => {
+    test('should show person selector with {current_user} option', () => {
         const condition: QuickActionCondition = {
             propertyId: 'assignee-prop-id',
             operator: 'in',
             values: [],
         }
 
+        const state = {
+            users: {
+                me: {id: 'user-1', username: 'testuser'},
+                boardUsers: {},
+            },
+            clientConfig: {
+                value: {},
+            },
+        }
+        const store = mockStateStore([], state)
+
         const {container} = render(wrapIntl(
-            <QuickActionConditionRow
-                condition={condition}
-                board={board}
-                isFirstRow={false}
-                onChange={mockOnChange}
-                onRemove={mockOnRemove}
-            />,
+            <ReduxProvider store={store}>
+                <QuickActionConditionRow
+                    condition={condition}
+                    board={board}
+                    isFirstRow={false}
+                    onChange={mockOnChange}
+                    onRemove={mockOnRemove}
+                />
+            </ReduxProvider>,
         ))
 
-        // Should have editable input for person
-        const editables = container.querySelectorAll('.Editable')
-        expect(editables.length).toBeGreaterThan(0)
+        // Should have person container
+        const personContainer = container.querySelector('.QuickActionConditionRow__person-container')
+        expect(personContainer).toBeInTheDocument()
     })
 
     test('should not show value input for checked operator on checkbox', () => {
