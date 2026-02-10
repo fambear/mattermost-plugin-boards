@@ -181,6 +181,33 @@
     }
 }
 
+// Force avatar size everywhere
+.BotWhitelistManager img,
+.BotSelect img,
+.BotSelect__option img,
+.BotSelect__multi-value img,
+.BotSelect__multi-value__label img {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    max-width: 24px !important;
+    min-height: 24px !important;
+    max-height: 24px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    flex-shrink: 0 !important;
+}
+
+.BotSelect__multi-value img,
+.BotSelect__multi-value__label img {
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px !important;
+    max-width: 18px !important;
+    min-height: 18px !important;
+    max-height: 18px !important;
+}
+
 // React-select overrides
 .BotSelect {
     &__control {
