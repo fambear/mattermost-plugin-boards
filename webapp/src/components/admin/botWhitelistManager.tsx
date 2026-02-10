@@ -55,11 +55,24 @@ const BotAvatar: React.FC<{userId: string; alt: string; small?: boolean}> = ({us
         }
     }
 
+    const size = small ? 18 : 24
+    
     return (
         <img
             src={useFallback ? FALLBACK_AVATAR : getAvatarUrl(userId)}
             alt={alt}
             className={`BotWhitelistManager__avatar${small ? ' BotWhitelistManager__avatar--small' : ''}`}
+            style={{
+                width: size,
+                height: size,
+                minWidth: size,
+                maxWidth: size,
+                minHeight: size,
+                maxHeight: size,
+                borderRadius: '50%',
+                objectFit: 'cover',
+                flexShrink: 0,
+            }}
             onError={handleError}
         />
     )
