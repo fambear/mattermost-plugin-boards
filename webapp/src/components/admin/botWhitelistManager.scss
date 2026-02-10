@@ -97,16 +97,24 @@
 
     // Avatar styles
     &__avatar {
-        width: 24px;
-        height: 24px;
+        width: 24px !important;
+        height: 24px !important;
+        min-width: 24px;
+        max-width: 24px;
+        min-height: 24px;
+        max-height: 24px;
         border-radius: 50%;
         object-fit: cover;
         flex-shrink: 0;
         background: rgba(var(--center-channel-color-rgb), 0.08);
 
         &--small {
-            width: 18px;
-            height: 18px;
+            width: 18px !important;
+            height: 18px !important;
+            min-width: 18px;
+            max-width: 18px;
+            min-height: 18px;
+            max-height: 18px;
         }
     }
 
@@ -116,6 +124,15 @@
         align-items: center;
         gap: 10px;
         padding: 2px 0;
+
+        img {
+            width: 24px !important;
+            height: 24px !important;
+            min-width: 24px;
+            max-width: 24px;
+            min-height: 24px;
+            max-height: 24px;
+        }
     }
 
     &__option-name {

@@ -4,7 +4,6 @@
 import React, {useState, useEffect, useMemo, useRef} from 'react'
 import Select, {MultiValue, components, OptionProps, MultiValueGenericProps} from 'react-select'
 
-import octoClient from '../../octoClient'
 import {IUser} from '../../user'
 
 import './botWhitelistManager.scss'
@@ -117,15 +116,36 @@ const BotWhitelistManager = (props: Props) => {
             setLoading(true)
             setError('')
             
-            const allUsers = await octoClient.getTeamUsers(false)
+            // Use Mattermost API directly to get ALL bots in the system
+            // (Boards API only returns users who have interacted with Boards)
+            const siteUrl = (window as any).mm_config?.SiteURL || window.location.origin
+            const response = await fetch(`${siteUrl}/api/v4/users?per_page=200`, {
+                credentials: 'include',
+            })
             
-            if (allUsers.length === 0) {
-                setError('Could not load users. This may happen if accessed outside of a team context.')
+            if (!response.ok) {
+                setError('Could not load users. Please check your permissions.')
                 setBots([])
                 return
             }
             
-            const botUsers = allUsers.filter((user: IUser) => user.is_bot)
+            const allUsers = await response.json()
+            
+            if (!Array.isArray(allUsers) || allUsers.length === 0) {
+                setError('Could not load users.')
+                setBots([])
+                return
+            }
+            
+            // Filter to only bots and map to IUser format
+            const botUsers: IUser[] = allUsers
+                .filter((user: any) => user.is_bot === true)
+                .map((user: any) => ({
+                    id: user.id,
+                    username: user.username,
+                    is_bot: true,
+                } as IUser))
+            
             setBots(botUsers)
             
             // Identify any saved bot IDs that are not in the current bot list
