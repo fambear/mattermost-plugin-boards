@@ -133,6 +133,34 @@
             font-size: 12px;
             font-weight: 500;
         }
+
+        &--unknown {
+            opacity: 0.6;
+        }
+    }
+
+    // Unknown bot badge
+    &__unknown-badge {
+        font-size: 11px;
+        color: rgba(var(--center-channel-color-rgb), 0.56);
+        font-style: italic;
+        margin-left: 4px;
+    }
+
+    // Option styling for unknown bots
+    &__option--unknown {
+        opacity: 0.7;
+    }
+
+    // Warning message for unknown bots
+    &__warning {
+        padding: 8px 12px;
+        background-color: rgba(var(--away-indicator-rgb), 0.1);
+        border: 1px solid rgba(var(--away-indicator-rgb), 0.3);
+        border-radius: 4px;
+        color: var(--center-channel-color);
+        font-size: 12px;
+        margin-top: 8px;
     }
 }
 

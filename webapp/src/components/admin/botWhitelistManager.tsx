@@ -1,7 +1,7 @@
 // Copyright (c) 2020-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState, useEffect, useMemo} from 'react'
+import React, {useState, useEffect, useMemo, useRef} from 'react'
 import Select, {MultiValue, components, OptionProps, MultiValueGenericProps} from 'react-select'
 
 import octoClient from '../../octoClient'
@@ -28,13 +28,42 @@ interface BotOption {
     value: string
     label: string
     user: IUser
+    isUnknown?: boolean  // For bots that exist in saved config but not in current team
 }
+
+// Properly URL-encoded fallback SVG for bot avatar
+const FALLBACK_AVATAR = 'data:image/svg+xml,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#666">' +
+    '<path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7v1h1a1 1 0 110 2h-1v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1H2a1 1 0 110-2h1v-1a7 7 0 017-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 012-2zM7.5 13a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm9 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3z"/>' +
+    '</svg>'
+)
 
 // Get avatar URL for a user
 const getAvatarUrl = (userId: string): string => {
-    // Use Mattermost API to get user avatar
     const siteUrl = (window as any).mm_config?.SiteURL || window.location.origin
     return `${siteUrl}/api/v4/users/${userId}/image?_=0`
+}
+
+// Avatar component with safe error handling (prevents infinite loop)
+const BotAvatar: React.FC<{userId: string; alt: string; small?: boolean}> = ({userId, alt, small}) => {
+    const [useFallback, setUseFallback] = useState(false)
+    const errorHandled = useRef(false)
+
+    const handleError = () => {
+        if (!errorHandled.current) {
+            errorHandled.current = true
+            setUseFallback(true)
+        }
+    }
+
+    return (
+        <img
+            src={useFallback ? FALLBACK_AVATAR : getAvatarUrl(userId)}
+            alt={alt}
+            className={`BotWhitelistManager__avatar${small ? ' BotWhitelistManager__avatar--small' : ''}`}
+            onError={handleError}
+        />
+    )
 }
 
 // Custom option component with avatar
@@ -42,17 +71,12 @@ const BotOption = (props: OptionProps<BotOption, true>) => {
     const {data} = props
     return (
         <components.Option {...props}>
-            <div className='BotWhitelistManager__option'>
-                <img
-                    src={getAvatarUrl(data.user.id)}
-                    alt={data.label}
-                    className='BotWhitelistManager__avatar'
-                    onError={(e) => {
-                        // Fallback to default bot icon on error
-                        (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666"><path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7v1h1a1 1 0 110 2h-1v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1H2a1 1 0 110-2h1v-1a7 7 0 017-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 012-2zM7.5 13a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm9 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3z"/></svg>'
-                    }}
-                />
-                <span className='BotWhitelistManager__option-name'>@{data.label}</span>
+            <div className={`BotWhitelistManager__option${data.isUnknown ? ' BotWhitelistManager__option--unknown' : ''}`}>
+                <BotAvatar userId={data.user.id} alt={data.label} />
+                <span className='BotWhitelistManager__option-name'>
+                    @{data.label}
+                    {data.isUnknown && <span className='BotWhitelistManager__unknown-badge'>(unavailable)</span>}
+                </span>
             </div>
         </components.Option>
     )
@@ -63,15 +87,8 @@ const BotMultiValueLabel = (props: MultiValueGenericProps<BotOption, true>) => {
     const {data} = props
     return (
         <components.MultiValueLabel {...props}>
-            <div className='BotWhitelistManager__selected-bot'>
-                <img
-                    src={getAvatarUrl(data.user.id)}
-                    alt={data.label}
-                    className='BotWhitelistManager__avatar BotWhitelistManager__avatar--small'
-                    onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666"><path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7v1h1a1 1 0 110 2h-1v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1H2a1 1 0 110-2h1v-1a7 7 0 017-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 012-2zM7.5 13a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm9 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3z"/></svg>'
-                    }}
-                />
+            <div className={`BotWhitelistManager__selected-bot${data.isUnknown ? ' BotWhitelistManager__selected-bot--unknown' : ''}`}>
+                <BotAvatar userId={data.user.id} alt={data.label} small />
                 <span>@{data.label}</span>
             </div>
         </components.MultiValueLabel>
@@ -83,6 +100,9 @@ const BotWhitelistManager = (props: Props) => {
     const [selectedBotIDs, setSelectedBotIDs] = useState<string[]>(props.value || [])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
+    
+    // Track IDs that were in saved config but not found in current bot list
+    const [unknownBotIDs, setUnknownBotIDs] = useState<string[]>([])
 
     useEffect(() => {
         loadBots()
@@ -107,6 +127,12 @@ const BotWhitelistManager = (props: Props) => {
             
             const botUsers = allUsers.filter((user: IUser) => user.is_bot)
             setBots(botUsers)
+            
+            // Identify any saved bot IDs that are not in the current bot list
+            const currentBotIDs = new Set(botUsers.map((b: IUser) => b.id))
+            const savedIDs = props.value || []
+            const unknown = savedIDs.filter(id => !currentBotIDs.has(id))
+            setUnknownBotIDs(unknown)
         } catch (err) {
             setError('Failed to load bots. Please try again.')
             console.error('Error loading bots:', err)
@@ -115,14 +141,25 @@ const BotWhitelistManager = (props: Props) => {
         }
     }
 
-    // Convert bots to react-select options
+    // Convert bots to react-select options, including unknown bots
     const botOptions: BotOption[] = useMemo(() => {
-        return bots.map(bot => ({
+        const knownOptions = bots.map(bot => ({
             value: bot.id,
             label: bot.username,
             user: bot,
+            isUnknown: false,
         }))
-    }, [bots])
+        
+        // Add placeholder options for unknown bot IDs (preserved from saved config)
+        const unknownOptions = unknownBotIDs.map(id => ({
+            value: id,
+            label: id.substring(0, 8) + '...',  // Show truncated ID as label
+            user: {id, username: id.substring(0, 8) + '...', is_bot: true} as IUser,
+            isUnknown: true,
+        }))
+        
+        return [...knownOptions, ...unknownOptions]
+    }, [bots, unknownBotIDs])
 
     // Get currently selected options
     const selectedOptions: BotOption[] = useMemo(() => {
@@ -130,14 +167,36 @@ const BotWhitelistManager = (props: Props) => {
     }, [botOptions, selectedBotIDs])
 
     const handleChange = (newValue: MultiValue<BotOption>) => {
-        const newSelectedIDs = newValue.map(opt => opt.value)
+        const selectedFromDropdown = newValue.map(opt => opt.value)
+        
+        // Preserve unknown IDs that are still selected (not explicitly removed)
+        // This prevents silent data loss for bots that exist in config but not in current context
+        const preservedUnknownIDs = unknownBotIDs.filter(id => 
+            selectedBotIDs.includes(id) && !newValue.some(opt => opt.value === id && !opt.isUnknown)
+        )
+        
+        // If user explicitly removed an unknown bot, don't preserve it
+        const explicitlyRemovedUnknown = unknownBotIDs.filter(id => 
+            selectedBotIDs.includes(id) && !selectedFromDropdown.includes(id)
+        )
+        
+        const finalUnknownIDs = preservedUnknownIDs.filter(id => !explicitlyRemovedUnknown.includes(id))
+        
+        // Combine: selected known bots + remaining unknown bots (unless explicitly removed)
+        const knownSelectedIDs = selectedFromDropdown.filter(id => !unknownBotIDs.includes(id))
+        const newSelectedIDs = [...knownSelectedIDs, ...finalUnknownIDs.filter(id => selectedFromDropdown.includes(id))]
+        
         setSelectedBotIDs(newSelectedIDs)
         props.onChange(props.id, newSelectedIDs)
         props.setSaveNeeded()
     }
 
     const handleSelectAll = () => {
-        const allBotIDs = bots.map(bot => bot.id)
+        // Select all known bots + preserve selected unknown bots
+        const allKnownBotIDs = bots.map(bot => bot.id)
+        const selectedUnknownIDs = unknownBotIDs.filter(id => selectedBotIDs.includes(id))
+        const allBotIDs = [...allKnownBotIDs, ...selectedUnknownIDs]
+        
         setSelectedBotIDs(allBotIDs)
         props.onChange(props.id, allBotIDs)
         props.setSaveNeeded()
@@ -231,6 +290,12 @@ const BotWhitelistManager = (props: Props) => {
                         closeMenuOnSelect={false}
                         hideSelectedOptions={false}
                     />
+                    
+                    {unknownBotIDs.length > 0 && selectedBotIDs.some(id => unknownBotIDs.includes(id)) && (
+                        <div className='BotWhitelistManager__warning'>
+                            ⚠️ Some selected bots are not available in the current context. They will be preserved until explicitly removed.
+                        </div>
+                    )}
                     
                     <div className='BotWhitelistManager__actions'>
                         <button
