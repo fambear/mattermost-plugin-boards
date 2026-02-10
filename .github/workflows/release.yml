@@ -120,9 +120,20 @@ jobs:
 
     - name: Download plugin artifact from release
       run: |
-        gh release download v${{ steps.version.outputs.version }} \
-          --pattern "boards-${{ steps.version.outputs.version }}.tar.gz" \
-          --dir ./
+        # Retry loop to handle GitHub Release API propagation delay
+        for i in 1 2 3 4 5; do
+          echo "Attempt $i: Downloading artifact..."
+          if gh release download v${{ steps.version.outputs.version }} \
+               --pattern "boards-${{ steps.version.outputs.version }}.tar.gz" \
+               --dir ./; then
+            echo "Download successful!"
+            exit 0
+          fi
+          echo "Download failed, waiting 5 seconds..."
+          sleep 5
+        done
+        echo "All download attempts failed"
+        exit 1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
