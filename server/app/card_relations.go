@@ -29,6 +29,15 @@ func (a *App) CreateCardRelation(relation *model.CardRelation, boardID string) (
 		})
 	}
 
+	// Get the target card for audit logging
+	_, targetCardBlock, err := a.store.GetBoardAndCardByID(relation.TargetCardID)
+	if err == nil && targetCardBlock != nil {
+		targetCard, err := model.Block2Card(targetCardBlock)
+		if err == nil {
+			a.logCardRelationChange(relation.SourceCardID, boardID, relation.CreatedBy, string(relation.RelationType), targetCard, false)
+		}
+	}
+
 	return createdRelation, nil
 }
 
@@ -89,6 +98,15 @@ func (a *App) DeleteCardRelation(relationID string) error {
 			a.wsAdapter.BroadcastCardRelationDelete(board.TeamID, relationID, board.ID)
 			return nil
 		})
+	}
+
+	// Get the target card for audit logging
+	_, targetCardBlock, err := a.store.GetBoardAndCardByID(relation.TargetCardID)
+	if err == nil && targetCardBlock != nil {
+		targetCard, err := model.Block2Card(targetCardBlock)
+		if err == nil {
+			a.logCardRelationChange(relation.SourceCardID, board.ID, relation.CreatedBy, string(relation.RelationType), targetCard, true)
+		}
 	}
 
 	return nil
