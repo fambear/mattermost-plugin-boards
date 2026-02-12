@@ -68,23 +68,12 @@
         flex: 1;
         padding: 24px 32px 100px;
         overflow-y: auto;
+        display: flex;
+        flex-direction: column;
     }
 
-    &__section {
-        margin-bottom: 32px;
-        padding-bottom: 32px;
-        border-bottom: 1px solid rgba(var(--center-channel-color-rgb), 0.08);
-
-        &:last-child {
-            border-bottom: none;
-        }
-
-        h2 {
-            font-size: 18px;
-            font-weight: 600;
-            margin: 0 0 16px 0;
-            color: rgb(var(--center-channel-color-rgb));
-        }
+    &__tab-content {
+        flex: 1;
     }
 
     &__placeholder {

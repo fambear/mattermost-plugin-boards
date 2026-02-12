@@ -1,0 +1,29 @@
+.BoardSettingsTabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid rgba(var(--center-channel-color-rgb), 0.08);
+    margin-bottom: 24px;
+
+    &__tab {
+        padding: 10px 16px;
+        font-size: 14px;
+        font-weight: 600;
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+        color: rgba(var(--center-channel-color-rgb), 0.64);
+        transition: all 100ms ease-out;
+        border-radius: 4px 4px 0 0;
+
+        &:hover {
+            background-color: rgba(var(--center-channel-color-rgb), 0.08);
+            color: rgba(var(--center-channel-color-rgb), 1);
+        }
+
+        &.active {
+            color: rgb(var(--button-bg-rgb));
+            border-bottom-color: rgb(var(--button-bg-rgb));
+        }
+    }
+}
