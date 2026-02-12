@@ -1,0 +1,40 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`components/boardSettingsTabs should render all tabs 1`] = `
+<div>
+  <div
+    class="BoardSettingsTabs"
+  >
+    <button
+      class="BoardSettingsTabs__tab active"
+      type="button"
+    >
+      General
+    </button>
+    <button
+      class="BoardSettingsTabs__tab "
+      type="button"
+    >
+      Views Management
+    </button>
+    <button
+      class="BoardSettingsTabs__tab "
+      type="button"
+    >
+      Card Properties and Options
+    </button>
+    <button
+      class="BoardSettingsTabs__tab "
+      type="button"
+    >
+      Status Transition Rules
+    </button>
+    <button
+      class="BoardSettingsTabs__tab "
+      type="button"
+    >
+      Quick Actions
+    </button>
+  </div>
+</div>
+`;

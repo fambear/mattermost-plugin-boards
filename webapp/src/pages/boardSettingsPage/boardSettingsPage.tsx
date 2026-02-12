@@ -22,6 +22,7 @@ import {Board} from '../../blocks/board'
 import Sidebar from '../../components/sidebar/sidebar'
 import BoardTemplateSelector from '../../components/boardTemplateSelector/boardTemplateSelector'
 
+import BoardSettingsTabs, {TabType} from './boardSettingsTabs'
 import GeneralSection from './generalSection'
 import ViewsSection from './viewsSection'
 import PropertiesSection from './propertiesSection'
@@ -50,6 +51,7 @@ const BoardSettingsPage = (): JSX.Element => {
     // Use route boardId (not currentBoardId) for consistent category resolution
     const category = useAppSelector(getCategoryOfBoard(boardId))
     const [boardTemplateSelectorOpen, setBoardTemplateSelectorOpen] = useState(false)
+    const [activeTab, setActiveTab] = useState<TabType>('general')
 
     // Initialize team and board data (same as BoardPage)
     useEffect(() => {
@@ -229,74 +231,38 @@ const BoardSettingsPage = (): JSX.Element => {
                     </div>
 
                     <div className='BoardSettingsPage__sections'>
-                        {/* Section 1: General (IT-369) */}
-                        <div className='BoardSettingsPage__section'>
-                            <h2>
-                                <FormattedMessage
-                                    id='BoardSettings.general-section'
-                                    defaultMessage='General'
+                        <BoardSettingsTabs activeTab={activeTab} onTabChange={setActiveTab} />
+                        <div className='BoardSettingsPage__tab-content'>
+                            {activeTab === 'general' && (
+                                <GeneralSection
+                                    board={board}
+                                    onBoardChange={handleBoardChange}
                                 />
-                            </h2>
-                            <GeneralSection
-                                board={board}
-                                onBoardChange={handleBoardChange}
-                            />
-                        </div>
-
-                        {/* Section 2: Views Management (IT-370) */}
-                        <div className='BoardSettingsPage__section'>
-                            <h2>
-                                <FormattedMessage
-                                    id='BoardSettings.views-section'
-                                    defaultMessage='Views Management'
+                            )}
+                            {activeTab === 'views' && (
+                                <ViewsSection
+                                    board={board}
+                                    views={views}
+                                    boardUsers={boardUsers}
                                 />
-                            </h2>
-                            <ViewsSection
-                                board={board}
-                                views={views}
-                                boardUsers={boardUsers}
-                            />
-                        </div>
-
-                        {/* Section 3: Card Properties and Options (IT-371) */}
-                        <div className='BoardSettingsPage__section'>
-                            <h2>
-                                <FormattedMessage
-                                    id='BoardSettings.properties-section'
-                                    defaultMessage='Card Properties and Options'
+                            )}
+                            {activeTab === 'properties' && (
+                                <PropertiesSection
+                                    board={board}
+                                    onBoardChange={handleBoardChange}
                                 />
-                            </h2>
-                            <PropertiesSection
-                                board={board}
-                                onBoardChange={handleBoardChange}
-                            />
-                        </div>
-
-                        {/* Section 4: Status Transition Rules (IT-381) */}
-                        <div className='BoardSettingsPage__section'>
-                            <h2>
-                                <FormattedMessage
-                                    id='BoardSettings.status-transition-section'
-                                    defaultMessage='Status Transition Rules'
+                            )}
+                            {activeTab === 'status' && (
+                                <StatusTransitionSection
+                                    board={board}
                                 />
-                            </h2>
-                            <StatusTransitionSection
-                                board={board}
-                            />
-                        </div>
-
-                        {/* Section 5: Quick Actions (IT-468) */}
-                        <div className='BoardSettingsPage__section'>
-                            <h2>
-                                <FormattedMessage
-                                    id='BoardSettings.quick-actions-section'
-                                    defaultMessage='Quick Actions'
+                            )}
+                            {activeTab === 'quickActions' && (
+                                <QuickActionsSection
+                                    board={board}
+                                    onBoardChange={handleBoardChange}
                                 />
-                            </h2>
-                            <QuickActionsSection
-                                board={board}
-                                onBoardChange={handleBoardChange}
-                            />
+                            )}
                         </div>
                     </div>
 
