@@ -61,6 +61,7 @@ const manifestStr = `
         "key": "FigmaPersonalAccessToken",
         "display_name": "Figma Personal Access Token:",
         "type": "text",
+        "secret": true,
         "help_text": "Enter your Figma Personal Access Token for integration with Figma. This token is stored securely and used for accessing Figma API. Learn how to generate a token at https://help.figma.com/hc/en-us/articles/8085703771159-Manage-personal-access-tokens",
         "placeholder": "figd_...",
         "default": "",

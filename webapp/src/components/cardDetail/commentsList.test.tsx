@@ -198,7 +198,7 @@ describe('components/cardDetail/CommentsList', () => {
 
         // Tab bar should be present
         const tabBar = container!.querySelector('.CommentsList__tabs')
-        expect(tabBar).toBeDefined()
+        expect(tabBar).not.toBeNull()
 
         // All three tabs should be present
         const tabs = container!.querySelectorAll('.CommentsList__tab')
@@ -322,7 +322,7 @@ describe('components/cardDetail/CommentsList', () => {
 
         // Comments tab - new comment form should be visible
         let newCommentSection = container!.querySelector('.newcomment')
-        expect(newCommentSection).toBeDefined()
+        expect(newCommentSection).not.toBeNull()
 
         // Switch to Card events tab
         const editsTab = screen.getByText(/Card events/)

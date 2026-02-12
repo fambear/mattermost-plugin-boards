@@ -10,6 +10,7 @@ exports[`components/cardDetail/CommentsList comments show up 1`] = `
     >
       <button
         class="CommentsList__tab active"
+        type="button"
       >
         Comments
         <span
@@ -22,11 +23,13 @@ exports[`components/cardDetail/CommentsList comments show up 1`] = `
       </button>
       <button
         class="CommentsList__tab "
+        type="button"
       >
         Card events
       </button>
       <button
         class="CommentsList__tab "
+        type="button"
       >
         Bot events
       </button>
@@ -191,6 +194,7 @@ exports[`components/cardDetail/CommentsList comments show up in readonly mode 1`
     >
       <button
         class="CommentsList__tab active"
+        type="button"
       >
         Comments
         <span
@@ -203,11 +207,13 @@ exports[`components/cardDetail/CommentsList comments show up in readonly mode 1`
       </button>
       <button
         class="CommentsList__tab "
+        type="button"
       >
         Card events
       </button>
       <button
         class="CommentsList__tab "
+        type="button"
       >
         Bot events
       </button>
