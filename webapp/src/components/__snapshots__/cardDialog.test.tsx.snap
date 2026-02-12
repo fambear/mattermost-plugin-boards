@@ -218,16 +218,19 @@ exports[`components/cardDialog already following card 1`] = `
               >
                 <button
                   class="CommentsList__tab active"
+                  type="button"
                 >
                   Comments
                 </button>
                 <button
                   class="CommentsList__tab "
+                  type="button"
                 >
                   Card events
                 </button>
                 <button
                   class="CommentsList__tab "
+                  type="button"
                 >
                   Bot events
                 </button>
@@ -647,16 +650,19 @@ exports[`components/cardDialog return a cardDialog readonly 1`] = `
               >
                 <button
                   class="CommentsList__tab active"
+                  type="button"
                 >
                   Comments
                 </button>
                 <button
                   class="CommentsList__tab "
+                  type="button"
                 >
                   Card events
                 </button>
                 <button
                   class="CommentsList__tab "
+                  type="button"
                 >
                   Bot events
                 </button>
@@ -1025,16 +1031,19 @@ exports[`components/cardDialog return cardDialog menu content 1`] = `
               >
                 <button
                   class="CommentsList__tab active"
+                  type="button"
                 >
                   Comments
                 </button>
                 <button
                   class="CommentsList__tab "
+                  type="button"
                 >
                   Card events
                 </button>
                 <button
                   class="CommentsList__tab "
+                  type="button"
                 >
                   Bot events
                 </button>
@@ -1286,16 +1295,19 @@ exports[`components/cardDialog return cardDialog menu content and cancel delete 
               >
                 <button
                   class="CommentsList__tab active"
+                  type="button"
                 >
                   Comments
                 </button>
                 <button
                   class="CommentsList__tab "
+                  type="button"
                 >
                   Card events
                 </button>
                 <button
                   class="CommentsList__tab "
+                  type="button"
                 >
                   Bot events
                 </button>
@@ -1547,16 +1559,19 @@ exports[`components/cardDialog should match snapshot 1`] = `
               >
                 <button
                   class="CommentsList__tab active"
+                  type="button"
                 >
                   Comments
                 </button>
                 <button
                   class="CommentsList__tab "
+                  type="button"
                 >
                   Card events
                 </button>
                 <button
                   class="CommentsList__tab "
+                  type="button"
                 >
                   Bot events
                 </button>
@@ -1744,16 +1759,19 @@ exports[`components/cardDialog should match snapshot without permissions 1`] = `
               >
                 <button
                   class="CommentsList__tab active"
+                  type="button"
                 >
                   Comments
                 </button>
                 <button
                   class="CommentsList__tab "
+                  type="button"
                 >
                   Card events
                 </button>
                 <button
                   class="CommentsList__tab "
+                  type="button"
                 >
                   Bot events
                 </button>
