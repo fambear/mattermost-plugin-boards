@@ -57,7 +57,7 @@ describe('components/boardSettingsTabs', () => {
         expect(activeTab).toHaveTextContent('General')
     })
 
-    test('should call onTabChange when a tab is clicked', () => {
+    test('should call onTabChange when a tab is clicked', async () => {
         render(
             wrapIntl(
                 <BoardSettingsTabs {...defaultProps} />,
@@ -65,7 +65,7 @@ describe('components/boardSettingsTabs', () => {
         )
 
         const viewsTab = screen.getByRole('button', {name: 'Views Management'})
-        userEvent.click(viewsTab)
+        await userEvent.click(viewsTab)
 
         expect(mockOnTabChange).toHaveBeenCalledTimes(1)
         expect(mockOnTabChange).toHaveBeenCalledWith('views')
@@ -146,7 +146,7 @@ describe('components/boardSettingsTabs', () => {
         expect(activeTabs.length).toBe(1)
     })
 
-    test('should switch active tab when clicking different tabs', () => {
+    test('should switch active tab when clicking different tabs', async () => {
         const {container} = render(
             wrapIntl(
                 <BoardSettingsTabs {...defaultProps} />,
@@ -159,12 +159,12 @@ describe('components/boardSettingsTabs', () => {
 
         // Click on properties tab
         const propertiesTab = screen.getByRole('button', {name: 'Card Properties and Options'})
-        userEvent.click(propertiesTab)
+        await userEvent.click(propertiesTab)
 
         expect(mockOnTabChange).toHaveBeenCalledWith('properties')
     })
 
-    test('should handle multiple tab clicks in sequence', () => {
+    test('should handle multiple tab clicks in sequence', async () => {
         render(
             wrapIntl(
                 <BoardSettingsTabs {...defaultProps} />,
@@ -174,10 +174,10 @@ describe('components/boardSettingsTabs', () => {
         const statusTab = screen.getByRole('button', {name: 'Status Transition Rules'})
         const quickActionsTab = screen.getByRole('button', {name: 'Quick Actions'})
 
-        userEvent.click(statusTab)
+        await userEvent.click(statusTab)
         expect(mockOnTabChange).toHaveBeenCalledWith('status')
 
-        userEvent.click(quickActionsTab)
+        await userEvent.click(quickActionsTab)
         expect(mockOnTabChange).toHaveBeenCalledWith('quickActions')
 
         expect(mockOnTabChange).toHaveBeenCalledTimes(2)

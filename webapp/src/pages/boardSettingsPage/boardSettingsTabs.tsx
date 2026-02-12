@@ -4,7 +4,9 @@
 import React from 'react'
 import {FormattedMessage} from 'react-intl'
 
-type TabType = 'general' | 'views' | 'properties' | 'status' | 'quickActions'
+import './boardSettingsTabs.scss'
+
+export type TabType = 'general' | 'views' | 'properties' | 'status' | 'quickActions'
 
 type Tab = {
     id: TabType
@@ -31,6 +33,7 @@ const BoardSettingsTabs = ({activeTab, onTabChange}: Props): JSX.Element => {
             {tabs.map((tab) => (
                 <button
                     key={tab.id}
+                    type="button"
                     className={`BoardSettingsTabs__tab ${activeTab === tab.id ? 'active' : ''}`}
                     onClick={() => onTabChange(tab.id)}
                 >

@@ -22,7 +22,7 @@ import {Board} from '../../blocks/board'
 import Sidebar from '../../components/sidebar/sidebar'
 import BoardTemplateSelector from '../../components/boardTemplateSelector/boardTemplateSelector'
 
-import BoardSettingsTabs from './boardSettingsTabs'
+import BoardSettingsTabs, {TabType} from './boardSettingsTabs'
 import GeneralSection from './generalSection'
 import ViewsSection from './viewsSection'
 import PropertiesSection from './propertiesSection'
@@ -31,9 +31,6 @@ import QuickActionsSection from './quickActionsSection'
 import BoardSettingsFooter from './boardSettingsFooter'
 
 import './boardSettingsPage.scss'
-import './boardSettingsTabs.scss'
-
-type TabType = 'general' | 'views' | 'properties' | 'status' | 'quickActions'
 
 const BoardSettingsPage = (): JSX.Element => {
     const history = useHistory()
