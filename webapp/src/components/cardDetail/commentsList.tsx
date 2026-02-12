@@ -218,6 +218,7 @@ const CommentsList = (props: Props) => {
                     return (
                         <button
                             key={tab.type}
+                            type="button"
                             className={`CommentsList__tab ${activeTab === tab.type ? 'active' : ''}`}
                             onClick={() => setActiveTab(tab.type)}
                         >

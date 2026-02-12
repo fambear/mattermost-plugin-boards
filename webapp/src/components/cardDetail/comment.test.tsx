@@ -227,7 +227,7 @@ describe('components/cardDetail/comment', () => {
             ))
 
             const replyButton = container.querySelector('.comment-reply')
-            expect(replyButton).toBeDefined()
+            expect(replyButton).not.toBeNull()
             expect(replyButton?.textContent).toContain('Reply')
         })
 
@@ -354,7 +354,7 @@ describe('components/cardDetail/comment', () => {
             ))
 
             expect(container).toBeDefined()
-            expect(container.querySelector('.comment-reply')).toBeDefined()
+            expect(container.querySelector('.comment-reply')).not.toBeNull()
         })
     })
 })
