@@ -5,7 +5,6 @@ package app
 
 import (
 	"encoding/json"
-	"reflect"
 	"testing"
 	"time"
 
@@ -459,7 +458,7 @@ func TestCreateNewAuditComment(t *testing.T) {
 
 	t.Run("create edits comment for human user", func(t *testing.T) {
 		// Mock block insertion
-		th.Store.EXPECT().InsertBlock(gomock.AssignableToTypeOf(reflect.TypeOf(&model.Block{})), userID).Return(nil)
+		th.Store.EXPECT().InsertBlock(gomock.AssignableToTypeOf(&model.Block{}), userID).Return(nil)
 		// Mock GetBoard and GetMembersForBoard called by InsertBlockAndNotify
 		th.Store.EXPECT().GetBoard(boardID).Return(&model.Board{ID: boardID, TeamID: "team1"}, nil)
 		th.Store.EXPECT().GetMembersForBoard(boardID).Return([]*model.BoardMember{}, nil)
@@ -470,7 +469,7 @@ func TestCreateNewAuditComment(t *testing.T) {
 
 	t.Run("create bot comment for bot user", func(t *testing.T) {
 		// Mock block insertion
-		th.Store.EXPECT().InsertBlock(gomock.AssignableToTypeOf(reflect.TypeOf(&model.Block{})), userID).Return(nil)
+		th.Store.EXPECT().InsertBlock(gomock.AssignableToTypeOf(&model.Block{}), userID).Return(nil)
 		// Mock GetBoard and GetMembersForBoard called by InsertBlockAndNotify
 		th.Store.EXPECT().GetBoard(boardID).Return(&model.Board{ID: boardID, TeamID: "team1"}, nil)
 		th.Store.EXPECT().GetMembersForBoard(boardID).Return([]*model.BoardMember{}, nil)
@@ -716,7 +715,7 @@ func TestDetectAndLogPropertyChanges(t *testing.T) {
 		th.Store.EXPECT().GetBlocksWithParentAndType("", cardID, model.TypeComment).Return([]*model.Block{}, nil)
 
 		// Mock block insertion
-		th.Store.EXPECT().InsertBlock(gomock.AssignableToTypeOf(reflect.TypeOf(&model.Block{})), userID).Return(nil)
+		th.Store.EXPECT().InsertBlock(gomock.AssignableToTypeOf(&model.Block{}), userID).Return(nil)
 		// Mock GetBoard and GetMembersForBoard called by InsertBlockAndNotify
 		th.Store.EXPECT().GetBoard(boardID).Return(&model.Board{ID: boardID, TeamID: "team1"}, nil)
 		th.Store.EXPECT().GetMembersForBoard(boardID).Return([]*model.BoardMember{}, nil)
@@ -745,7 +744,7 @@ func TestDetectAndLogPropertyChanges(t *testing.T) {
 		th.Store.EXPECT().GetBlocksWithParentAndType("", cardID, model.TypeComment).Return([]*model.Block{}, nil)
 
 		// Mock block insertion
-		th.Store.EXPECT().InsertBlock(gomock.AssignableToTypeOf(reflect.TypeOf(&model.Block{})), userID).Return(nil)
+		th.Store.EXPECT().InsertBlock(gomock.AssignableToTypeOf(&model.Block{}), userID).Return(nil)
 		// Mock GetBoard and GetMembersForBoard called by InsertBlockAndNotify
 		th.Store.EXPECT().GetBoard(boardID).Return(&model.Board{ID: boardID, TeamID: "team1"}, nil)
 		th.Store.EXPECT().GetMembersForBoard(boardID).Return([]*model.BoardMember{}, nil)
@@ -808,7 +807,7 @@ func TestLogCardRelationChange(t *testing.T) {
 			ID:    userID,
 			IsBot: false,
 		}, nil)
-		th.Store.EXPECT().InsertBlock(gomock.AssignableToTypeOf(reflect.TypeOf(&model.Block{})), userID).Return(nil)
+		th.Store.EXPECT().InsertBlock(gomock.AssignableToTypeOf(&model.Block{}), userID).Return(nil)
 		// Mock GetBoard and GetMembersForBoard called by InsertBlockAndNotify
 		th.Store.EXPECT().GetBoard(boardID).Return(&model.Board{ID: boardID, TeamID: "team1"}, nil)
 		th.Store.EXPECT().GetMembersForBoard(boardID).Return([]*model.BoardMember{}, nil)
@@ -821,7 +820,7 @@ func TestLogCardRelationChange(t *testing.T) {
 			ID:    userID,
 			IsBot: true,
 		}, nil)
-		th.Store.EXPECT().InsertBlock(gomock.AssignableToTypeOf(reflect.TypeOf(&model.Block{})), userID).Return(nil)
+		th.Store.EXPECT().InsertBlock(gomock.AssignableToTypeOf(&model.Block{}), userID).Return(nil)
 		// Mock GetBoard and GetMembersForBoard called by InsertBlockAndNotify
 		th.Store.EXPECT().GetBoard(boardID).Return(&model.Board{ID: boardID, TeamID: "team1"}, nil)
 		th.Store.EXPECT().GetMembersForBoard(boardID).Return([]*model.BoardMember{}, nil)
@@ -834,7 +833,7 @@ func TestLogCardRelationChange(t *testing.T) {
 			ID:    userID,
 			IsBot: false,
 		}, nil)
-		th.Store.EXPECT().InsertBlock(gomock.AssignableToTypeOf(reflect.TypeOf(&model.Block{})), userID).Return(nil)
+		th.Store.EXPECT().InsertBlock(gomock.AssignableToTypeOf(&model.Block{}), userID).Return(nil)
 		// Mock GetBoard and GetMembersForBoard called by InsertBlockAndNotify
 		th.Store.EXPECT().GetBoard(boardID).Return(&model.Board{ID: boardID, TeamID: "team1"}, nil)
 		th.Store.EXPECT().GetMembersForBoard(boardID).Return([]*model.BoardMember{}, nil)
@@ -853,7 +852,7 @@ func TestLogCardRelationChange(t *testing.T) {
 			ID:    userID,
 			IsBot: false,
 		}, nil)
-		th.Store.EXPECT().InsertBlock(gomock.AssignableToTypeOf(reflect.TypeOf(&model.Block{})), userID).Return(nil).Do(func(block *model.Block, _ string) {
+		th.Store.EXPECT().InsertBlock(gomock.AssignableToTypeOf(&model.Block{}), userID).Return(nil).Do(func(block *model.Block, _ string) {
 			// Verify the title contains the card ID
 			assert.Contains(t, block.Title, relatedCardWithoutCode.ID)
 		})

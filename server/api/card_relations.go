@@ -258,7 +258,7 @@ func (a *API) handleDeleteCardRelation(w http.ResponseWriter, r *http.Request) {
 	auditRec.AddMeta("relationID", relationID)
 
 	// Delete the relation
-	err := a.app.DeleteCardRelation(relationID)
+	err := a.app.DeleteCardRelation(relationID, userID)
 	if err != nil {
 		a.errorResponse(w, r, err)
 		return

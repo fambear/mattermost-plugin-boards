@@ -76,7 +76,7 @@ func (a *App) UpdateCardRelation(relation *model.CardRelation) (*model.CardRelat
 }
 
 // DeleteCardRelation deletes a card relation.
-func (a *App) DeleteCardRelation(relationID string) error {
+func (a *App) DeleteCardRelation(relationID, userID string) error {
 	// Get relation first to broadcast deletion
 	relation, err := a.store.GetCardRelation(relationID)
 	if err != nil {
@@ -100,12 +100,14 @@ func (a *App) DeleteCardRelation(relationID string) error {
 		})
 	}
 
-	// Get the target card for audit logging
-	_, targetCardBlock, err := a.store.GetBoardAndCardByID(relation.TargetCardID)
-	if err == nil && targetCardBlock != nil {
-		targetCard, err := model.Block2Card(targetCardBlock)
-		if err == nil {
-			a.logCardRelationChange(relation.SourceCardID, board.ID, relation.CreatedBy, string(relation.RelationType), targetCard, true)
+	// Get the target card for audit logging (only if board is available)
+	if board != nil {
+		_, targetCardBlock, err := a.store.GetBoardAndCardByID(relation.TargetCardID)
+		if err == nil && targetCardBlock != nil {
+			targetCard, err := model.Block2Card(targetCardBlock)
+			if err == nil {
+				a.logCardRelationChange(relation.SourceCardID, board.ID, userID, string(relation.RelationType), targetCard, true)
+			}
 		}
 	}
 
@@ -113,7 +115,7 @@ func (a *App) DeleteCardRelation(relationID string) error {
 }
 
 // DeleteCardRelationsByCard deletes all relations involving a card.
-func (a *App) DeleteCardRelationsByCard(cardID string) error {
+func (a *App) DeleteCardRelationsByCard(cardID, userID string) error {
 	relations, err := a.store.GetCardRelations(cardID)
 	if err != nil {
 		return err
