@@ -15,6 +15,8 @@ import {TestBlockFactory} from '../../test/testBlockFactory'
 
 import mutator from '../../mutator'
 
+import {CommentType} from '../../blocks/commentBlock'
+
 import {mockMMStore} from '../../../tests/mock_window'
 
 import Comment from './comment'
@@ -200,5 +202,159 @@ describe('components/cardDetail/comment', () => {
         userEvent.click(buttonDelete)
         expect(mockedMutator.deleteBlock).toBeCalledTimes(1)
         expect(mockedMutator.deleteBlock).toBeCalledWith(comment)
+    })
+
+    describe('comment types and reply button', () => {
+        const onReplyMock = jest.fn()
+
+        afterEach(() => {
+            onReplyMock.mockClear()
+        })
+
+        test('reply button is shown for comment type when not readonly and onReply is provided', () => {
+            const {container} = render(wrapIntl(
+                <ReduxProvider store={store}>
+                    <Comment
+                        comment={comment}
+                        userId={comment.modifiedBy}
+                        userImageUrl={userImageUrl}
+                        readonly={false}
+                        canDelete={true}
+                        commentType='comment'
+                        onReply={onReplyMock}
+                    />
+                </ReduxProvider>,
+            ))
+
+            const replyButton = container.querySelector('.comment-reply')
+            expect(replyButton).not.toBeNull()
+            expect(replyButton?.textContent).toContain('Reply')
+        })
+
+        test('reply button is NOT shown for edits type', () => {
+            const editComment = {...comment, id: 'edit_id', fields: {commentType: 'edits' as CommentType}}
+
+            const {container} = render(wrapIntl(
+                <ReduxProvider store={store}>
+                    <Comment
+                        comment={editComment}
+                        userId={comment.modifiedBy}
+                        userImageUrl={userImageUrl}
+                        readonly={false}
+                        canDelete={true}
+                        commentType='edits'
+                        onReply={onReplyMock}
+                    />
+                </ReduxProvider>,
+            ))
+
+            const replyButton = container.querySelector('.comment-reply')
+            expect(replyButton).toBeNull()
+        })
+
+        test('reply button is NOT shown for bot type', () => {
+            const botComment = {...comment, id: 'bot_id', fields: {commentType: 'bot' as CommentType}}
+
+            const {container} = render(wrapIntl(
+                <ReduxProvider store={store}>
+                    <Comment
+                        comment={botComment}
+                        userId={comment.modifiedBy}
+                        userImageUrl={userImageUrl}
+                        readonly={false}
+                        canDelete={true}
+                        commentType='bot'
+                        onReply={onReplyMock}
+                    />
+                </ReduxProvider>,
+            ))
+
+            const replyButton = container.querySelector('.comment-reply')
+            expect(replyButton).toBeNull()
+        })
+
+        test('reply button is NOT shown when readonly', () => {
+            const {container} = render(wrapIntl(
+                <ReduxProvider store={store}>
+                    <Comment
+                        comment={comment}
+                        userId={comment.modifiedBy}
+                        userImageUrl={userImageUrl}
+                        readonly={true}
+                        canDelete={true}
+                        commentType='comment'
+                        onReply={onReplyMock}
+                    />
+                </ReduxProvider>,
+            ))
+
+            const replyButton = container.querySelector('.comment-reply')
+            expect(replyButton).toBeNull()
+        })
+
+        test('reply button is NOT shown when onReply is not provided', () => {
+            const {container} = render(wrapIntl(
+                <ReduxProvider store={store}>
+                    <Comment
+                        comment={comment}
+                        userId={comment.modifiedBy}
+                        userImageUrl={userImageUrl}
+                        readonly={false}
+                        canDelete={true}
+                        commentType='comment'
+                    />
+                </ReduxProvider>,
+            ))
+
+            const replyButton = container.querySelector('.comment-reply')
+            expect(replyButton).toBeNull()
+        })
+
+        test('clicking reply button calls onReply with comment id and quoted text', () => {
+            const commentWithText = {...comment, title: 'This is a comment with multiple lines\nAnd some more content'}
+
+            const {container} = render(wrapIntl(
+                <ReduxProvider store={store}>
+                    <Comment
+                        comment={commentWithText}
+                        userId={comment.modifiedBy}
+                        userImageUrl={userImageUrl}
+                        readonly={false}
+                        canDelete={true}
+                        commentType='comment'
+                        onReply={onReplyMock}
+                    />
+                </ReduxProvider>,
+            ))
+
+            const replyButton = container.querySelector('.comment-reply') as HTMLButtonElement
+            replyButton.click()
+
+            expect(onReplyMock).toHaveBeenCalledTimes(1)
+            expect(onReplyMock).toHaveBeenCalledWith(commentWithText.id, '> This is a comment with multiple lines\n> And some more content')
+        })
+    })
+
+    describe('backward compatibility', () => {
+        test('comment without commentType field works correctly when treated as comment type', () => {
+            const legacyComment = {...comment, fields: {}}
+
+            const {container} = render(wrapIntl(
+                <ReduxProvider store={store}>
+                    <Comment
+                        comment={legacyComment}
+                        userId={comment.modifiedBy}
+                        userImageUrl={userImageUrl}
+                        readonly={false}
+                        canDelete={true}
+                        commentType='comment'
+                        onReply={jest.fn()}
+                    />
+                </ReduxProvider>,
+            ))
+
+            expect(container).toBeDefined()
+            expect(container.querySelector('.comment-reply')).not.toBeNull()
+        })
     })
 })

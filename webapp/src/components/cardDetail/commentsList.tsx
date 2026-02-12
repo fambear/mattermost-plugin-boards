@@ -1,10 +1,10 @@
 // Copyright (c) 2020-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState} from 'react'
+import React, {useState, useMemo} from 'react'
 import {FormattedMessage, useIntl} from 'react-intl'
 
-import {CommentBlock, createCommentBlock} from '../../blocks/commentBlock'
+import {CommentBlock, createCommentBlock, CommentType} from '../../blocks/commentBlock'
 import mutator from '../../mutator'
 import {useAppSelector} from '../../store/hooks'
 import {Utils} from '../../utils'
@@ -72,11 +72,13 @@ type CommentTreeNodeProps = {
     canDeleteOthersComments: boolean
     me: IUser | null
     onReply?: (commentId: string, quotedText: string) => void
+    getCommentType: (comment: CommentBlock) => CommentType
 }
 
-const CommentTreeNode: React.FC<CommentTreeNodeProps> = ({node, level, readonly, canDeleteOthersComments, me, onReply}) => {
+const CommentTreeNode: React.FC<CommentTreeNodeProps> = ({node, level, readonly, canDeleteOthersComments, me, onReply, getCommentType}) => {
     const canDeleteComment = canDeleteOthersComments || me?.id === node.comment.modifiedBy
     const isReply = level > 0
+    const commentType = getCommentType(node.comment)
 
     return (
         <>
@@ -91,6 +93,7 @@ const CommentTreeNode: React.FC<CommentTreeNodeProps> = ({node, level, readonly,
                     userId={node.comment.modifiedBy}
                     readonly={readonly}
                     canDelete={canDeleteComment}
+                    commentType={commentType}
                     onReply={!readonly ? onReply : undefined}
                 />
             </div>
@@ -103,6 +106,7 @@ const CommentTreeNode: React.FC<CommentTreeNodeProps> = ({node, level, readonly,
                     canDeleteOthersComments={canDeleteOthersComments}
                     me={me}
                     onReply={onReply}
+                    getCommentType={getCommentType}
                 />
             ))}
         </>
@@ -112,8 +116,28 @@ const CommentTreeNode: React.FC<CommentTreeNodeProps> = ({node, level, readonly,
 const CommentsList = (props: Props) => {
     const [newComment, setNewComment] = useState('')
     const [replyToCommentId, setReplyToCommentId] = useState<string | null>(null)
+    const [activeTab, setActiveTab] = useState<CommentType>('comment')
     const me = useAppSelector<IUser|null>(getMe)
     const canDeleteOthersComments = useHasCurrentBoardPermissions([Permission.DeleteOthersComments])
+    const intl = useIntl()
+
+    const {comments} = props
+
+    const getCommentType = (comment: CommentBlock): CommentType => {
+        return (comment.fields?.commentType as CommentType | undefined) || 'comment'
+    }
+
+    const counts = useMemo(() => {
+        return comments.reduce((acc, comment) => {
+            const type = getCommentType(comment)
+            acc[type] = (acc[type] || 0) + 1
+            return acc
+        }, {} as Record<CommentType, number>)
+    }, [comments])
+
+    const filteredComments = useMemo(() => {
+        return comments.filter((comment) => getCommentType(comment) === activeTab)
+    }, [comments, activeTab])
 
     const onSendClicked = () => {
         const commentText = newComment
@@ -144,9 +168,6 @@ const CommentsList = (props: Props) => {
         setReplyToCommentId(commentId)
         setNewComment(quotedText + '\n\n')
     }
-
-    const {comments} = props
-    const intl = useIntl()
 
     const newCommentComponent = (
         <div className='CommentsList__new'>
@@ -181,10 +202,38 @@ const CommentsList = (props: Props) => {
     )
 
     // Build comment tree and render with threading
-    const commentTree = buildCommentTree(comments)
+    const commentTree = buildCommentTree(filteredComments)
+
+    const renderTabBar = () => {
+        const tabs: {type: CommentType, label: string, id: string}[] = [
+            {type: 'comment', label: intl.formatMessage({id: 'CommentsList.tab.comments', defaultMessage: 'Comments'}), id: 'comments'},
+            {type: 'edits', label: intl.formatMessage({id: 'CommentsList.tab.cardEvents', defaultMessage: 'Card events'}), id: 'edits'},
+            {type: 'bot', label: intl.formatMessage({id: 'CommentsList.tab.botEvents', defaultMessage: 'Bot events'}), id: 'bot'},
+        ]
+
+        return (
+            <div className='CommentsList__tabs'>
+                {tabs.map((tab) => {
+                    const count = counts[tab.type] || 0
+                    return (
+                        <button
+                            key={tab.type}
+                            type="button"
+                            className={`CommentsList__tab ${activeTab === tab.type ? 'active' : ''}`}
+                            onClick={() => setActiveTab(tab.type)}
+                        >
+                            {tab.label}
+                            {count > 0 && <span className='CommentsList__tab-count'>({count})</span>}
+                        </button>
+                    )
+                })}
+            </div>
+        )
+    }
 
     return (
         <div className='CommentsList'>
+            {renderTabBar()}
             {commentTree.map((node) => (
                 <CommentTreeNode
                     key={node.comment.id}
@@ -194,11 +243,12 @@ const CommentsList = (props: Props) => {
                     canDeleteOthersComments={canDeleteOthersComments}
                     me={me}
                     onReply={handleReply}
+                    getCommentType={getCommentType}
                 />
             ))}
 
             {/* New comment at the bottom */}
-            {!props.readonly && newCommentComponent}
+            {!props.readonly && activeTab === 'comment' && newCommentComponent}
 
             {/* horizontal divider below comments */}
             {!(comments.length === 0 && props.readonly) && <hr className='CommentsList__divider'/>}

@@ -14,11 +14,11 @@ var manifest *model.Manifest
 const manifestStr = `
 {
   "id": "focalboard",
-  "name": "Mattermost Boards",
-  "description": "The Mattermost Boards plugin",
-  "homepage_url": "https://github.com/mattermost/mattermost-plugin-boards",
-  "support_url": "https://github.com/mattermost/mattermost-plugin-boards/issues",
-  "release_notes_url": "https://github.com/mattermost/mattermost-plugin-boards/releases",
+  "name": "FamBear Boards",
+  "description": "The Mattermost Boards plugin (FamBear Edition)",
+  "homepage_url": "https://github.com/fambear/mattermost-plugin-boards",
+  "support_url": "https://github.com/fambear/mattermost-plugin-boards/issues",
+  "release_notes_url": "https://github.com/fambear/mattermost-plugin-boards/releases",
   "icon_path": "assets/starter-template-icon.svg",
   "version": "9.2.2",
   "min_server_version": "10.7.0",
@@ -46,6 +46,34 @@ const manifestStr = `
         "help_text": "This allows board editors to share boards that can be accessed by anyone with the link.",
         "placeholder": "",
         "default": false,
+        "hosting": ""
+      },
+      {
+        "key": "Integrations",
+        "display_name": "Integrations",
+        "type": "header",
+        "help_text": "",
+        "placeholder": "",
+        "default": null,
+        "hosting": ""
+      },
+      {
+        "key": "FigmaPersonalAccessToken",
+        "display_name": "Figma Personal Access Token:",
+        "type": "text",
+        "secret": true,
+        "help_text": "Enter your Figma Personal Access Token for integration with Figma. This token is stored securely and used for accessing Figma API. Learn how to generate a token at https://help.figma.com/hc/en-us/articles/8085703771159-Manage-personal-access-tokens",
+        "placeholder": "figd_...",
+        "default": "",
+        "hosting": ""
+      },
+      {
+        "key": "AllowedBotUserIDs",
+        "display_name": "Bots Allowed as Assignees:",
+        "type": "custom",
+        "help_text": "Select which bots can be assigned to cards in Boards. By default, all bots are excluded from the assignee selector.",
+        "placeholder": "",
+        "default": null,
         "hosting": ""
       }
     ]

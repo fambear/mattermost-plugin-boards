@@ -6,6 +6,35 @@ exports[`components/cardDetail/CommentsList comments show up 1`] = `
     class="CommentsList"
   >
     <div
+      class="CommentsList__tabs"
+    >
+      <button
+        class="CommentsList__tab active"
+        type="button"
+      >
+        Comments
+        <span
+          class="CommentsList__tab-count"
+        >
+          (
+          2
+          )
+        </span>
+      </button>
+      <button
+        class="CommentsList__tab "
+        type="button"
+      >
+        Card events
+      </button>
+      <button
+        class="CommentsList__tab "
+        type="button"
+      >
+        Bot events
+      </button>
+    </div>
+    <div
       class="comment-thread-item "
       style="margin-left: 0px;"
     >
@@ -21,7 +50,9 @@ exports[`components/cardDetail/CommentsList comments show up 1`] = `
           />
           <div
             class="comment-username"
-          />
+          >
+            username_1
+          </div>
           <div
             class="octo-tooltip tooltip-top"
             data-tooltip="a long time ago"
@@ -80,7 +111,9 @@ exports[`components/cardDetail/CommentsList comments show up 1`] = `
           />
           <div
             class="comment-username"
-          />
+          >
+            username_2
+          </div>
           <div
             class="octo-tooltip tooltip-top"
             data-tooltip="a long time ago"
@@ -157,6 +190,35 @@ exports[`components/cardDetail/CommentsList comments show up in readonly mode 1`
     class="CommentsList"
   >
     <div
+      class="CommentsList__tabs"
+    >
+      <button
+        class="CommentsList__tab active"
+        type="button"
+      >
+        Comments
+        <span
+          class="CommentsList__tab-count"
+        >
+          (
+          2
+          )
+        </span>
+      </button>
+      <button
+        class="CommentsList__tab "
+        type="button"
+      >
+        Card events
+      </button>
+      <button
+        class="CommentsList__tab "
+        type="button"
+      >
+        Bot events
+      </button>
+    </div>
+    <div
       class="comment-thread-item "
       style="margin-left: 0px;"
     >
@@ -172,7 +234,9 @@ exports[`components/cardDetail/CommentsList comments show up in readonly mode 1`
           />
           <div
             class="comment-username"
-          />
+          >
+            username_1
+          </div>
           <div
             class="octo-tooltip tooltip-top"
             data-tooltip="a long time ago"
@@ -211,7 +275,9 @@ exports[`components/cardDetail/CommentsList comments show up in readonly mode 1`
           />
           <div
             class="comment-username"
-          />
+          >
+            username_2
+          </div>
           <div
             class="octo-tooltip tooltip-top"
             data-tooltip="a long time ago"

@@ -3,6 +3,8 @@
 
 import {Block, createBlock} from './block'
 
+export type CommentType = 'comment' | 'edits' | 'bot'
+
 type CommentBlock = Block & {
     type: 'comment'
 }
