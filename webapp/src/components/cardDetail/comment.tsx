@@ -26,12 +26,15 @@ import {formatText, messageHtmlToComponent} from '../../webapp_globals'
 import {getCurrentTeam} from '../../store/teams'
 
 
+import {CommentType} from '../../blocks/commentBlock'
+
 type Props = {
     comment: Block
     userId: string
     userImageUrl: string
     readonly: boolean
     canDelete: boolean
+    commentType?: CommentType
     onReply?: (commentId: string, quotedText: string) => void
 }
 
@@ -104,7 +107,7 @@ const Comment: FC<Props> = (props: Props) => {
                     </div>
                 </Tooltip>
 
-                {!props.readonly && onReply && (
+                {!props.readonly && onReply && props.commentType !== 'edits' && props.commentType !== 'bot' && (
                     <button
                         type='button'
                         className='comment-reply'

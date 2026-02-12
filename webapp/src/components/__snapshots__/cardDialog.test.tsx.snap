@@ -214,6 +214,25 @@ exports[`components/cardDialog already following card 1`] = `
               class="CommentsList"
             >
               <div
+                class="CommentsList__tabs"
+              >
+                <button
+                  class="CommentsList__tab active"
+                >
+                  Comments
+                </button>
+                <button
+                  class="CommentsList__tab "
+                >
+                  Card events
+                </button>
+                <button
+                  class="CommentsList__tab "
+                >
+                  Bot events
+                </button>
+              </div>
+              <div
                 class="CommentsList__new"
               >
                 <div
@@ -622,7 +641,27 @@ exports[`components/cardDialog return a cardDialog readonly 1`] = `
             <hr />
             <div
               class="CommentsList"
-            />
+            >
+              <div
+                class="CommentsList__tabs"
+              >
+                <button
+                  class="CommentsList__tab active"
+                >
+                  Comments
+                </button>
+                <button
+                  class="CommentsList__tab "
+                >
+                  Card events
+                </button>
+                <button
+                  class="CommentsList__tab "
+                >
+                  Bot events
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -982,6 +1021,25 @@ exports[`components/cardDialog return cardDialog menu content 1`] = `
               class="CommentsList"
             >
               <div
+                class="CommentsList__tabs"
+              >
+                <button
+                  class="CommentsList__tab active"
+                >
+                  Comments
+                </button>
+                <button
+                  class="CommentsList__tab "
+                >
+                  Card events
+                </button>
+                <button
+                  class="CommentsList__tab "
+                >
+                  Bot events
+                </button>
+              </div>
+              <div
                 class="CommentsList__new"
               >
                 <div
@@ -1223,6 +1281,25 @@ exports[`components/cardDialog return cardDialog menu content and cancel delete 
             <div
               class="CommentsList"
             >
+              <div
+                class="CommentsList__tabs"
+              >
+                <button
+                  class="CommentsList__tab active"
+                >
+                  Comments
+                </button>
+                <button
+                  class="CommentsList__tab "
+                >
+                  Card events
+                </button>
+                <button
+                  class="CommentsList__tab "
+                >
+                  Bot events
+                </button>
+              </div>
               <div
                 class="CommentsList__new"
               >
@@ -1466,6 +1543,25 @@ exports[`components/cardDialog should match snapshot 1`] = `
               class="CommentsList"
             >
               <div
+                class="CommentsList__tabs"
+              >
+                <button
+                  class="CommentsList__tab active"
+                >
+                  Comments
+                </button>
+                <button
+                  class="CommentsList__tab "
+                >
+                  Card events
+                </button>
+                <button
+                  class="CommentsList__tab "
+                >
+                  Bot events
+                </button>
+              </div>
+              <div
                 class="CommentsList__new"
               >
                 <div
@@ -1642,7 +1738,27 @@ exports[`components/cardDialog should match snapshot without permissions 1`] = `
             <hr />
             <div
               class="CommentsList"
-            />
+            >
+              <div
+                class="CommentsList__tabs"
+              >
+                <button
+                  class="CommentsList__tab active"
+                >
+                  Comments
+                </button>
+                <button
+                  class="CommentsList__tab "
+                >
+                  Card events
+                </button>
+                <button
+                  class="CommentsList__tab "
+                >
+                  Bot events
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
