@@ -91,11 +91,14 @@ type PropertyTypeEnum = 'text' | 'number' | 'select' | 'multiSelect' | 'date' | 
 
 type PropertySortRule = 'default' | 'byOrder' | 'byValue' | 'asNumber'
 
+type WorkflowTag = 'Preparation' | 'Execution' | 'Review' | 'Finished' | 'Rejected'
+
 interface IPropertyOption {
     id: string
     value: string
     color: string
     hideIfEmpty?: boolean
+    tag?: WorkflowTag
 }
 
 // A template for card properties attached to a board
@@ -345,6 +348,7 @@ export {
     BoardsAndBlocksPatch,
     PropertyTypeEnum,
     PropertySortRule,
+    WorkflowTag,
     IPropertyOption,
     IPropertyTemplate,
     BoardGroup,
