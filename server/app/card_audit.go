@@ -96,11 +96,11 @@ func (a *App) formatPropertyChange(propName, propType string, propDef map[string
 	}
 }
 
-// formatPersonPropertyChange formats person-type property changes
+// formatPersonPropertyChange formats person-type property changes (both single and multi)
 func (a *App) formatPersonPropertyChange(propName, propType string, oldValue, newValue interface{}, hasOldValue bool) []propertyChange {
-	formatUser := func(v interface{}) string {
-		userID, ok := v.(string)
-		if !ok || userID == "" {
+	// Helper to format a single userID to @username
+	formatSingleUser := func(userID string) string {
+		if userID == "" {
 			return ""
 		}
 		if user, err := a.store.GetUserByID(userID); err == nil && user != nil {
@@ -109,8 +109,44 @@ func (a *App) formatPersonPropertyChange(propName, propType string, oldValue, ne
 		return userID
 	}
 
-	oldStr := formatUser(oldValue)
-	newStr := formatUser(newValue)
+	// Helper to format a value (single string or slice) to comma-separated usernames
+	formatValue := func(v interface{}) string {
+		if v == nil {
+			return ""
+		}
+		// Handle single person (string)
+		if userID, ok := v.(string); ok {
+			return formatSingleUser(userID)
+		}
+		// Handle multiPerson (slice)
+		if slice, ok := v.([]interface{}); ok {
+			var usernames []string
+			for _, item := range slice {
+				if userID, ok := item.(string); ok && userID != "" {
+					usernames = append(usernames, formatSingleUser(userID))
+				}
+			}
+			if len(usernames) > 0 {
+				return strings.Join(usernames, ", ")
+			}
+		}
+		// Handle []string (sometimes JSON unmarshals this way)
+		if slice, ok := v.([]string); ok {
+			var usernames []string
+			for _, userID := range slice {
+				if userID != "" {
+					usernames = append(usernames, formatSingleUser(userID))
+				}
+			}
+			if len(usernames) > 0 {
+				return strings.Join(usernames, ", ")
+			}
+		}
+		return ""
+	}
+
+	oldStr := formatValue(oldValue)
+	newStr := formatValue(newValue)
 
 	if !hasOldValue || oldStr == "" {
 		if newStr != "" {
@@ -414,7 +450,7 @@ func (a *App) createOrUpdateAuditComment(cardID, boardID, userID, commentType st
 		now := utils.GetMillis()
 		if now-latestComment.CreateAt < aggregationWindowMs {
 			// Append to existing comment
-			return a.appendAuditComment(latestComment, changes)
+			return a.appendAuditComment(latestComment, changes, userID)
 		}
 	}
 
@@ -474,7 +510,7 @@ func (a *App) createNewAuditComment(cardID, boardID, userID, commentType string,
 }
 
 // appendAuditComment appends new changes to an existing audit comment
-func (a *App) appendAuditComment(comment *model.Block, changes []propertyChange) error {
+func (a *App) appendAuditComment(comment *model.Block, changes []propertyChange, userID string) error {
 	// Append new lines to existing comment
 	newLines := a.formatChangesToText(changes)
 	updatedTitle := comment.Title + "\n" + newLines
@@ -483,7 +519,7 @@ func (a *App) appendAuditComment(comment *model.Block, changes []propertyChange)
 		Title: &updatedTitle,
 	}
 
-	_, err := a.PatchBlockAndNotify(comment.ID, patch, comment.ModifiedBy, false)
+	_, err := a.PatchBlockAndNotify(comment.ID, patch, userID, false)
 	return err
 }
 
@@ -492,14 +528,16 @@ func (a *App) formatChangesToText(changes []propertyChange) string {
 	var lines []string
 	for _, change := range changes {
 		if change.OldValue != "" && change.NewValue != "" {
+			// Value changed from X to Y
 			lines = append(lines, change.PropertyName+" changed from "+change.OldValue+" to "+change.NewValue)
-		} else if change.OldValue != "" {
-			lines = append(lines, change.PropertyName+": removed "+change.OldValue)
+		} else if change.OldValue != "" && change.NewValue == "" {
+			// Value was cleared
+			lines = append(lines, change.PropertyName+" cleared (was "+change.OldValue+")")
 		} else if change.NewValue != "" {
-			lines = append(lines, change.PropertyName+": added "+change.NewValue)
-		} else {
+			// Value was set (no previous value)
 			lines = append(lines, change.PropertyName+" set to "+change.NewValue)
 		}
+		// Skip if both old and new are empty (no change to report)
 	}
 	return strings.Join(lines, "\n")
 }
