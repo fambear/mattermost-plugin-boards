@@ -16,17 +16,18 @@ const (
 )
 
 type AmazonS3Config struct {
-	AccessKeyID     string
-	SecretAccessKey string
-	Bucket          string
-	PathPrefix      string
-	Region          string
-	Endpoint        string
-	SSL             bool
-	SignV2          bool
-	SSE             bool
-	Trace           bool
-	Timeout         int64
+	AccessKeyID           string
+	SecretAccessKey       string
+	Bucket                string
+	PathPrefix            string
+	Region                string
+	Endpoint              string
+	SSL                   bool
+	SignV2                bool
+	SSE                   bool
+	Trace                 bool
+	Timeout               int64
+	PresignExpiresSeconds int64
 }
 
 // Configuration is the app configuration stored in a json file.

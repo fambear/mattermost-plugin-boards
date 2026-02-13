@@ -94,6 +94,7 @@ func New(params Params) (*Server, error) {
 	filesBackendSettings.AmazonS3SSE = params.Cfg.FilesS3Config.SSE
 	filesBackendSettings.AmazonS3Trace = params.Cfg.FilesS3Config.Trace
 	filesBackendSettings.AmazonS3RequestTimeoutMilliseconds = params.Cfg.FilesS3Config.Timeout
+	filesBackendSettings.AmazonS3PresignExpiresSeconds = params.Cfg.FilesS3Config.PresignExpiresSeconds
 
 	filesBackend, appErr := filestore.NewFileBackend(filesBackendSettings)
 	if appErr != nil {

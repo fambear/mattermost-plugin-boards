@@ -144,7 +144,16 @@ func (a *API) handleServeFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Try to generate presigned URL for direct S3 access
-	if linkGen, ok := a.app.GetFilesBackend().(filestore.FileBackendWithLinkGenerator); ok {
+	backend := a.app.GetFilesBackend()
+	a.logger.Debug("File backend type check",
+		mlog.String("backendType", fmt.Sprintf("%T", backend)),
+		mlog.String("filename", filename))
+	linkGen, hasLinkGen := backend.(filestore.FileBackendWithLinkGenerator)
+	if !hasLinkGen {
+		a.logger.Debug("Backend does NOT support presigned URLs - falling back to proxy")
+	}
+	if hasLinkGen {
+		a.logger.Debug("Backend supports presigned URLs")
 		// First validate file ownership to prevent path traversal attacks
 		if validErr := a.app.ValidateFileOwnership(board.TeamID, boardID, filename); validErr == nil {
 			fileInfo, filePath, pathErr := a.app.GetFilePath(board.TeamID, boardID, filename)
