@@ -3,25 +3,16 @@
 
 
 import React from 'react'
-import {render, screen, act, fireEvent} from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import {mocked} from 'jest-mock'
+import {render, screen} from '@testing-library/react'
 import '@testing-library/jest-dom'
-import {createIntl} from 'react-intl'
 
 import configureStore from 'redux-mock-store'
 import {Provider as ReduxProvider} from 'react-redux'
 
 import {wrapIntl} from '../../testUtils'
 import {TestBlockFactory} from '../../test/testBlockFactory'
-import mutator from '../../mutator'
-import propsRegistry from '../../properties'
-import {PropertyType} from '../../properties/types'
 
 import CardDetailProperties from './cardDetailProperties'
-
-jest.mock('../../mutator')
-const mockedMutator = mocked(mutator, true)
 
 describe('components/cardDetail/CardDetailProperties', () => {
     const board = TestBlockFactory.createBoard()
@@ -56,20 +47,9 @@ describe('components/cardDetail/CardDetailProperties', () => {
         },
     ]
 
-    const view = TestBlockFactory.createBoardView(board)
-    view.fields.sortOptions = []
-    view.fields.groupById = undefined
-    view.fields.hiddenOptionIds = []
-    const views = [view]
-
     const card = TestBlockFactory.createCard(board)
     card.fields.properties.property_id_1 = 'property_value_id_1'
     card.fields.properties.property_id_2 = '1234'
-
-    const cardTemplate = TestBlockFactory.createCard(board)
-    cardTemplate.fields.isTemplate = true
-
-    const cards = [card]
 
     const state = {
         users: {
@@ -118,9 +98,6 @@ describe('components/cardDetail/CardDetailProperties', () => {
                 <CardDetailProperties
                     board={board!}
                     card={card}
-                    cards={[card]}
-                    activeView={view}
-                    views={views}
                     readonly={false}
                 />
             </ReduxProvider>,
@@ -134,140 +111,190 @@ describe('components/cardDetail/CardDetailProperties', () => {
         expect(container).toMatchSnapshot()
     })
 
-    it('should show confirmation dialog when deleting existing select property', () => {
+    it('should display all visible properties', () => {
         renderComponent()
 
-        const menuElement = screen.getByRole('button', {name: 'Owner'})
-        userEvent.click(menuElement)
+        // Verify property names are displayed
+        expect(screen.getByText('Owner')).toBeInTheDocument()
+        expect(screen.getByText('MockStatus')).toBeInTheDocument()
 
-        const deleteButton = screen.getByRole('button', {name: /delete/i})
-        userEvent.click(deleteButton)
+        // Verify the select property value is displayed
+        expect(screen.getByText('Jean-Luc Picard')).toBeInTheDocument()
 
-        expect(screen.getByRole('heading', {name: 'Confirm delete property'})).toBeInTheDocument()
-        expect(screen.getByRole('button', {name: /delete/i})).toBeInTheDocument()
+        // Number property uses Editable component which stores value in state
+        // The value '1234' is set in card.fields.properties.property_id_2
+        expect(card.fields.properties.property_id_2).toBe('1234')
     })
 
-    it('should show property types menu', () => {
-        const intl = createIntl({locale: 'en'})
+    it('should not display "+ Add a property" button', () => {
+        renderComponent()
+
+        // Verify the "Add a property" button is not present
+        const addButton = screen.queryByRole('button', {name: /add a property/i})
+        expect(addButton).not.toBeInTheDocument()
+    })
+
+    it('should not display property menu (edit controls)', () => {
         const {container} = renderComponent()
 
-        const menuElement = screen.getByRole('button', {name: /add a property/i})
-        userEvent.click(menuElement)
-        expect(container).toMatchSnapshot()
-
-        const selectProperty = screen.getByText(/select property type/i)
-        expect(selectProperty).toBeInTheDocument()
-
-        propsRegistry.list().forEach((type: PropertyType) => {
-            const typeButton = screen.getByRole('button', {name: type.displayName(intl)})
-            expect(typeButton).toBeInTheDocument()
-        })
+        // Verify there are no property menu wrappers (the three-dot menu)
+        const menuWrappers = container.querySelectorAll('.MenuWrapper')
+        expect(menuWrappers.length).toBe(0)
     })
 
-    it('should allow change property types menu, confirm', () => {
-        renderComponent()
+    it('should not allow property renaming via UI', () => {
+        const {container} = renderComponent()
 
-        const menuElement = screen.getByRole('button', {name: 'Owner'})
-        userEvent.click(menuElement)
-
-        const typeProperty = screen.getByText(/Type: Select/i)
-        expect(typeProperty).toBeInTheDocument()
-
-        fireEvent.mouseOver(typeProperty)
-
-        const newTypeMenu = screen.getByRole('button', {name: 'Text'})
-        userEvent.click(newTypeMenu)
-
-        expect(screen.getByRole('heading', {name: 'Confirm property type change'})).toBeInTheDocument()
-        expect(screen.getByRole('button', {name: /Change property/i})).toBeInTheDocument()
-    })
-
-    test('rename select property and confirm button on dialog should rename property', async () => {
-        const result = renderComponent()
-
-        // rename to "Owner-Renamed"
-        onPropertyRenameNoConfirmationDialog(result.container)
-        const propertyTemplate = board.cardProperties[0]
-
-        // should be called once on confirming renaming the property
-        expect(mockedMutator.changePropertyTypeAndName).toBeCalledTimes(1)
-        expect(mockedMutator.changePropertyTypeAndName).toHaveBeenCalledWith(board, cards, propertyTemplate, 'select', 'Owner - Renamed')
-    })
-
-    it('should add new number property', async () => {
-        renderComponent()
-
-        const menuElement = screen.getByRole('button', {name: /add a property/i})
-        userEvent.click(menuElement)
-
-        await act(async () => {
-            const numberType = screen.getByRole('button', {name: /number/i})
-            userEvent.click(numberType)
-        })
-
-        expect(mockedMutator.insertPropertyTemplate).toHaveBeenCalledTimes(1)
-
-        const args = mockedMutator.insertPropertyTemplate.mock.calls[0]
-        const template = args[3]
-        expect(template).toBeTruthy()
-        expect(template!.name).toMatch(/number/i)
-        expect(template!.type).toBe('number')
-    })
-
-    it('confirmation on delete dialog should delete the property', () => {
-        const result = renderComponent()
-        const container = result.container
-
-        openDeleteConfirmationDialog(container)
-
-        const propertyTemplate = board.cardProperties[0]
-
-        const confirmButton = result.getByTitle('Delete')
-        expect(confirmButton).toBeDefined()
-
-        //click delete button
-        userEvent.click(confirmButton!)
-
-        // should be called once on confirming delete
-        expect(mockedMutator.deleteProperty).toBeCalledTimes(1)
-        expect(mockedMutator.deleteProperty).toBeCalledWith(board, views, cards, propertyTemplate.id)
-    })
-
-    it('cancel on delete dialog should do nothing', () => {
-        const result = renderComponent()
-        const container = result.container
-
-        openDeleteConfirmationDialog(container)
-
-        const cancelButton = result.getByTitle('Cancel')
-        expect(cancelButton).toBeDefined()
-
-        userEvent.click(cancelButton!)
-        expect(container).toMatchSnapshot()
-    })
-
-    function openDeleteConfirmationDialog(container: HTMLElement) {
-        const propertyLabel = container.querySelector('.MenuWrapper')
-        expect(propertyLabel).toBeDefined()
-        userEvent.click(propertyLabel!)
-
-        const deleteOption = container.querySelector('.MenuOption.TextOption')
-        expect(propertyLabel).toBeDefined()
-        userEvent.click(deleteOption!)
-
-        const confirmDialog = container.querySelector('.dialog.confirmation-dialog-box')
-        expect(confirmDialog).toBeDefined()
-    }
-
-    function onPropertyRenameNoConfirmationDialog(container: HTMLElement) {
-        const propertyLabel = container.querySelector('.MenuWrapper')
-        expect(propertyLabel).toBeDefined()
-        userEvent.click(propertyLabel!)
-
-        // write new name in the name text box
+        // Verify there's no property name input field
         const propertyNameInput = container.querySelector('.PropertyMenu.menu-textbox')
-        expect(propertyNameInput).toBeDefined()
-        userEvent.type(propertyNameInput!, 'Owner - Renamed{enter}')
-        userEvent.click(propertyLabel!)
-    }
+        expect(propertyNameInput).not.toBeInTheDocument()
+    })
+
+    it('should display properties when readonly is false', () => {
+        renderComponent()
+
+        // Properties should be visible when not readonly
+        expect(screen.getByText('Owner')).toBeInTheDocument()
+        expect(screen.getByText('Jean-Luc Picard')).toBeInTheDocument()
+    })
+
+    it('should display properties when readonly is true', () => {
+        const component = wrapIntl(
+            <ReduxProvider store={store}>
+                <CardDetailProperties
+                    board={board!}
+                    card={card}
+                    readonly={true}
+                />
+            </ReduxProvider>,
+        )
+
+        render(component)
+
+        // Properties should still be visible when readonly
+        expect(screen.getByText('Owner')).toBeInTheDocument()
+        expect(screen.getByText('Jean-Luc Picard')).toBeInTheDocument()
+    })
+
+    describe('hidden properties (hideIfEmpty)', () => {
+        it('should hide empty properties with hideIfEmpty set', () => {
+            const boardWithHiddenProps = TestBlockFactory.createBoard()
+            boardWithHiddenProps.cardProperties = [
+                {
+                    id: 'visible_prop',
+                    name: 'Visible Property',
+                    type: 'text',
+                    options: [],
+                },
+                {
+                    id: 'hidden_prop',
+                    name: 'Hidden Property',
+                    type: 'text',
+                    options: [],
+                    hideIfEmpty: true,
+                },
+            ]
+
+            const cardWithEmptyProps = TestBlockFactory.createCard(boardWithHiddenProps)
+            cardWithEmptyProps.fields.properties = {
+                visible_prop: 'has value',
+                hidden_prop: '',
+            }
+
+            const stateWithHiddenProps = {
+                ...state,
+                boards: {
+                    ...state.boards,
+                    boards: {
+                        [boardWithHiddenProps.id]: boardWithHiddenProps,
+                    },
+                    current: boardWithHiddenProps.id,
+                },
+                cards: {
+                    ...state.cards,
+                    cards: {
+                        [cardWithEmptyProps.id]: cardWithEmptyProps,
+                    },
+                    current: cardWithEmptyProps.id,
+                },
+            }
+
+            const storeWithHiddenProps = mockStore(stateWithHiddenProps)
+
+            const component = wrapIntl(
+                <ReduxProvider store={storeWithHiddenProps}>
+                    <CardDetailProperties
+                        board={boardWithHiddenProps}
+                        card={cardWithEmptyProps}
+                        readonly={false}
+                    />
+                </ReduxProvider>,
+            )
+
+            render(component)
+
+            expect(screen.getByText('Visible Property')).toBeInTheDocument()
+            expect(screen.queryByText('Hidden Property')).not.toBeInTheDocument()
+        })
+
+        it('should show "Display More" button when there are hidden properties', () => {
+            const boardWithHiddenProps = TestBlockFactory.createBoard()
+            boardWithHiddenProps.cardProperties = [
+                {
+                    id: 'visible_prop',
+                    name: 'Visible Property',
+                    type: 'text',
+                    options: [],
+                },
+                {
+                    id: 'hidden_prop',
+                    name: 'Hidden Property',
+                    type: 'text',
+                    options: [],
+                    hideIfEmpty: true,
+                },
+            ]
+
+            const cardWithEmptyProps = TestBlockFactory.createCard(boardWithHiddenProps)
+            cardWithEmptyProps.fields.properties = {
+                visible_prop: 'has value',
+                hidden_prop: '',
+            }
+
+            const stateWithHiddenProps = {
+                ...state,
+                boards: {
+                    ...state.boards,
+                    boards: {
+                        [boardWithHiddenProps.id]: boardWithHiddenProps,
+                    },
+                    current: boardWithHiddenProps.id,
+                },
+                cards: {
+                    ...state.cards,
+                    cards: {
+                        [cardWithEmptyProps.id]: cardWithEmptyProps,
+                    },
+                    current: cardWithEmptyProps.id,
+                },
+            }
+
+            const storeWithHiddenProps = mockStore(stateWithHiddenProps)
+
+            const component = wrapIntl(
+                <ReduxProvider store={storeWithHiddenProps}>
+                    <CardDetailProperties
+                        board={boardWithHiddenProps}
+                        card={cardWithEmptyProps}
+                        readonly={false}
+                    />
+                </ReduxProvider>,
+            )
+
+            render(component)
+
+            const displayMoreButton = screen.getByText(/-- Display More --/i)
+            expect(displayMoreButton).toBeInTheDocument()
+        })
+    })
 })

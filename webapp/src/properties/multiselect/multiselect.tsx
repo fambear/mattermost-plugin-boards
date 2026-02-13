@@ -6,7 +6,6 @@ import React, {useState, useCallback} from 'react'
 import {useIntl} from 'react-intl'
 
 import {IPropertyOption} from '../../blocks/board'
-import {Utils, IDType} from '../../utils'
 
 import mutator from '../../mutator'
 
@@ -33,18 +32,6 @@ const MultiSelectProperty = (props: PropertyProps): JSX.Element => {
             map((currentValue) => currentValue.id)
         mutator.changePropertyValue(board.id, card, propertyTemplate.id, newValues)
     }, [board.id, card, propertyTemplate.id])
-
-    const onCreateValue = useCallback((newValue: string, currentValues: IPropertyOption[]) => {
-        const option: IPropertyOption = {
-            id: Utils.createGuid(IDType.BlockID),
-            value: newValue,
-            color: 'propColorDefault',
-        }
-        currentValues.push(option)
-        mutator.insertPropertyOption(board.id, board.cardProperties, propertyTemplate, option, 'add property option').then(() => {
-            mutator.changePropertyValue(board.id, card, propertyTemplate.id, currentValues.map((v: IPropertyOption) => v.id))
-        })
-    }, [board, board.id, card, propertyTemplate])
 
     const values = Array.isArray(propertyValue) && propertyValue.length > 0 ? propertyValue.map((v) => propertyTemplate.options.find((o) => o!.id === v)).filter((v): v is IPropertyOption => Boolean(v)) : []
 
@@ -83,7 +70,6 @@ const MultiSelectProperty = (props: PropertyProps): JSX.Element => {
             onChangeColor={onChangeColor}
             onDeleteOption={onDeleteOption}
             onDeleteValue={(valueToRemove) => onDeleteValue(valueToRemove, values)}
-            onCreate={(newValue) => onCreateValue(newValue, values)}
             onBlur={() => setOpen(false)}
         />
     )

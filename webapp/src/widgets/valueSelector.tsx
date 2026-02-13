@@ -28,7 +28,7 @@ type Props = {
     options: IPropertyOption[]
     value?: IPropertyOption | IPropertyOption[]
     emptyValue: string
-    onCreate: (value: string) => void
+    onCreate?: (value: string) => void
     onChange: (value: string | string[]) => void
     onChangeColor: (option: IPropertyOption, color: string) => void
     onDeleteOption: (option: IPropertyOption) => void
