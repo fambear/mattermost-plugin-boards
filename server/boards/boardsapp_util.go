@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	defaultS3Timeout              = 60 * 1000 // 60 seconds
-	defaultS3PresignExpiresSeconds = 3600     // 1 hour
+	defaultS3Timeout               = 60 * 1000 // 60 seconds
+	defaultS3PresignExpiresSeconds = 3600      // 1 hour
 )
 
 func createBoardsConfig(mmconfig mm_model.Config, baseURL string, serverID string) *config.Configuration {
