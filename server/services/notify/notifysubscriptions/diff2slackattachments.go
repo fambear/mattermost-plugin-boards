@@ -241,6 +241,17 @@ func appendPropertyChanges(fields []*mm_model.SlackAttachmentField, cardDiff *Di
 func appendCommentChanges(fields []*mm_model.SlackAttachmentField, cardDiff *Diff) []*mm_model.SlackAttachmentField {
 	for _, child := range cardDiff.Diffs {
 		if child.BlockType == model.TypeComment {
+			// Skip bot comments - they shouldn't trigger notifications
+			block := child.NewBlock
+			if block == nil {
+				block = child.OldBlock
+			}
+			if block != nil {
+				if commentType, ok := block.Fields["commentType"].(string); ok && commentType == "bot" {
+					continue
+				}
+			}
+
 			var format string
 			var msg string
 			if child.NewBlock != nil && child.OldBlock == nil {
