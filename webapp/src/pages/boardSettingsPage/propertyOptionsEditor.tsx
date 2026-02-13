@@ -145,7 +145,10 @@ const PropertyOptionsEditor = (props: Props): JSX.Element => {
                         {isStatusProperty && (
                             <div className='PropertyOptionsEditor__option-tag'>
                                 <MenuWrapper>
-                                    <button className='PropertyItem__dropdown'>
+                                    <button
+                                        type='button'
+                                        className='PropertyItem__dropdown'
+                                    >
                                         {tagOptions.find((t) => t.id === (option.tag || ''))?.name || tagOptions[0].name}
                                     </button>
                                     <Menu>

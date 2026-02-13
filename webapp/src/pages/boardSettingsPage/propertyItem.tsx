@@ -92,6 +92,7 @@ const PropertyItem = (props: Props): JSX.Element => {
                         onChange={setName}
                         onSave={handleNameSave}
                         saveOnEsc={true}
+                        readonly={isStatusProperty}
                     />
                 </div>
                 <div className='PropertyItem__type'>
