@@ -214,7 +214,7 @@ const VideoElement = (props: Props): JSX.Element|null => {
                 onRetry={handleRetry}
                 className='VideoElement__loader'
             >
-                {videoDataUrl && (
+                {videoDataUrl ? (
                     <>
                         <div className='VideoElement__container'>
                             <div className='VideoElement__wrapper'>
@@ -254,6 +254,16 @@ const VideoElement = (props: Props): JSX.Element|null => {
                             </RootPortal>
                         )}
                     </>
+                ) : (
+                    !isLoading && !loadError && (
+                        <div className='VideoElement__container'>
+                            <div className='VideoElement__metadata'>
+                                <span className='VideoElement__source'>
+                                    {intl.formatMessage({id: 'VideoElement.no-video', defaultMessage: 'No video available'})}
+                                </span>
+                            </div>
+                        </div>
+                    )
                 )}
             </MediaLoader>
         )
