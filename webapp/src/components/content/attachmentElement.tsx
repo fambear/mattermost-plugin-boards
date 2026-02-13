@@ -1,7 +1,7 @@
 // Copyright (c) 2020-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useState, useCallback} from 'react'
 import {useIntl} from 'react-intl'
 
 import octoClient from '../../octoClient'
@@ -19,6 +19,7 @@ import {useAppSelector} from '../../store/hooks'
 import {Permission} from '../../constants'
 
 import ArchivedFile from './archivedFile/archivedFile'
+import MediaLoader from './mediaLoader'
 
 import './attachmentElement.scss'
 import CompassIcon from './../../widgets/icons/compassIcon'
@@ -39,23 +40,55 @@ const AttachmentElement = (props: Props): JSX.Element|null => {
     const [fileIcon, setFileIcon] = useState<string>('file-text-outline-larg')
     const [fileName, setFileName] = useState<string>()
     const [showConfirmationDialogBox, setShowConfirmationDialogBox] = useState<boolean>(false)
+    const [isLoading, setIsLoading] = useState(!block.isUploading)
+    const [loadError, setLoadError] = useState<string|null>(null)
+    const [retryCount, setRetryCount] = useState(0)
     const uploadPercent = useAppSelector(getUploadPercent(block.id))
     const intl = useIntl()
 
+    const handleRetry = useCallback(() => {
+        setLoadError(null)
+        setIsLoading(true)
+        setRetryCount(prev => prev + 1)
+    }, [])
+
     useEffect(() => {
+        if (block.isUploading) {
+            setIsLoading(false)
+            setFileInfo({
+                name: block.title,
+                extension: block.title.split('.').slice(0, -1).join('.'),
+            })
+            return
+        }
+
+        setIsLoading(true)
+        setLoadError(null)
+
         const loadFile = async () => {
-            if (block.isUploading) {
-                setFileInfo({
-                    name: block.title,
-                    extension: block.title.split('.').slice(0, -1).join('.'),
-                })
-                return
+            try {
+                const attachmentInfo = await octoClient.getFileInfo(block.boardId, block.fields.fileId)
+                if (!attachmentInfo || !attachmentInfo.name) {
+                    setLoadError(intl.formatMessage({
+                        id: 'AttachmentElement.load-failed',
+                        defaultMessage: 'Unable to load file information',
+                    }))
+                    setIsLoading(false)
+                    return
+                }
+                setFileInfo(attachmentInfo)
+                setIsLoading(false)
+            } catch (error) {
+                Utils.logError(`Failed to load attachment info: ${error}`)
+                setLoadError(intl.formatMessage({
+                    id: 'AttachmentElement.load-failed',
+                    defaultMessage: 'Unable to load file information',
+                }))
+                setIsLoading(false)
             }
-            const attachmentInfo = await octoClient.getFileInfo(block.boardId, block.fields.fileId)
-            setFileInfo(attachmentInfo)
         }
         loadFile()
-    }, [])
+    }, [block.boardId, block.fields.fileId, block.isUploading, block.title, retryCount, intl])
 
     useEffect(() => {
         if (fileInfo.size && !fileSize) {
@@ -124,82 +157,89 @@ const AttachmentElement = (props: Props): JSX.Element|null => {
     }
 
     return (
-        <div className='FileElement mr-4'>
-            {showConfirmationDialogBox && <ConfirmationDialogBox dialogBox={confirmDialogProps}/>}
-            <div className='fileElement-icon-division'>
-                <CompassIcon
-                    icon={fileIcon}
-                    className='fileElement-icon'
-                />
-            </div>
-            <div className='fileElement-file-details mt-3'>
-                <Tooltip
-                    title={fileInfo.name ? fileInfo.name : ''}
-                    placement='bottom'
-                >
-                    <div className='fileElement-file-name'>
-                        {fileName}
-                    </div>
-                </Tooltip>
-                {!block.isUploading && <div className='fileElement-file-ext-and-size'>
-                    {fileInfo.extension?.substring(1)} {fileSize}
-                </div> }
-                {block.isUploading && <div className='fileElement-file-uploading'>
-                    {intl.formatMessage({
-                        id: 'AttachmentElement.upload-percentage',
-                        defaultMessage: 'Uploading...({uploadPercent}%)',
-                    }, {
-                        uploadPercent,
-                    })}
-                </div>}
-            </div>
-            {block.isUploading &&
-                <div className='progress'>
-                    <span
-                        className='progress-bar'
-                        style={{width: uploadPercent + '%'}}
+        <MediaLoader
+            isLoading={isLoading}
+            error={loadError}
+            onRetry={handleRetry}
+            className='FileElement__loader'
+        >
+            <div className='FileElement mr-4'>
+                {showConfirmationDialogBox && <ConfirmationDialogBox dialogBox={confirmDialogProps}/>}
+                <div className='fileElement-icon-division'>
+                    <CompassIcon
+                        icon={fileIcon}
+                        className='fileElement-icon'
+                    />
+                </div>
+                <div className='fileElement-file-details mt-3'>
+                    <Tooltip
+                        title={fileInfo.name ? fileInfo.name : ''}
+                        placement='bottom'
                     >
-                        {''}
-                    </span>
-                </div>}
-            {!block.isUploading &&
-            <div className='fileElement-delete-download'>
-                <BoardPermissionGate permissions={[Permission.ManageBoardCards]}>
-                    <MenuWrapper className='mt-3 fileElement-menu-icon'>
-                        <IconButton
-                            size='medium'
-                            icon={<CompassIcon icon='dots-vertical'/>}
-                        />
-                        <div className='delete-menu'>
-                            <Menu position='left'>
-                                <Menu.Text
-                                    id='makeTemplate'
-                                    icon={
-                                        <CompassIcon
-                                            icon='trash-can-outline'
-                                        />}
-                                    name='Delete'
-                                    onClick={handleDeleteButtonClick}
-                                />
-                            </Menu>
+                        <div className='fileElement-file-name'>
+                            {fileName}
                         </div>
-                    </MenuWrapper>
-                </BoardPermissionGate>
-                <Tooltip
-                    title={intl.formatMessage({id: 'AttachmentElement.download', defaultMessage: 'Download'})}
-                    placement='bottom'
-                >
-                    <div
-                        className='fileElement-download-btn mt-3 mr-2'
-                        onClick={attachmentDownloadHandler}
+                    </Tooltip>
+                    {!block.isUploading && <div className='fileElement-file-ext-and-size'>
+                        {fileInfo.extension?.substring(1)} {fileSize}
+                    </div> }
+                    {block.isUploading && <div className='fileElement-file-uploading'>
+                        {intl.formatMessage({
+                            id: 'AttachmentElement.upload-percentage',
+                            defaultMessage: 'Uploading...({uploadPercent}%)',
+                        }, {
+                            uploadPercent,
+                        })}
+                    </div>}
+                </div>
+                {block.isUploading &&
+                    <div className='progress'>
+                        <span
+                            className='progress-bar'
+                            style={{width: uploadPercent + '%'}}
+                        >
+                            {''}
+                        </span>
+                    </div>}
+                {!block.isUploading &&
+                <div className='fileElement-delete-download'>
+                    <BoardPermissionGate permissions={[Permission.ManageBoardCards]}>
+                        <MenuWrapper className='mt-3 fileElement-menu-icon'>
+                            <IconButton
+                                size='medium'
+                                icon={<CompassIcon icon='dots-vertical'/>}
+                            />
+                            <div className='delete-menu'>
+                                <Menu position='left'>
+                                    <Menu.Text
+                                        id='makeTemplate'
+                                        icon={
+                                            <CompassIcon
+                                                icon='trash-can-outline'
+                                            />}
+                                        name='Delete'
+                                        onClick={handleDeleteButtonClick}
+                                    />
+                                </Menu>
+                            </div>
+                        </MenuWrapper>
+                    </BoardPermissionGate>
+                    <Tooltip
+                        title={intl.formatMessage({id: 'AttachmentElement.download', defaultMessage: 'Download'})}
+                        placement='bottom'
                     >
-                        <CompassIcon
-                            icon='download-outline'
-                        />
-                    </div>
-                </Tooltip>
-            </div> }
-        </div>
+                        <div
+                            className='fileElement-download-btn mt-3 mr-2'
+                            onClick={attachmentDownloadHandler}
+                        >
+                            <CompassIcon
+                                icon='download-outline'
+                            />
+                        </div>
+                    </Tooltip>
+                </div> }
+            </div>
+        </MediaLoader>
     )
 }
 

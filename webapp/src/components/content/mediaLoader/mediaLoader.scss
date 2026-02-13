@@ -1,0 +1,74 @@
+.MediaLoader {
+    position: relative;
+
+    &__loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100px;
+        gap: 12px;
+        background: rgba(var(--center-channel-color-rgb), 0.04);
+        border-radius: 4px;
+    }
+
+    &__spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid rgba(var(--center-channel-color-rgb), 0.16);
+        border-top-color: rgb(var(--link-color-rgb));
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    &__loading-text {
+        font-size: 12px;
+        color: rgba(var(--center-channel-color-rgb), 0.56);
+    }
+
+    &__error {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        padding: 16px;
+        background: rgba(var(--error-text-color-rgb), 0.08);
+        border-radius: 4px;
+        color: rgb(var(--error-text-color-rgb));
+    }
+
+    &__error-icon {
+        font-size: 24px;
+    }
+
+    &__error-text {
+        font-size: 14px;
+        text-align: center;
+    }
+
+    &__retry-button {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        background: none;
+        border: none;
+        color: rgb(var(--link-color-rgb));
+        cursor: pointer;
+        font-size: 14px;
+        padding: 4px 8px;
+        border-radius: 4px;
+
+        &:hover {
+            background: rgba(var(--link-color-rgb), 0.08);
+        }
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect, useState, useCallback} from 'react'
-import {IntlShape} from 'react-intl'
+import {IntlShape, useIntl} from 'react-intl'
 
 import {ContentBlock} from '../../blocks/contentBlock'
 import {ImageBlock, createImageBlock} from '../../blocks/imageBlock'
@@ -18,6 +18,7 @@ import RootPortal from '../rootPortal'
 
 import {contentRegistry} from './contentRegistry'
 import ArchivedFile from './archivedFile/archivedFile'
+import MediaLoader from './mediaLoader'
 
 import './imageElement.scss'
 
@@ -35,21 +36,51 @@ const ImageElement = (props: Props): JSX.Element|null => {
     const [fileInfo, setFileInfo] = useState<FileInfo>({})
     const [imageDimensions, setImageDimensions] = useState<ImageDimensions|null>(null)
     const [showViewer, setShowViewer] = useState(false)
+    const [isLoading, setIsLoading] = useState(true)
+    const [loadError, setLoadError] = useState<string|null>(null)
+    const [retryCount, setRetryCount] = useState(0)
+    const intl = useIntl()
 
     const {block} = props
 
+    const handleRetry = useCallback(() => {
+        setLoadError(null)
+        setIsLoading(true)
+        setImageDataUrl(null)
+        setRetryCount(prev => prev + 1)
+    }, [])
+
     useEffect(() => {
-        if (!imageDataUrl) {
-            const loadImage = async () => {
+        setIsLoading(true)
+        setLoadError(null)
+
+        const loadImage = async () => {
+            try {
                 const fileURL = await octoClient.getFileAsDataUrl(block.boardId, props.block.fields.fileId)
-                setImageDataUrl(fileURL.url || '')
+                if (!fileURL.url || fileURL.url.length === 0) {
+                    setLoadError(intl.formatMessage({
+                        id: 'ImageElement.load-failed',
+                        defaultMessage: 'Unable to load image',
+                    }))
+                    setIsLoading(false)
+                    return
+                }
+                setImageDataUrl(fileURL.url)
 
                 const fullFileInfo = await octoClient.getFileInfo(block.boardId, props.block.fields.fileId)
                 setFileInfo(fullFileInfo)
+                setIsLoading(false)
+            } catch (error) {
+                Utils.logError(`Failed to load image: ${error}`)
+                setLoadError(intl.formatMessage({
+                    id: 'ImageElement.load-failed',
+                    defaultMessage: 'Unable to load image',
+                }))
+                setIsLoading(false)
             }
-            loadImage()
         }
-    }, [])
+        loadImage()
+    }, [block.boardId, props.block.fields.fileId, retryCount, intl])
 
     const handleImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
         const img = e.currentTarget
@@ -82,17 +113,18 @@ const ImageElement = (props: Props): JSX.Element|null => {
         )
     }
 
-    if (!imageDataUrl) {
-        return null
-    }
-
     return (
-        <>
+        <MediaLoader
+            isLoading={isLoading}
+            error={loadError}
+            onRetry={handleRetry}
+            className='ImageElement__loader'
+        >
             <div className='ImageElement__container'>
                 <div className='ImageElement__wrapper'>
                     <img
                         className='ImageElement'
-                        src={imageDataUrl}
+                        src={imageDataUrl || ''}
                         alt=''
                         aria-label={block.title || 'View image in full screen'}
                         onLoad={handleImageLoad}
@@ -142,12 +174,12 @@ const ImageElement = (props: Props): JSX.Element|null => {
             {showViewer && (
                 <RootPortal>
                     <ImageViewer
-                        imageUrl={imageDataUrl}
+                        imageUrl={imageDataUrl || ''}
                         onClose={handleCloseViewer}
                     />
                 </RootPortal>
             )}
-        </>
+        </MediaLoader>
     )
 }
 

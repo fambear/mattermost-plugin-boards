@@ -103,7 +103,7 @@ describe('components/content/VideoElement', () => {
             })
 
             await waitFor(() => {
-                const errorElement = document.querySelector('.VideoElement__error')
+                const errorElement = document.querySelector('.MediaLoader__error')
                 expect(errorElement).toBeTruthy()
             })
         })
@@ -121,7 +121,7 @@ describe('components/content/VideoElement', () => {
             })
 
             await waitFor(() => {
-                const errorElement = document.querySelector('.VideoElement__error')
+                const errorElement = document.querySelector('.MediaLoader__error')
                 expect(errorElement).toBeTruthy()
             })
         })
@@ -206,6 +206,106 @@ describe('components/content/VideoElement', () => {
                 const metadata = document.querySelector('.VideoElement__source')
                 expect(metadata?.textContent).toBe('test-video.mp4')
             })
+        })
+
+        test('should show loading spinner while video is loading', async () => {
+            // Create a promise that we can resolve manually
+            let resolveLoad: (value: {url: string}) => void
+            mockedOcto.getFileAsDataUrl.mockImplementation(() => new Promise((resolve) => {
+                resolveLoad = resolve
+            }))
+
+            const component = wrapIntl(
+                <VideoElement
+                    block={defaultBlock}
+                />,
+            )
+            await act(async () => {
+                render(component)
+            })
+
+            // Should show loading spinner
+            const loadingElement = document.querySelector('.MediaLoader__loading')
+            expect(loadingElement).toBeTruthy()
+
+            // Resolve the promise
+            await act(async () => {
+                resolveLoad!({url: 'blob:test-video.mp4'})
+            })
+
+            // Wait for loading to complete
+            await waitFor(() => {
+                const spinner = document.querySelector('.MediaLoader__spinner')
+                expect(spinner).toBeNull()
+            })
+        })
+
+        test('should hide loading spinner after video loads', async () => {
+            const component = wrapIntl(
+                <VideoElement
+                    block={defaultBlock}
+                />,
+            )
+            await act(async () => {
+                render(component)
+            })
+
+            await waitFor(() => {
+                const spinner = document.querySelector('.MediaLoader__spinner')
+                expect(spinner).toBeNull()
+            })
+        })
+
+        test('should show retry button on error', async () => {
+            mockedOcto.getFileAsDataUrl.mockResolvedValue({
+                url: '',
+            })
+
+            const component = wrapIntl(
+                <VideoElement
+                    block={defaultBlock}
+                />,
+            )
+            await act(async () => {
+                render(component)
+            })
+
+            await waitFor(() => {
+                const retryButton = document.querySelector('.MediaLoader__retry-button')
+                expect(retryButton).toBeTruthy()
+            })
+        })
+
+        test('should retry loading when retry button is clicked', async () => {
+            // First call fails
+            mockedOcto.getFileAsDataUrl.mockResolvedValueOnce({url: ''})
+
+            const component = wrapIntl(
+                <VideoElement
+                    block={defaultBlock}
+                />,
+            )
+            await act(async () => {
+                render(component)
+            })
+
+            await waitFor(() => {
+                const retryButton = document.querySelector('.MediaLoader__retry-button')
+                expect(retryButton).toBeTruthy()
+            })
+
+            // Second call succeeds
+            mockedOcto.getFileAsDataUrl.mockResolvedValue({url: 'blob:test-video.mp4'})
+
+            await act(async () => {
+                const retryButton = document.querySelector('.MediaLoader__retry-button')
+                if (retryButton) {
+                    fireEvent.click(retryButton)
+                }
+            })
+
+            // Should have called getFileAsDataUrl twice (initial + retry)
+            expect(mockedOcto.getFileAsDataUrl).toHaveBeenCalledTimes(2)
         })
     })
 

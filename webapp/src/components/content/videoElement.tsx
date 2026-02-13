@@ -16,6 +16,7 @@ import RootPortal from '../rootPortal'
 
 import {contentRegistry} from './contentRegistry'
 import VideoAddDialog, {VideoAddResult} from './videoAddDialog'
+import MediaLoader from './mediaLoader'
 
 import './videoElement.scss'
 
@@ -26,7 +27,9 @@ type Props = {
 const VideoElement = (props: Props): JSX.Element|null => {
     const [videoDataUrl, setVideoDataUrl] = useState<string|null>(null)
     const [showViewer, setShowViewer] = useState(false)
-    const [loadError, setLoadError] = useState(false)
+    const [loadError, setLoadError] = useState<string|null>(null)
+    const [isLoading, setIsLoading] = useState(true)
+    const [retryCount, setRetryCount] = useState(0)
     const intl = useIntl()
 
     const {block} = props
@@ -34,41 +37,51 @@ const VideoElement = (props: Props): JSX.Element|null => {
     const sourceType = videoBlock.fields.sourceType || 'file'
     const videoId = videoBlock.fields.videoId || ''
 
+    const handleRetry = useCallback(() => {
+        setLoadError(null)
+        setIsLoading(true)
+        setVideoDataUrl(null)
+        setRetryCount(prev => prev + 1)
+    }, [])
+
     useEffect(() => {
-        if (sourceType === 'file' && !videoDataUrl && !loadError) {
-            const loadVideo = async () => {
-                const fileId = videoBlock.fields.fileId
-                if (fileId) {
-                    try {
-                        const fileURL = await octoClient.getFileAsDataUrl(block.boardId, fileId)
-                        if (fileURL.url && fileURL.url.length > 0) {
-                            setVideoDataUrl(fileURL.url)
-                        } else {
-                            setLoadError(true)
-                            sendFlashMessage({
-                                content: intl.formatMessage({
-                                    id: 'VideoElement.load-failed',
-                                    defaultMessage: 'Unable to load video file',
-                                }),
-                                severity: 'normal',
-                            })
-                        }
-                    } catch (error) {
-                        Utils.logError(`Failed to load video file: ${error}`)
-                        setLoadError(true)
-                        sendFlashMessage({
-                            content: intl.formatMessage({
-                                id: 'VideoElement.load-failed',
-                                defaultMessage: 'Unable to load video file',
-                            }),
-                            severity: 'normal',
-                        })
-                    }
-                }
-            }
-            loadVideo()
+        if (sourceType !== 'file') {
+            setIsLoading(false)
+            return
         }
-    }, [videoBlock.fields.fileId, block.boardId, sourceType, videoDataUrl, loadError, intl])
+
+        setIsLoading(true)
+        setLoadError(null)
+
+        const loadVideo = async () => {
+            const fileId = videoBlock.fields.fileId
+            if (fileId) {
+                try {
+                    const fileURL = await octoClient.getFileAsDataUrl(block.boardId, fileId)
+                    if (fileURL.url && fileURL.url.length > 0) {
+                        setVideoDataUrl(fileURL.url)
+                        setIsLoading(false)
+                    } else {
+                        setLoadError(intl.formatMessage({
+                            id: 'VideoElement.load-failed',
+                            defaultMessage: 'Unable to load video file',
+                        }))
+                        setIsLoading(false)
+                    }
+                } catch (error) {
+                    Utils.logError(`Failed to load video file: ${error}`)
+                    setLoadError(intl.formatMessage({
+                        id: 'VideoElement.load-failed',
+                        defaultMessage: 'Unable to load video file',
+                    }))
+                    setIsLoading(false)
+                }
+            } else {
+                setIsLoading(false)
+            }
+        }
+        loadVideo()
+    }, [videoBlock.fields.fileId, block.boardId, sourceType, retryCount, intl])
 
     const handleVideoClick = useCallback((e: React.MouseEvent) => {
         e.stopPropagation()
@@ -86,24 +99,6 @@ const VideoElement = (props: Props): JSX.Element|null => {
     const handleCloseViewer = useCallback(() => {
         setShowViewer(false)
     }, [])
-
-    // Show error placeholder if loading failed
-    if (loadError && sourceType === 'file') {
-        return (
-            <div className='VideoElement__error'>
-                <CompassIcon
-                    icon='alert-outline'
-                    className='ErrorIcon'
-                />
-                <span>
-                    {intl.formatMessage({
-                        id: 'VideoElement.error',
-                        defaultMessage: 'Unable to load video',
-                    })}
-                </span>
-            </div>
-        )
-    }
 
     // YouTube embed
     if (sourceType === 'youtube' && videoId) {
@@ -197,47 +192,56 @@ const VideoElement = (props: Props): JSX.Element|null => {
     }
 
     // File upload
-    if (videoDataUrl) {
+    if (sourceType === 'file') {
         return (
-            <>
-                <div className='VideoElement__container'>
-                    <div className='VideoElement__wrapper'>
-                        <video
-                            className='VideoElement__preview'
-                            data-testid='video'
-                        >
-                            <source src={videoDataUrl}/>
-                        </video>
-                        <div
-                            className='VideoElement__overlay'
-                            onClick={handleVideoClick}
-                            onKeyDown={handleVideoKeyDown}
-                            tabIndex={0}
-                            role='button'
-                            aria-label='Play video in full screen'
-                        >
-                            <div className='VideoElement__play-icon'>
-                                <CompassIcon
-                                    icon='play'
-                                    className='PlayIcon'
-                                />
+            <MediaLoader
+                isLoading={isLoading}
+                error={loadError}
+                onRetry={handleRetry}
+                className='VideoElement__loader'
+            >
+                {videoDataUrl && (
+                    <>
+                        <div className='VideoElement__container'>
+                            <div className='VideoElement__wrapper'>
+                                <video
+                                    className='VideoElement__preview'
+                                    data-testid='video'
+                                >
+                                    <source src={videoDataUrl}/>
+                                </video>
+                                <div
+                                    className='VideoElement__overlay'
+                                    onClick={handleVideoClick}
+                                    onKeyDown={handleVideoKeyDown}
+                                    tabIndex={0}
+                                    role='button'
+                                    aria-label='Play video in full screen'
+                                >
+                                    <div className='VideoElement__play-icon'>
+                                        <CompassIcon
+                                            icon='play'
+                                            className='PlayIcon'
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className='VideoElement__metadata'>
+                                <span className='VideoElement__source'>{videoBlock.fields.filename || intl.formatMessage({id: 'VideoElement.file', defaultMessage: 'Video'})}</span>
                             </div>
                         </div>
-                    </div>
-                    <div className='VideoElement__metadata'>
-                        <span className='VideoElement__source'>{videoBlock.fields.filename || intl.formatMessage({id: 'VideoElement.file', defaultMessage: 'Video'})}</span>
-                    </div>
-                </div>
-                {showViewer && (
-                    <RootPortal>
-                        <VideoViewer
-                            sourceType='file'
-                            videoUrl={videoDataUrl}
-                            onClose={handleCloseViewer}
-                        />
-                    </RootPortal>
+                        {showViewer && (
+                            <RootPortal>
+                                <VideoViewer
+                                    sourceType='file'
+                                    videoUrl={videoDataUrl}
+                                    onClose={handleCloseViewer}
+                                />
+                            </RootPortal>
+                        )}
+                    </>
                 )}
-            </>
+            </MediaLoader>
         )
     }
 
