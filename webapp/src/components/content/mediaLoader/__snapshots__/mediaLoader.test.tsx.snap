@@ -1,0 +1,64 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`components/content/mediaLoader/MediaLoader should match snapshot when loaded successfully 1`] = `
+<div>
+  <div
+    class="MediaLoader"
+  >
+    <div>
+      Content
+    </div>
+  </div>
+</div>
+`;
+
+exports[`components/content/mediaLoader/MediaLoader should match snapshot when loading 1`] = `
+<div>
+  <div
+    class="MediaLoader"
+  >
+    <div
+      class="MediaLoader__loading"
+    >
+      <div
+        class="MediaLoader__spinner"
+      />
+      <span
+        class="MediaLoader__loading-text"
+      >
+        Loading...
+      </span>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`components/content/mediaLoader/MediaLoader should match snapshot with error 1`] = `
+<div>
+  <div
+    class="MediaLoader"
+  >
+    <div
+      class="MediaLoader__error"
+    >
+      <i
+        class="CompassIcon icon-alert-outline MediaLoader__error-icon"
+      />
+      <span
+        class="MediaLoader__error-text"
+      >
+        Failed to load
+      </span>
+      <button
+        class="MediaLoader__retry-button"
+        type="button"
+      >
+        <i
+          class="CompassIcon icon-refresh"
+        />
+        Retry
+      </button>
+    </div>
+  </div>
+</div>
+`;

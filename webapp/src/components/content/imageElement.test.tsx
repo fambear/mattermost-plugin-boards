@@ -3,7 +3,7 @@
 
 
 import React from 'react'
-import {render} from '@testing-library/react'
+import {render, fireEvent, waitFor} from '@testing-library/react'
 
 import {act} from 'react-dom/test-utils'
 
@@ -18,14 +18,12 @@ import octoClient from '../../octoClient'
 import ImageElement from './imageElement'
 
 jest.mock('../../octoClient')
+jest.mock('../rootPortal', () => ({
+    __esModule: true,
+    default: ({children}: {children: React.ReactNode}) => <div data-testid='root-portal'>{children}</div>,
+}))
+
 const mockedOcto = mocked(octoClient, true)
-mockedOcto.getFileAsDataUrl.mockResolvedValue({url: 'test.jpg'})
-mockedOcto.getFileInfo.mockResolvedValue({
-    url: 'test.jpg',
-    name: 'test-image.jpg',
-    extension: '.jpg',
-    size: 165002,
-})
 
 describe('components/content/ImageElement', () => {
     const defaultBlock: ImageBlock = {
@@ -45,6 +43,17 @@ describe('components/content/ImageElement', () => {
         deleteAt: 0,
         limited: false,
     }
+
+    beforeEach(() => {
+        jest.clearAllMocks()
+        mockedOcto.getFileAsDataUrl.mockResolvedValue({url: 'test.jpg'})
+        mockedOcto.getFileInfo.mockResolvedValue({
+            url: 'test.jpg',
+            name: 'test-image.jpg',
+            extension: '.jpg',
+            size: 165002,
+        })
+    })
 
     test('should match snapshot', async () => {
         const component = wrapIntl(
@@ -85,5 +94,246 @@ describe('components/content/ImageElement', () => {
             imageContainer = container
         })
         expect(imageContainer).toMatchSnapshot()
+    })
+
+    describe('loading state', () => {
+        test('should show loading spinner while image is loading', async () => {
+            // Create a promise that we can resolve manually
+            let resolveLoad: (value: {url: string}) => void
+            mockedOcto.getFileAsDataUrl.mockImplementation(() => new Promise((resolve) => {
+                resolveLoad = resolve
+            }))
+
+            const component = wrapIntl(
+                <ImageElement
+                    block={defaultBlock}
+                />,
+            )
+            await act(async () => {
+                render(component)
+            })
+
+            // Should show loading spinner
+            const loadingElement = document.querySelector('.MediaLoader__loading')
+            expect(loadingElement).toBeTruthy()
+
+            // Resolve the promise
+            await act(async () => {
+                resolveLoad!({url: 'test.jpg'})
+            })
+
+            // Wait for loading to complete
+            await waitFor(() => {
+                const spinner = document.querySelector('.MediaLoader__spinner')
+                expect(spinner).toBeNull()
+            })
+        })
+
+        test('should hide loading spinner after image loads', async () => {
+            const component = wrapIntl(
+                <ImageElement
+                    block={defaultBlock}
+                />,
+            )
+            await act(async () => {
+                render(component)
+            })
+
+            await waitFor(() => {
+                const spinner = document.querySelector('.MediaLoader__spinner')
+                expect(spinner).toBeNull()
+            })
+        })
+    })
+
+    describe('error state', () => {
+        test('should show error state when image fails to load (empty url)', async () => {
+            mockedOcto.getFileAsDataUrl.mockResolvedValue({url: ''})
+
+            const component = wrapIntl(
+                <ImageElement
+                    block={defaultBlock}
+                />,
+            )
+            await act(async () => {
+                render(component)
+            })
+
+            await waitFor(() => {
+                const errorElement = document.querySelector('.MediaLoader__error')
+                expect(errorElement).toBeTruthy()
+            })
+        })
+
+        test('should show error state when getFileAsDataUrl throws exception', async () => {
+            mockedOcto.getFileAsDataUrl.mockRejectedValue(new Error('Network error'))
+
+            const component = wrapIntl(
+                <ImageElement
+                    block={defaultBlock}
+                />,
+            )
+            await act(async () => {
+                render(component)
+            })
+
+            await waitFor(() => {
+                const errorElement = document.querySelector('.MediaLoader__error')
+                expect(errorElement).toBeTruthy()
+            })
+        })
+
+        test('should show retry button on error', async () => {
+            mockedOcto.getFileAsDataUrl.mockResolvedValue({url: ''})
+
+            const component = wrapIntl(
+                <ImageElement
+                    block={defaultBlock}
+                />,
+            )
+            await act(async () => {
+                render(component)
+            })
+
+            await waitFor(() => {
+                const retryButton = document.querySelector('.MediaLoader__retry-button')
+                expect(retryButton).toBeTruthy()
+            })
+        })
+
+        test('should retry loading when retry button is clicked', async () => {
+            // First call fails
+            mockedOcto.getFileAsDataUrl.mockResolvedValueOnce({url: ''})
+
+            const component = wrapIntl(
+                <ImageElement
+                    block={defaultBlock}
+                />,
+            )
+            await act(async () => {
+                render(component)
+            })
+
+            await waitFor(() => {
+                const retryButton = document.querySelector('.MediaLoader__retry-button')
+                expect(retryButton).toBeTruthy()
+            })
+
+            // Second call succeeds
+            mockedOcto.getFileAsDataUrl.mockResolvedValue({url: 'test.jpg'})
+
+            await act(async () => {
+                const retryButton = document.querySelector('.MediaLoader__retry-button')
+                if (retryButton) {
+                    fireEvent.click(retryButton)
+                }
+            })
+
+            // Should have called getFileAsDataUrl twice (initial + retry)
+            expect(mockedOcto.getFileAsDataUrl).toHaveBeenCalledTimes(2)
+        })
+
+        test('should track multiple retry attempts', async () => {
+            // All calls fail
+            mockedOcto.getFileAsDataUrl.mockResolvedValue({url: ''})
+
+            const component = wrapIntl(
+                <ImageElement
+                    block={defaultBlock}
+                />,
+            )
+            await act(async () => {
+                render(component)
+            })
+
+            // Click retry button 3 times
+            for (let i = 0; i < 3; i++) {
+                await waitFor(() => {
+                    const retryButton = document.querySelector('.MediaLoader__retry-button')
+                    expect(retryButton).toBeTruthy()
+                })
+
+                await act(async () => {
+                    const retryButton = document.querySelector('.MediaLoader__retry-button')
+                    if (retryButton) {
+                        fireEvent.click(retryButton)
+                    }
+                })
+            }
+
+            // Should have called getFileAsDataUrl 4 times (initial + 3 retries)
+            expect(mockedOcto.getFileAsDataUrl).toHaveBeenCalledTimes(4)
+        })
+    })
+
+    describe('accessibility', () => {
+        test('should have proper ARIA labels for image overlay', async () => {
+            const component = wrapIntl(
+                <ImageElement
+                    block={defaultBlock}
+                />,
+            )
+            await act(async () => {
+                render(component)
+            })
+
+            await waitFor(() => {
+                const overlay = document.querySelector('.ImageElement__overlay')
+                expect(overlay).toBeTruthy()
+                expect(overlay?.getAttribute('role')).toBe('button')
+                expect(overlay?.getAttribute('tabindex')).toBe('0')
+            })
+        })
+    })
+
+    describe('loaded state', () => {
+        test('should display image when loaded successfully', async () => {
+            const component = wrapIntl(
+                <ImageElement
+                    block={defaultBlock}
+                />,
+            )
+            await act(async () => {
+                render(component)
+            })
+
+            await waitFor(() => {
+                const image = document.querySelector('.ImageElement') as HTMLImageElement
+                expect(image).toBeTruthy()
+                expect(image.src).toContain('test.jpg')
+            })
+        })
+
+        test('should show image metadata when loaded', async () => {
+            const component = wrapIntl(
+                <ImageElement
+                    block={defaultBlock}
+                />,
+            )
+            await act(async () => {
+                render(component)
+            })
+
+            await waitFor(() => {
+                const metadata = document.querySelector('.ImageElement__metadata')
+                expect(metadata).toBeTruthy()
+            })
+        })
+
+        test('should show download link when loaded', async () => {
+            const component = wrapIntl(
+                <ImageElement
+                    block={defaultBlock}
+                />,
+            )
+            await act(async () => {
+                render(component)
+            })
+
+            await waitFor(() => {
+                const downloadLink = document.querySelector('.ImageElement__download')
+                expect(downloadLink).toBeTruthy()
+            })
+        })
     })
 })

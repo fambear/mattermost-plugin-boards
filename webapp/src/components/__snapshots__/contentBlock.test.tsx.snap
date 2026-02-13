@@ -416,48 +416,52 @@ exports[`components/contentBlock should match snapshot with imageBlock 1`] = `
         style="flex: 0 0 auto; height: 100%;"
       />
       <div
-        class="ImageElement__container"
+        class="MediaLoader ImageElement__loader"
       >
         <div
-          class="ImageElement__wrapper"
+          class="ImageElement__container"
         >
-          <img
-            alt=""
-            aria-label="View image in full screen"
-            class="ImageElement"
-            src="test.jpg"
-          />
           <div
-            aria-label="View image in full screen"
-            class="ImageElement__overlay"
-            role="button"
-            tabindex="0"
+            class="ImageElement__wrapper"
           >
+            <img
+              alt=""
+              aria-label="View image in full screen"
+              class="ImageElement"
+              src="test.jpg"
+            />
             <div
-              class="ImageElement__magnify-icon"
+              aria-label="View image in full screen"
+              class="ImageElement__overlay"
+              role="button"
+              tabindex="0"
             >
-              <i
-                class="CompassIcon icon-magnify MagnifyIcon"
-              />
+              <div
+                class="ImageElement__magnify-icon"
+              >
+                <i
+                  class="CompassIcon icon-magnify MagnifyIcon"
+                />
+              </div>
             </div>
           </div>
-        </div>
-        <div
-          class="ImageElement__metadata"
-        >
-          <span
-            class="ImageElement__size"
+          <div
+            class="ImageElement__metadata"
           >
-            161.1 KiB
-          </span>
-          <a
-            class="ImageElement__download"
-            href="test.jpg"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            Download
-          </a>
+            <span
+              class="ImageElement__size"
+            >
+              161.1 KiB
+            </span>
+            <a
+              class="ImageElement__download"
+              href="test.jpg"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Download
+            </a>
+          </div>
         </div>
       </div>
     </div>
