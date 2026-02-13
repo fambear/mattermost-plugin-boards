@@ -99,3 +99,34 @@ test('OctoClient: GetFileInfo', async () => {
                 'X-Requested-With': 'XMLHttpRequest',
             }}))
 })
+
+test('OctoClient: GetFileUrl returns direct URL for progressive streaming', () => {
+    const url = octoClient.getFileUrl('board-id', 'file-id')
+    expect(url).toBe('http://localhost/api/v2/files/teams/0/board-id/file-id')
+})
+
+test('OctoClient: GetFileUrl with read token includes token in URL', () => {
+    // Mock getReadToken to return a token
+    const originalGetReadToken = require('./utils').Utils.getReadToken
+    require('./utils').Utils.getReadToken = jest.fn().mockReturnValue('test-read-token')
+
+    const url = octoClient.getFileUrl('board-id', 'file-id')
+    expect(url).toBe('http://localhost/api/v2/files/teams/0/board-id/file-id?read_token=test-read-token')
+
+    // Restore original function
+    require('./utils').Utils.getReadToken = originalGetReadToken
+})
+
+test('OctoClient: GetFileUrl returns correct URL format for video src attribute', () => {
+    const boardId = 'test-board-123'
+    const fileId = 'test-file-456'
+    const url = octoClient.getFileUrl(boardId, fileId)
+
+    // Verify the URL contains the expected path structure
+    expect(url).toContain('/api/v2/files/')
+    expect(url).toContain(boardId)
+    expect(url).toContain(fileId)
+
+    // Verify it's a properly formatted URL that can be used in video src
+    expect(() => new URL(url)).not.toThrow()
+})

@@ -742,6 +742,17 @@ class OctoClient {
         return fileInfo
     }
 
+    // getFileUrl returns the direct API URL for a file that can be used in video src
+    // The browser will handle redirects and HTTP Range requests for progressive streaming
+    getFileUrl(boardId: string, fileId: string): string {
+        let path = '/api/v2/files/teams/' + this.teamId + '/' + boardId + '/' + fileId
+        const readToken = Utils.getReadToken()
+        if (readToken) {
+            path += `?read_token=${readToken}`
+        }
+        return this.getBaseURL() + path
+    }
+
     async getTeam(): Promise<Team | null> {
         const path = this.teamPath()
         const response = await fetch(this.getBaseURL() + path, {headers: this.headers()})

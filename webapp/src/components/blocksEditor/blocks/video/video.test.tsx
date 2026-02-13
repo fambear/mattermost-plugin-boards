@@ -26,35 +26,40 @@ describe('components/blocksEditor/blocks/video', () => {
     describe('Display component', () => {
         test('should match Display snapshot for file upload', async () => {
             const mockedOcto = mocked(octoClient, true)
-            mockedOcto.getFileAsDataUrl.mockResolvedValue({url: 'test.jpg'})
+            mockedOcto.getFileUrl.mockReturnValue('http://localhost/api/v2/files/teams/0/board-id/test')
             const Component = VideoBlock.Display
             const {container} = render(wrapIntl(
                 <Component
                     onChange={jest.fn()}
                     value={{file: 'test', filename: 'test-filename', sourceType: 'file'}}
+                    currentBoardId='board-id'
                     onCancel={jest.fn()}
                     onSave={jest.fn()}
                 />,
             ))
             await screen.findByTestId('video')
             expect(container).toMatchSnapshot()
+            // Verify getFileUrl was called with correct parameters (using fileId from 'file' property)
+            expect(mockedOcto.getFileUrl).toHaveBeenCalledWith('board-id', 'test')
         })
 
         test('should match Display snapshot for file upload with fileId', async () => {
             const mockedOcto = mocked(octoClient, true)
-            mockedOcto.getFileAsDataUrl.mockResolvedValue({url: 'test.mp4'})
+            mockedOcto.getFileUrl.mockReturnValue('http://localhost/api/v2/files/teams/0/board-id/test-file-id')
             const Component = VideoBlock.Display
             const {container} = render(wrapIntl(
                 <Component
                     onChange={jest.fn()}
                     value={{fileId: 'test-file-id', filename: 'test-video.mp4', sourceType: 'file'}}
+                    currentBoardId='board-id'
                     onCancel={jest.fn()}
                     onSave={jest.fn()}
                 />,
             ))
             await screen.findByTestId('video')
             expect(container).toMatchSnapshot()
-            expect(mockedOcto.getFileAsDataUrl).toHaveBeenCalledWith('', 'test-file-id')
+            // Verify getFileUrl is called for progressive streaming (not getFileAsDataUrl)
+            expect(mockedOcto.getFileUrl).toHaveBeenCalledWith('board-id', 'test-file-id')
         })
 
         test('should match Display snapshot for YouTube', async () => {

@@ -67,12 +67,14 @@ const Video: ContentType<FileInfo> = {
 
         useEffect(() => {
             if (sourceType === 'file' && !videoDataUrl) {
-                const loadVideo = async () => {
+                const loadVideo = () => {
                     // Support both 'fileId' (from saved blocks) and 'file' (legacy)
                     const fileId = props.value?.fileId || (typeof props.value?.file === 'string' ? props.value.file : undefined)
                     if (fileId) {
-                        const fileURL = await octoClient.getFileAsDataUrl(props.currentBoardId || '', fileId)
-                        setVideoDataUrl(fileURL.url || '')
+                        // Use direct URL for progressive streaming via HTTP Range requests
+                        // instead of fetching entire file as blob
+                        const directUrl = octoClient.getFileUrl(props.currentBoardId || '', fileId)
+                        setVideoDataUrl(directUrl)
                     }
                 }
                 loadVideo()

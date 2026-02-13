@@ -98,7 +98,7 @@ exports[`components/blocksEditor/blocks/video Display component should match Dis
         data-testid="video"
       >
         <source
-          src="test.jpg"
+          src="http://localhost/api/v2/files/teams/0/board-id/test"
         />
       </video>
       <div
@@ -142,7 +142,7 @@ exports[`components/blocksEditor/blocks/video Display component should match Dis
         data-testid="video"
       >
         <source
-          src="test.mp4"
+          src="http://localhost/api/v2/files/teams/0/board-id/test-file-id"
         />
       </video>
       <div
