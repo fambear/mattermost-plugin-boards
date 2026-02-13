@@ -149,3 +149,10 @@ func (a *App) SetCardLimit(cardLimit int) {
 func (a *App) GetLicense() *mm_model.License {
 	return a.store.GetLicense()
 }
+
+// GetFilesBackend returns the file backend for file operations.
+// The returned backend may implement filestore.FileBackendWithLinkGenerator
+// for presigned URL generation when using S3-compatible storage.
+func (a *App) GetFilesBackend() fileBackend {
+	return a.filesBackend
+}

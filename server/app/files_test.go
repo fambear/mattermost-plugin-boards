@@ -1053,6 +1053,16 @@ func TestValidateFileOwnership(t *testing.T) {
 	})
 }
 
+func TestGetFilesBackend(t *testing.T) {
+	th, _ := SetupTestHelper(t)
+
+	t.Run("should return the file backend", func(t *testing.T) {
+		backend := th.App.GetFilesBackend()
+		assert.NotNil(t, backend)
+		assert.Equal(t, th.FilesBackend, backend)
+	})
+}
+
 func TestGetFilePathWithGlobalTeamID(t *testing.T) {
 	th, _ := SetupTestHelper(t)
 

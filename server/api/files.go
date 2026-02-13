@@ -24,6 +24,7 @@ import (
 	mmModel "github.com/mattermost/mattermost/server/public/model"
 
 	"github.com/mattermost/mattermost/server/public/shared/mlog"
+	"github.com/mattermost/mattermost/server/v8/platform/shared/filestore"
 )
 
 var UnsafeContentTypes = [...]string{
@@ -140,6 +141,29 @@ func (a *API) handleServeFile(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		a.errorResponse(w, r, err)
 		return
+	}
+
+	// Try to generate presigned URL for direct S3 access
+	if linkGen, ok := a.app.GetFilesBackend().(filestore.FileBackendWithLinkGenerator); ok {
+		_, filePath, pathErr := a.app.GetFilePath(board.TeamID, boardID, filename)
+		if pathErr == nil {
+			link, _, linkErr := linkGen.GeneratePublicLink(filePath)
+			if linkErr == nil {
+				auditRec := a.makeAuditRecord(r, "getFile", audit.Fail)
+				defer a.audit.LogRecord(audit.LevelRead, auditRec)
+				auditRec.AddMeta("boardID", boardID)
+				auditRec.AddMeta("teamID", board.TeamID)
+				auditRec.AddMeta("filename", filename)
+				auditRec.Success()
+
+				http.Redirect(w, r, link, http.StatusTemporaryRedirect)
+				return
+			}
+			// Log the error but fall through to proxy mode
+			a.logger.Debug("Failed to generate presigned URL, falling back to proxy",
+				mlog.String("filePath", filePath),
+				mlog.Err(linkErr))
+		}
 	}
 
 	auditRec := a.makeAuditRecord(r, "getFile", audit.Fail)
