@@ -212,6 +212,11 @@ func appendTitleChanges(fields []*mm_model.SlackAttachmentField, cardDiff *Diff)
 	return fields
 }
 
+// GitHub-related property IDs that show ugly JSON in notifications.
+var githubPropertyIDs = map[string]bool{
+	"agithubprs1prp7x9jkxd1ec66j": true, // GitHub PRs (JSON array)
+}
+
 func appendPropertyChanges(fields []*mm_model.SlackAttachmentField, cardDiff *Diff) []*mm_model.SlackAttachmentField {
 	if len(cardDiff.PropDiffs) == 0 {
 		return fields
@@ -219,6 +224,11 @@ func appendPropertyChanges(fields []*mm_model.SlackAttachmentField, cardDiff *Di
 
 	for _, propDiff := range cardDiff.PropDiffs {
 		if propDiff.NewValue == propDiff.OldValue {
+			continue
+		}
+
+		// Skip GitHub-related properties - they contain JSON that looks ugly in notifications
+		if githubPropertyIDs[propDiff.ID] {
 			continue
 		}
 
