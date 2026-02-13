@@ -185,25 +185,7 @@ exports[`components/cardDialog already following card 1`] = `
             >
               <div
                 class="octo-propertylist CardDetailProperties"
-              >
-                <div
-                  class="octo-propertyname add-property"
-                >
-                  <div
-                    aria-label="menuwrapper"
-                    class="MenuWrapper"
-                    role="button"
-                  >
-                    <button
-                      type="button"
-                    >
-                      <span>
-                        + Add a property
-                      </span>
-                    </button>
-                  </div>
-                </div>
-              </div>
+              />
             </div>
           </div>
           <div
@@ -953,25 +935,7 @@ exports[`components/cardDialog return cardDialog menu content 1`] = `
             >
               <div
                 class="octo-propertylist CardDetailProperties"
-              >
-                <div
-                  class="octo-propertyname add-property"
-                >
-                  <div
-                    aria-label="menuwrapper"
-                    class="MenuWrapper"
-                    role="button"
-                  >
-                    <button
-                      type="button"
-                    >
-                      <span>
-                        + Add a property
-                      </span>
-                    </button>
-                  </div>
-                </div>
-              </div>
+              />
             </div>
           </div>
           <div
@@ -1195,25 +1159,7 @@ exports[`components/cardDialog return cardDialog menu content and cancel delete 
             >
               <div
                 class="octo-propertylist CardDetailProperties"
-              >
-                <div
-                  class="octo-propertyname add-property"
-                >
-                  <div
-                    aria-label="menuwrapper"
-                    class="MenuWrapper"
-                    role="button"
-                  >
-                    <button
-                      type="button"
-                    >
-                      <span>
-                        + Add a property
-                      </span>
-                    </button>
-                  </div>
-                </div>
-              </div>
+              />
             </div>
           </div>
           <div
@@ -1437,25 +1383,7 @@ exports[`components/cardDialog should match snapshot 1`] = `
             >
               <div
                 class="octo-propertylist CardDetailProperties"
-              >
-                <div
-                  class="octo-propertyname add-property"
-                >
-                  <div
-                    aria-label="menuwrapper"
-                    class="MenuWrapper"
-                    role="button"
-                  >
-                    <button
-                      type="button"
-                    >
-                      <span>
-                        + Add a property
-                      </span>
-                    </button>
-                  </div>
-                </div>
-              </div>
+              />
             </div>
           </div>
           <div
