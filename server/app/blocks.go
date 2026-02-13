@@ -101,6 +101,9 @@ func (a *App) PatchBlockAndNotify(blockID string, blockPatch *model.BlockPatch, 
 	// Populate code field for card blocks before broadcasting
 	a.PopulateBlockCode(block, board)
 
+	// Audit logging for card property changes
+	a.DetectAndLogPropertyChangesFromBlock(oldBlock, blockPatch, board, modifiedByID)
+
 	a.blockChangeNotifier.Enqueue(func() error {
 		// broadcast on websocket
 		a.wsAdapter.BroadcastBlockChange(board.TeamID, block)
