@@ -443,7 +443,7 @@ func TestFormatChangesToText(t *testing.T) {
 	})
 }
 
-// TestCreateNewAuditComment tests creating a new audit comment
+// TestCreateNewAuditComment tests creating a new audit comment.
 func TestCreateNewAuditComment(t *testing.T) {
 	th, tearDown := SetupTestHelper(t)
 	defer tearDown()
@@ -479,7 +479,7 @@ func TestCreateNewAuditComment(t *testing.T) {
 	})
 }
 
-// TestGetLastAuditComment tests retrieving the last audit comment
+// TestGetLastAuditComment tests retrieving the last audit comment.
 func TestGetLastAuditComment(t *testing.T) {
 	th, tearDown := SetupTestHelper(t)
 	defer tearDown()
@@ -577,7 +577,7 @@ func TestGetLastAuditComment(t *testing.T) {
 	})
 }
 
-// TestCreateOrUpdateAuditComment tests comment aggregation logic
+// TestCreateOrUpdateAuditComment tests comment aggregation logic.
 func TestCreateOrUpdateAuditComment(t *testing.T) {
 	th, tearDown := SetupTestHelper(t)
 	defer tearDown()
@@ -658,7 +658,7 @@ func TestCreateOrUpdateAuditComment(t *testing.T) {
 	})
 }
 
-// TestDetectAndLogPropertyChanges tests the main property change detection function
+// TestDetectAndLogPropertyChanges tests the main property change detection function.
 func TestDetectAndLogPropertyChanges(t *testing.T) {
 	th, tearDown := SetupTestHelper(t)
 	defer tearDown()
@@ -787,7 +787,7 @@ func TestDetectAndLogPropertyChanges(t *testing.T) {
 	})
 }
 
-// TestLogCardRelationChange tests the card relation audit logging
+// TestLogCardRelationChange tests the card relation audit logging.
 func TestLogCardRelationChange(t *testing.T) {
 	th, tearDown := SetupTestHelper(t)
 	defer tearDown()
