@@ -212,7 +212,7 @@ func appendTitleChanges(fields []*mm_model.SlackAttachmentField, cardDiff *Diff)
 	return fields
 }
 
-// GitHub-related property IDs that show ugly JSON in notifications
+// GitHub-related property IDs that show ugly JSON in notifications.
 var githubPropertyIDs = map[string]bool{
 	"agithubprs1prp7x9jkxd1ec66j": true, // GitHub PRs (JSON array)
 }
