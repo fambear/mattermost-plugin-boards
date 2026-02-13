@@ -76,6 +76,63 @@ func (a *App) detectAndLogPropertyChanges(currentCard *model.Card, cardPatch *mo
 	}
 }
 
+// DetectAndLogPropertyChangesFromBlock handles audit logging when a card block is patched via PatchBlock API.
+// This is needed because the frontend uses PatchBlock (not PatchCard) when changing property values.
+func (a *App) DetectAndLogPropertyChangesFromBlock(oldBlock *model.Block, blockPatch *model.BlockPatch, board *model.Board, userID string) {
+	// Only process card blocks with property changes
+	if oldBlock.Type != model.TypeCard || blockPatch.UpdatedFields == nil {
+		return
+	}
+
+	// Check if properties were updated
+	propertiesRaw, ok := blockPatch.UpdatedFields["properties"]
+	if !ok {
+		return
+	}
+
+	// Convert properties to map
+	properties, ok := propertiesRaw.(map[string]interface{})
+	if !ok {
+		return
+	}
+
+	// Convert oldBlock to Card
+	currentCard, err := model.Block2Card(oldBlock)
+	if err != nil {
+		a.logger.Warn("DetectAndLogPropertyChangesFromBlock: failed to convert block to card",
+			mlog.String("blockID", oldBlock.ID),
+			mlog.Err(err),
+		)
+		return
+	}
+
+	// Build UpdatedProperties map that includes:
+	// 1. All properties in the new state (changed or added)
+	// 2. Properties that were removed (existed before but not in new state) - set to nil
+	updatedProperties := make(map[string]interface{})
+
+	// Copy all new properties
+	for k, v := range properties {
+		updatedProperties[k] = v
+	}
+
+	// Check for removed properties (existed in old card but not in new properties)
+	for propID := range currentCard.Properties {
+		if _, exists := properties[propID]; !exists {
+			// Property was removed - mark with nil to trigger "cleared" audit
+			updatedProperties[propID] = nil
+		}
+	}
+
+	// Create a CardPatch with UpdatedProperties
+	cardPatch := &model.CardPatch{
+		UpdatedProperties: updatedProperties,
+	}
+
+	// Call the existing function
+	a.detectAndLogPropertyChanges(currentCard, cardPatch, board, oldBlock.ID, userID)
+}
+
 // formatPropertyChange formats a property change into one or more change lines.
 func (a *App) formatPropertyChange(propName, propType string, propDef map[string]interface{}, oldValue, newValue interface{}, hasOldValue bool) []propertyChange {
 	switch propType {
