@@ -3,7 +3,7 @@
 exports[`components/content/mediaLoader/MediaLoader should match snapshot when loaded successfully 1`] = `
 <div>
   <div
-    class="MediaLoader "
+    class="MediaLoader"
   >
     <div>
       Content
@@ -15,7 +15,7 @@ exports[`components/content/mediaLoader/MediaLoader should match snapshot when l
 exports[`components/content/mediaLoader/MediaLoader should match snapshot when loading 1`] = `
 <div>
   <div
-    class="MediaLoader "
+    class="MediaLoader"
   >
     <div
       class="MediaLoader__loading"
@@ -36,7 +36,7 @@ exports[`components/content/mediaLoader/MediaLoader should match snapshot when l
 exports[`components/content/mediaLoader/MediaLoader should match snapshot with error 1`] = `
 <div>
   <div
-    class="MediaLoader "
+    class="MediaLoader"
   >
     <div
       class="MediaLoader__error"
