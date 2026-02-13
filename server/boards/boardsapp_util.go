@@ -13,7 +13,10 @@ import (
 	mm_model "github.com/mattermost/mattermost/server/public/model"
 )
 
-const defaultS3Timeout = 60 * 1000 // 60 seconds
+const (
+	defaultS3Timeout              = 60 * 1000 // 60 seconds
+	defaultS3PresignExpiresSeconds = 3600     // 1 hour
+)
 
 func createBoardsConfig(mmconfig mm_model.Config, baseURL string, serverID string) *config.Configuration {
 	filesS3Config := config.AmazonS3Config{}
@@ -51,6 +54,12 @@ func createBoardsConfig(mmconfig mm_model.Config, baseURL string, serverID strin
 		filesS3Config.Timeout = *mmconfig.FileSettings.AmazonS3RequestTimeoutMilliseconds
 	} else {
 		filesS3Config.Timeout = defaultS3Timeout
+	}
+	// Use export presign expiry setting as default, or fallback to 1 hour
+	if mmconfig.FileSettings.ExportAmazonS3PresignExpiresSeconds != nil && *mmconfig.FileSettings.ExportAmazonS3PresignExpiresSeconds > 0 {
+		filesS3Config.PresignExpiresSeconds = *mmconfig.FileSettings.ExportAmazonS3PresignExpiresSeconds
+	} else {
+		filesS3Config.PresignExpiresSeconds = defaultS3PresignExpiresSeconds
 	}
 
 	enableTelemetry := false
