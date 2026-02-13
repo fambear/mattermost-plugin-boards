@@ -19,14 +19,14 @@ const (
 	aggregationWindowMs = 60 * 1000 // 1 minute
 )
 
-// propertyChange represents a single property change for audit logging
+// propertyChange represents a single property change for audit logging.
 type propertyChange struct {
 	PropertyName string
 	OldValue     string
 	NewValue     string
 }
 
-// detectAndLogPropertyChanges detects property changes and creates audit comments
+// detectAndLogPropertyChanges detects property changes and creates audit comments.
 func (a *App) detectAndLogPropertyChanges(currentCard *model.Card, cardPatch *model.CardPatch, board *model.Board, cardID, userID string) {
 	var changes []propertyChange
 
@@ -76,15 +76,15 @@ func (a *App) detectAndLogPropertyChanges(currentCard *model.Card, cardPatch *mo
 	}
 }
 
-// formatPropertyChange formats a property change into one or more change lines
+// formatPropertyChange formats a property change into one or more change lines.
 func (a *App) formatPropertyChange(propName, propType string, propDef map[string]interface{}, oldValue, newValue interface{}, hasOldValue bool) []propertyChange {
 	switch propType {
 	case "person", "multiPerson":
-		return a.formatPersonPropertyChange(propName, propType, oldValue, newValue, hasOldValue)
+		return a.formatPersonPropertyChange(propName, oldValue, newValue, hasOldValue)
 	case "select":
 		return a.formatSelectPropertyChange(propName, propDef, oldValue, newValue, hasOldValue)
 	case "multiSelect":
-		return a.formatMultiSelectPropertyChange(propName, propDef, oldValue, newValue, hasOldValue)
+		return a.formatMultiSelectPropertyChange(propName, propDef, oldValue, newValue)
 	case "date":
 		return a.formatDatePropertyChange(propName, oldValue, newValue, hasOldValue, false)
 	case "dateTime":
@@ -96,8 +96,8 @@ func (a *App) formatPropertyChange(propName, propType string, propDef map[string
 	}
 }
 
-// formatPersonPropertyChange formats person-type property changes (both single and multi)
-func (a *App) formatPersonPropertyChange(propName, propType string, oldValue, newValue interface{}, hasOldValue bool) []propertyChange {
+// formatPersonPropertyChange formats person-type property changes (both single and multi).
+func (a *App) formatPersonPropertyChange(propName string, oldValue, newValue interface{}, hasOldValue bool) []propertyChange {
 	// Helper to format a single userID to @username
 	formatSingleUser := func(userID string) string {
 		if userID == "" {
@@ -176,7 +176,7 @@ func (a *App) formatPersonPropertyChange(propName, propType string, oldValue, ne
 	return nil
 }
 
-// formatSelectPropertyChange formats select property changes
+// formatSelectPropertyChange formats select property changes.
 func (a *App) formatSelectPropertyChange(propName string, propDef map[string]interface{}, oldValue, newValue interface{}, hasOldValue bool) []propertyChange {
 	getOptionLabel := func(v interface{}) string {
 		optionID, ok := v.(string)
@@ -232,8 +232,8 @@ func (a *App) formatSelectPropertyChange(propName string, propDef map[string]int
 	return nil
 }
 
-// formatMultiSelectPropertyChange formats multi-select property changes
-func (a *App) formatMultiSelectPropertyChange(propName string, propDef map[string]interface{}, oldValue, newValue interface{}, hasOldValue bool) []propertyChange {
+// formatMultiSelectPropertyChange formats multi-select property changes.
+func (a *App) formatMultiSelectPropertyChange(propName string, propDef map[string]interface{}, oldValue, newValue interface{}) []propertyChange {
 	getOptions := func(v interface{}) map[string]string {
 		result := make(map[string]string)
 		optIDs, ok := v.([]interface{})
@@ -301,7 +301,7 @@ func (a *App) formatMultiSelectPropertyChange(propName string, propDef map[strin
 	return changes
 }
 
-// formatDatePropertyChange formats date/dateTime property changes
+// formatDatePropertyChange formats date/dateTime property changes.
 func (a *App) formatDatePropertyChange(propName string, oldValue, newValue interface{}, hasOldValue bool, withTime bool) []propertyChange {
 	formatDate := func(v interface{}) string {
 		if v == nil {
@@ -357,7 +357,7 @@ func (a *App) formatDatePropertyChange(propName string, oldValue, newValue inter
 	return nil
 }
 
-// formatCheckboxPropertyChange formats checkbox property changes
+// formatCheckboxPropertyChange formats checkbox property changes.
 func (a *App) formatCheckboxPropertyChange(propName string, oldValue, newValue interface{}, hasOldValue bool) []propertyChange {
 	formatBool := func(v interface{}) string {
 		b, ok := v.(bool)
@@ -401,7 +401,7 @@ func (a *App) formatCheckboxPropertyChange(propName string, oldValue, newValue i
 	return nil
 }
 
-// formatTextPropertyChange formats text property changes
+// formatTextPropertyChange formats text property changes.
 func (a *App) formatTextPropertyChange(propName string, oldValue, newValue interface{}, hasOldValue bool) []propertyChange {
 	formatValue := func(v interface{}) string {
 		if v == nil {
@@ -441,7 +441,7 @@ func (a *App) formatTextPropertyChange(propName string, oldValue, newValue inter
 	return nil
 }
 
-// createOrUpdateAuditComment creates a new audit comment or appends to an existing one
+// createOrUpdateAuditComment creates a new audit comment or appends to an existing one.
 func (a *App) createOrUpdateAuditComment(cardID, boardID, userID, commentType string, changes []propertyChange) error {
 	// Check if we should aggregate with an existing comment
 	latestComment, err := a.getLastAuditComment(cardID, commentType)
@@ -458,7 +458,7 @@ func (a *App) createOrUpdateAuditComment(cardID, boardID, userID, commentType st
 	return a.createNewAuditComment(cardID, boardID, userID, commentType, changes)
 }
 
-// getLastAuditComment retrieves the most recent audit comment of the specified type
+// getLastAuditComment retrieves the most recent audit comment of the specified type.
 func (a *App) getLastAuditComment(cardID, commentType string) (*model.Block, error) {
 	comments, err := a.store.GetBlocksWithParentAndType("", cardID, model.TypeComment)
 	if err != nil {
@@ -485,7 +485,7 @@ func (a *App) getLastAuditComment(cardID, commentType string) (*model.Block, err
 	return latestComment, nil
 }
 
-// createNewAuditComment creates a new audit comment
+// createNewAuditComment creates a new audit comment.
 func (a *App) createNewAuditComment(cardID, boardID, userID, commentType string, changes []propertyChange) error {
 	now := utils.GetMillis()
 	commentText := a.formatChangesToText(changes)
@@ -509,7 +509,7 @@ func (a *App) createNewAuditComment(cardID, boardID, userID, commentType string,
 	return a.InsertBlockAndNotify(commentBlock, userID, false)
 }
 
-// appendAuditComment appends new changes to an existing audit comment
+// appendAuditComment appends new changes to an existing audit comment.
 func (a *App) appendAuditComment(comment *model.Block, changes []propertyChange, userID string) error {
 	// Append new lines to existing comment
 	newLines := a.formatChangesToText(changes)
@@ -523,17 +523,18 @@ func (a *App) appendAuditComment(comment *model.Block, changes []propertyChange,
 	return err
 }
 
-// formatChangesToText formats changes into comment text
+// formatChangesToText formats changes into comment text.
 func (a *App) formatChangesToText(changes []propertyChange) string {
 	var lines []string
 	for _, change := range changes {
-		if change.OldValue != "" && change.NewValue != "" {
+		switch {
+		case change.OldValue != "" && change.NewValue != "":
 			// Value changed from X to Y
 			lines = append(lines, change.PropertyName+" changed from "+change.OldValue+" to "+change.NewValue)
-		} else if change.OldValue != "" && change.NewValue == "" {
+		case change.OldValue != "" && change.NewValue == "":
 			// Value was cleared
 			lines = append(lines, change.PropertyName+" cleared (was "+change.OldValue+")")
-		} else if change.NewValue != "" {
+		case change.NewValue != "":
 			// Value was set (no previous value)
 			lines = append(lines, change.PropertyName+" set to "+change.NewValue)
 		}
@@ -542,7 +543,7 @@ func (a *App) formatChangesToText(changes []propertyChange) string {
 	return strings.Join(lines, "\n")
 }
 
-// logCardRelationChange logs a card relation change
+// logCardRelationChange logs a card relation change.
 func (a *App) logCardRelationChange(cardID, boardID, userID, relationType string, relatedCard *model.Card, isDeletion bool) {
 	if relatedCard == nil {
 		return
@@ -561,9 +562,9 @@ func (a *App) logCardRelationChange(cardID, boardID, userID, relationType string
 	}
 
 	if isDeletion {
-		commentText = "Relation removed: " + string(relationType) + " " + relatedCardCode
+		commentText = "Relation removed: " + relationType + " " + relatedCardCode
 	} else {
-		commentText = "Relation added: " + string(relationType) + " " + relatedCardCode
+		commentText = "Relation added: " + relationType + " " + relatedCardCode
 	}
 
 	commentBlock := &model.Block{
