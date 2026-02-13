@@ -133,6 +133,11 @@ func (a *App) PatchCard(cardPatch *model.CardPatch, cardID string, userID string
 
 	a.populateCardCode(newCard, board)
 
+	// Log property changes as audit comments
+	if len(cardPatch.UpdatedProperties) > 0 {
+		a.detectAndLogPropertyChanges(currentCard, cardPatch, board, cardID, userID)
+	}
+
 	return newCard, nil
 }
 
