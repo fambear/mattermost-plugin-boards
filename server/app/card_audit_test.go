@@ -31,7 +31,7 @@ func TestFormatPersonPropertyChange(t *testing.T) {
 			Username: username1,
 		}, nil)
 
-		changes := th.App.formatPersonPropertyChange("Assignee", "person", nil, userID1, false)
+		changes := th.App.formatPersonPropertyChange("Assignee", nil, userID1, false)
 
 		require.Len(t, changes, 1)
 		assert.Equal(t, "Assignee", changes[0].PropertyName)
@@ -49,7 +49,7 @@ func TestFormatPersonPropertyChange(t *testing.T) {
 			Username: username2,
 		}, nil)
 
-		changes := th.App.formatPersonPropertyChange("Assignee", "person", userID1, userID2, true)
+		changes := th.App.formatPersonPropertyChange("Assignee", userID1, userID2, true)
 
 		require.Len(t, changes, 1)
 		assert.Equal(t, "Assignee", changes[0].PropertyName)
@@ -63,7 +63,7 @@ func TestFormatPersonPropertyChange(t *testing.T) {
 			Username: username1,
 		}, nil)
 
-		changes := th.App.formatPersonPropertyChange("Assignee", "person", userID1, "", true)
+		changes := th.App.formatPersonPropertyChange("Assignee", userID1, "", true)
 
 		require.Len(t, changes, 1)
 		assert.Equal(t, "Assignee", changes[0].PropertyName)
@@ -77,7 +77,7 @@ func TestFormatPersonPropertyChange(t *testing.T) {
 			Username: username1,
 		}, nil).Times(2)
 
-		changes := th.App.formatPersonPropertyChange("Assignee", "person", userID1, userID1, true)
+		changes := th.App.formatPersonPropertyChange("Assignee", userID1, userID1, true)
 
 		assert.Nil(t, changes)
 	})
@@ -85,7 +85,7 @@ func TestFormatPersonPropertyChange(t *testing.T) {
 	t.Run("user not found - uses userID", func(t *testing.T) {
 		th.Store.EXPECT().GetUserByID(userID1).Return(nil, model.NewErrNotFound(userID1))
 
-		changes := th.App.formatPersonPropertyChange("Assignee", "person", nil, userID1, false)
+		changes := th.App.formatPersonPropertyChange("Assignee", nil, userID1, false)
 
 		require.Len(t, changes, 1)
 		assert.Equal(t, "Assignee", changes[0].PropertyName)
@@ -196,7 +196,7 @@ func TestFormatMultiSelectPropertyChange(t *testing.T) {
 		oldValue := []interface{}{option1ID}
 		newValue := []interface{}{option1ID, option2ID}
 
-		changes := th.App.formatMultiSelectPropertyChange("Tags", propDef, oldValue, newValue, true)
+		changes := th.App.formatMultiSelectPropertyChange("Tags", propDef, oldValue, newValue)
 
 		require.Len(t, changes, 1)
 		assert.Equal(t, "Tags", changes[0].PropertyName)
@@ -208,7 +208,7 @@ func TestFormatMultiSelectPropertyChange(t *testing.T) {
 		oldValue := []interface{}{option1ID, option2ID}
 		newValue := []interface{}{option1ID}
 
-		changes := th.App.formatMultiSelectPropertyChange("Tags", propDef, oldValue, newValue, true)
+		changes := th.App.formatMultiSelectPropertyChange("Tags", propDef, oldValue, newValue)
 
 		require.Len(t, changes, 1)
 		assert.Equal(t, "Tags", changes[0].PropertyName)
@@ -220,7 +220,7 @@ func TestFormatMultiSelectPropertyChange(t *testing.T) {
 		oldValue := []interface{}{option1ID, option2ID}
 		newValue := []interface{}{option2ID, option3ID}
 
-		changes := th.App.formatMultiSelectPropertyChange("Tags", propDef, oldValue, newValue, true)
+		changes := th.App.formatMultiSelectPropertyChange("Tags", propDef, oldValue, newValue)
 
 		require.Len(t, changes, 2)
 		// Check that Bug was removed and Enhancement was added
@@ -242,7 +242,7 @@ func TestFormatMultiSelectPropertyChange(t *testing.T) {
 		oldValue := []interface{}{option1ID, option2ID}
 		newValue := []interface{}{option1ID, option2ID}
 
-		changes := th.App.formatMultiSelectPropertyChange("Tags", propDef, oldValue, newValue, true)
+		changes := th.App.formatMultiSelectPropertyChange("Tags", propDef, oldValue, newValue)
 
 		assert.Nil(t, changes)
 	})
