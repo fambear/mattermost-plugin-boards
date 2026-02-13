@@ -69,6 +69,7 @@ const CardDetailProperties = (props: Props) => {
                 board={board}
                 propertyTemplate={propertyTemplate}
                 showEmptyPlaceholder={true}
+                disableOptionEditing={true}
             />
         </div>
     )

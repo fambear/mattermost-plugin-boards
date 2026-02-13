@@ -31,6 +31,7 @@ export type PropertyProps = {
     propertyValue: string | string[]
     propertyTemplate: IPropertyTemplate
     showEmptyPlaceholder: boolean
+    disableOptionEditing?: boolean
 }
 
 export abstract class PropertyType {
