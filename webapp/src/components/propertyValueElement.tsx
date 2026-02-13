@@ -15,10 +15,11 @@ type Props = {
     card: Card
     propertyTemplate: IPropertyTemplate
     showEmptyPlaceholder: boolean
+    disableOptionEditing?: boolean
 }
 
 const PropertyValueElement = (props: Props): JSX.Element => {
-    const {card, propertyTemplate, readOnly, showEmptyPlaceholder, board} = props
+    const {card, propertyTemplate, readOnly, showEmptyPlaceholder, board, disableOptionEditing} = props
 
     let propertyValue = card.fields.properties[propertyTemplate.id]
     if (propertyValue === undefined) {
@@ -35,6 +36,7 @@ const PropertyValueElement = (props: Props): JSX.Element => {
             showEmptyPlaceholder={showEmptyPlaceholder}
             propertyTemplate={propertyTemplate}
             propertyValue={propertyValue}
+            disableOptionEditing={disableOptionEditing}
         />
     )
 }
