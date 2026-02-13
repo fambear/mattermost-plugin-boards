@@ -869,7 +869,7 @@ func TestLogCardRelationChange(t *testing.T) {
 	})
 }
 
-// Helper function to split lines for testing
+// Helper function to split lines for testing.
 func splitLines(s string) []string {
 	lines := []string{}
 	current := ""
