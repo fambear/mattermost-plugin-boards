@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestFormatPersonPropertyChange tests the person property change formatting
+// TestFormatPersonPropertyChange tests the person property change formatting.
 func TestFormatPersonPropertyChange(t *testing.T) {
 	th, tearDown := SetupTestHelper(t)
 	defer tearDown()
@@ -93,7 +93,7 @@ func TestFormatPersonPropertyChange(t *testing.T) {
 	})
 }
 
-// TestFormatSelectPropertyChange tests the select property change formatting
+// TestFormatSelectPropertyChange tests the select property change formatting.
 func TestFormatSelectPropertyChange(t *testing.T) {
 	th, tearDown := SetupTestHelper(t)
 	defer tearDown()
@@ -160,7 +160,7 @@ func TestFormatSelectPropertyChange(t *testing.T) {
 	})
 }
 
-// TestFormatMultiSelectPropertyChange tests the multi-select property change formatting
+// TestFormatMultiSelectPropertyChange tests the multi-select property change formatting.
 func TestFormatMultiSelectPropertyChange(t *testing.T) {
 	th, tearDown := SetupTestHelper(t)
 	defer tearDown()
@@ -248,7 +248,7 @@ func TestFormatMultiSelectPropertyChange(t *testing.T) {
 	})
 }
 
-// TestFormatDatePropertyChange tests the date/dateTime property change formatting
+// TestFormatDatePropertyChange tests the date/dateTime property change formatting.
 func TestFormatDatePropertyChange(t *testing.T) {
 	th, tearDown := SetupTestHelper(t)
 	defer tearDown()
@@ -308,7 +308,7 @@ func TestFormatDatePropertyChange(t *testing.T) {
 	})
 }
 
-// TestFormatCheckboxPropertyChange tests the checkbox property change formatting
+// TestFormatCheckboxPropertyChange tests the checkbox property change formatting.
 func TestFormatCheckboxPropertyChange(t *testing.T) {
 	th, tearDown := SetupTestHelper(t)
 	defer tearDown()
@@ -350,7 +350,7 @@ func TestFormatCheckboxPropertyChange(t *testing.T) {
 	})
 }
 
-// TestFormatTextPropertyChange tests the text property change formatting
+// TestFormatTextPropertyChange tests the text property change formatting.
 func TestFormatTextPropertyChange(t *testing.T) {
 	th, tearDown := SetupTestHelper(t)
 	defer tearDown()
@@ -395,7 +395,7 @@ func TestFormatTextPropertyChange(t *testing.T) {
 	})
 }
 
-// TestFormatChangesToText tests the formatting of changes to comment text
+// TestFormatChangesToText tests the formatting of changes to comment text.
 func TestFormatChangesToText(t *testing.T) {
 	th, tearDown := SetupTestHelper(t)
 	defer tearDown()
