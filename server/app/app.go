@@ -4,7 +4,6 @@
 package app
 
 import (
-	"io"
 	"sync"
 	"time"
 
@@ -43,19 +42,10 @@ type servicesAPI interface {
 
 type ReadCloseSeeker = filestore.ReadCloseSeeker
 
-type fileBackend interface {
-	Reader(path string) (ReadCloseSeeker, error)
-	FileExists(path string) (bool, error)
-	CopyFile(oldPath, newPath string) error
-	MoveFile(oldPath, newPath string) error
-	WriteFile(fr io.Reader, path string) (int64, error)
-	RemoveFile(path string) error
-}
-
 type Services struct {
 	Auth             *auth.Auth
 	Store            store.Store
-	FilesBackend     fileBackend
+	FilesBackend     filestore.FileBackend
 	Webhook          *webhook.Client
 	Metrics          *metrics.Metrics
 	Notifications    *notify.Service
@@ -70,7 +60,7 @@ type App struct {
 	store               store.Store
 	auth                *auth.Auth
 	wsAdapter           ws.Adapter
-	filesBackend        fileBackend
+	filesBackend        filestore.FileBackend
 	webhook             *webhook.Client
 	metrics             *metrics.Metrics
 	notifications       *notify.Service
@@ -148,4 +138,11 @@ func (a *App) SetCardLimit(cardLimit int) {
 
 func (a *App) GetLicense() *mm_model.License {
 	return a.store.GetLicense()
+}
+
+// GetFilesBackend returns the file backend for file operations.
+// The returned backend may implement filestore.FileBackendWithLinkGenerator
+// for presigned URL generation when using S3-compatible storage.
+func (a *App) GetFilesBackend() filestore.FileBackend {
+	return a.filesBackend
 }

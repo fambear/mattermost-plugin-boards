@@ -24,6 +24,7 @@ import (
 	mmModel "github.com/mattermost/mattermost/server/public/model"
 
 	"github.com/mattermost/mattermost/server/public/shared/mlog"
+	"github.com/mattermost/mattermost/server/v8/platform/shared/filestore"
 )
 
 var UnsafeContentTypes = [...]string{
@@ -142,6 +143,46 @@ func (a *API) handleServeFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Try to generate presigned URL for direct S3 access
+	if linkGen, ok := a.app.GetFilesBackend().(filestore.FileBackendWithLinkGenerator); ok {
+		// First validate file ownership to prevent path traversal attacks
+		if validErr := a.app.ValidateFileOwnership(board.TeamID, boardID, filename); validErr == nil {
+			fileInfo, filePath, pathErr := a.app.GetFilePath(board.TeamID, boardID, filename)
+			if pathErr == nil {
+				// Skip presigned URLs for unsafe content types - they need security headers
+				// that can only be applied via proxy mode
+				isUnsafe := false
+				if fileInfo != nil && fileInfo.MimeType != "" {
+					for _, unsafeType := range UnsafeContentTypes {
+						if strings.HasPrefix(fileInfo.MimeType, unsafeType) {
+							isUnsafe = true
+							break
+						}
+					}
+				}
+
+				if !isUnsafe {
+					link, _, linkErr := linkGen.GeneratePublicLink(filePath)
+					if linkErr == nil {
+						auditRec := a.makeAuditRecord(r, "getFile", audit.Fail)
+						defer a.audit.LogRecord(audit.LevelRead, auditRec)
+						auditRec.AddMeta("boardID", boardID)
+						auditRec.AddMeta("teamID", board.TeamID)
+						auditRec.AddMeta("filename", filename)
+						auditRec.Success()
+
+						http.Redirect(w, r, link, http.StatusTemporaryRedirect)
+						return
+					}
+					// Log the error but fall through to proxy mode
+					a.logger.Debug("Failed to generate presigned URL, falling back to proxy",
+						mlog.String("filePath", filePath),
+						mlog.Err(linkErr))
+				}
+			}
+		}
+	}
+
 	auditRec := a.makeAuditRecord(r, "getFile", audit.Fail)
 	defer a.audit.LogRecord(audit.LevelRead, auditRec)
 	auditRec.AddMeta("boardID", boardID)
@@ -183,22 +224,17 @@ func (a *API) handleServeFile(w http.ResponseWriter, r *http.Request) {
 		mimeType = fileInfo.MimeType
 		fileSize = fileInfo.Size
 	}
-	writeFileResponse(filename, mimeType, fileSize, time.Now(), "", fileReader, false, w, r)
+	writeFileResponse(filename, mimeType, fileSize, time.Now(), fileReader, false, w, r)
 	auditRec.Success()
 }
 
 func writeFileResponse(filename string, contentType string, contentSize int64,
-	lastModification time.Time, webserverMode string, fileReader io.ReadSeeker, forceDownload bool, w http.ResponseWriter, r *http.Request) {
+	lastModification time.Time, fileReader io.ReadSeeker, forceDownload bool, w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "private, no-cache")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 
 	if contentSize > 0 {
-		contentSizeStr := strconv.Itoa(int(contentSize))
-		if webserverMode == "gzip" {
-			w.Header().Set("X-Uncompressed-Content-Length", contentSizeStr)
-		} else {
-			w.Header().Set("Content-Length", contentSizeStr)
-		}
+		w.Header().Set("Content-Length", strconv.Itoa(int(contentSize)))
 	}
 
 	if contentType == "" {
