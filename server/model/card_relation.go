@@ -125,10 +125,12 @@ func NewErrInvalidCardRelation(msg string) error {
 	return ErrInvalidCardRelation{msg: msg}
 }
 
-// CardRelationWithCard represents a card relation with the related card details
+// CardRelationWithCard represents a card relation with the related card details.
 // swagger:model
 type CardRelationWithCard struct {
 	CardRelation
-	// The related card
+	// The related card.
 	Card *Card `json:"card"`
+	// The workflow tag of the card's status (e.g., "Finished", "Rejected").
+	StatusTag string `json:"statusTag,omitempty"`
 }
