@@ -119,8 +119,52 @@ func (s *SQLStore) getCardRelation(db sq.BaseRunner, relationID string) (*model.
 	return relation, nil
 }
 
+// resolveStatusTag finds the workflow tag for a card's status property.
+// It looks up the Status property in board.CardProperties, finds the option
+// matching the card's status value, and returns the tag (e.g., "Finished", "Rejected").
+func resolveStatusTag(board *model.Board, card *model.Card) string {
+	if board == nil || card == nil {
+		return ""
+	}
+
+	// Find Status property in board.CardProperties.
+	for _, prop := range board.CardProperties {
+		propName, _ := prop["name"].(string)
+		if propName != "Status" {
+			continue
+		}
+
+		propID, _ := prop["id"].(string)
+		if propID == "" {
+			continue
+		}
+
+		// Get the card's status value.
+		statusValue, ok := card.Properties[propID].(string)
+		if !ok || statusValue == "" {
+			return ""
+		}
+
+		// Find the matching option and return its tag.
+		options, _ := prop["options"].([]interface{})
+		for _, opt := range options {
+			optMap, _ := opt.(map[string]interface{})
+			if optMap == nil {
+				continue
+			}
+			optID, _ := optMap["id"].(string)
+			if optID == statusValue {
+				tag, _ := optMap["tag"].(string)
+				return tag
+			}
+		}
+	}
+
+	return ""
+}
+
 func (s *SQLStore) getCardRelations(db sq.BaseRunner, cardID string) ([]*model.CardRelationWithCard, error) {
-	// Get all relations where the card is either source or target
+	// Get all relations where the card is either source or target.
 	query := s.getQueryBuilder(db).
 		Select(s.cardRelationFields("cr.")...).
 		From(s.tablePrefix + "card_relations AS cr").
@@ -141,16 +185,18 @@ func (s *SQLStore) getCardRelations(db sq.BaseRunner, cardID string) ([]*model.C
 		return nil, err
 	}
 
-	// Fetch related cards
+	// Fetch related cards and collect unique board IDs.
 	result := make([]*model.CardRelationWithCard, 0, len(relations))
+	boardIDs := make(map[string]bool)
+
 	for _, relation := range relations {
-		// Determine which card to fetch (the other card in the relation)
+		// Determine which card to fetch (the other card in the relation).
 		relatedCardID := relation.TargetCardID
 		if relation.SourceCardID != cardID {
 			relatedCardID = relation.SourceCardID
 		}
 
-		// Fetch the related card (block)
+		// Fetch the related card (block).
 		block, err := s.getBlock(db, relatedCardID)
 		if err != nil {
 			s.logger.Warn("getCardRelations: related card not found",
@@ -159,7 +205,7 @@ func (s *SQLStore) getCardRelations(db sq.BaseRunner, cardID string) ([]*model.C
 			continue
 		}
 
-		// Convert block to card
+		// Convert block to card.
 		card, err := model.Block2Card(block)
 		if err != nil {
 			s.logger.Warn("getCardRelations: error converting block to card",
@@ -168,10 +214,33 @@ func (s *SQLStore) getCardRelations(db sq.BaseRunner, cardID string) ([]*model.C
 			continue
 		}
 
+		boardIDs[card.BoardID] = true
 		result = append(result, &model.CardRelationWithCard{
 			CardRelation: *relation,
 			Card:         card,
 		})
+	}
+
+	// Fetch boards and resolve status tags.
+	boards := make(map[string]*model.Board)
+	for boardID := range boardIDs {
+		board, err := s.getBoard(db, boardID)
+		if err != nil {
+			s.logger.Warn("getCardRelations: board not found",
+				mlog.String("boardID", boardID),
+				mlog.Err(err))
+			continue
+		}
+		boards[boardID] = board
+	}
+
+	// Populate StatusTag for each relation.
+	for _, rel := range result {
+		if rel.Card != nil {
+			if board, ok := boards[rel.Card.BoardID]; ok {
+				rel.StatusTag = resolveStatusTag(board, rel.Card)
+			}
+		}
 	}
 
 	return result, nil
