@@ -53,6 +53,8 @@ const AttachmentElement = (props: Props): JSX.Element|null => {
     }, [])
 
     useEffect(() => {
+        let cancelled = false
+
         if (block.isUploading) {
             setIsLoading(false)
             const parts = block.title.split('.')
@@ -70,6 +72,9 @@ const AttachmentElement = (props: Props): JSX.Element|null => {
         const loadFile = async () => {
             try {
                 const attachmentInfo = await octoClient.getFileInfo(block.boardId, block.fields.fileId)
+                if (cancelled) {
+                    return
+                }
                 if (!attachmentInfo || !attachmentInfo.name) {
                     setLoadError(intl.formatMessage({
                         id: 'AttachmentElement.load-failed',
@@ -81,6 +86,9 @@ const AttachmentElement = (props: Props): JSX.Element|null => {
                 setFileInfo(attachmentInfo)
                 setIsLoading(false)
             } catch (error) {
+                if (cancelled) {
+                    return
+                }
                 Utils.logError(`Failed to load attachment info: ${error}`)
                 setLoadError(intl.formatMessage({
                     id: 'AttachmentElement.load-failed',
@@ -90,6 +98,10 @@ const AttachmentElement = (props: Props): JSX.Element|null => {
             }
         }
         loadFile()
+
+        return () => {
+            cancelled = true
+        }
     }, [block.boardId, block.fields.fileId, block.isUploading, block.title, retryCount, intl])
 
     useEffect(() => {

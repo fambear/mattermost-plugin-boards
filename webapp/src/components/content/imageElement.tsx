@@ -51,12 +51,17 @@ const ImageElement = (props: Props): JSX.Element|null => {
     }, [])
 
     useEffect(() => {
+        let cancelled = false
+
         setIsLoading(true)
         setLoadError(null)
 
         const loadImage = async () => {
             try {
                 const fileURL = await octoClient.getFileAsDataUrl(block.boardId, props.block.fields.fileId)
+                if (cancelled) {
+                    return
+                }
                 if (!fileURL.url || fileURL.url.length === 0) {
                     setLoadError(intl.formatMessage({
                         id: 'ImageElement.load-failed',
@@ -68,9 +73,15 @@ const ImageElement = (props: Props): JSX.Element|null => {
                 setImageDataUrl(fileURL.url)
 
                 const fullFileInfo = await octoClient.getFileInfo(block.boardId, props.block.fields.fileId)
+                if (cancelled) {
+                    return
+                }
                 setFileInfo(fullFileInfo)
                 setIsLoading(false)
             } catch (error) {
+                if (cancelled) {
+                    return
+                }
                 Utils.logError(`Failed to load image: ${error}`)
                 setLoadError(intl.formatMessage({
                     id: 'ImageElement.load-failed',
@@ -80,6 +91,10 @@ const ImageElement = (props: Props): JSX.Element|null => {
             }
         }
         loadImage()
+
+        return () => {
+            cancelled = true
+        }
     }, [block.boardId, props.block.fields.fileId, retryCount, intl])
 
     const handleImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
