@@ -434,9 +434,6 @@ const CardDetail = (props: Props): JSX.Element|null => {
                         <CardDetailProperties
                             board={props.board}
                             card={props.card}
-                            cards={props.cards}
-                            activeView={props.activeView}
-                            views={props.views}
                             readonly={props.readonly}
                         />
 

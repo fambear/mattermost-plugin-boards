@@ -8,10 +8,10 @@ import {useIntl} from 'react-intl'
 import {IPropertyOption} from '../../blocks/board'
 
 import Label from '../../widgets/label'
-import {Utils, IDType} from '../../utils'
 import mutator from '../../mutator'
 import ValueSelector from '../../widgets/valueSelector'
 import octoClient from '../../octoClient'
+import {Utils} from '../../utils'
 
 import {PropertyProps} from '../types'
 
@@ -107,17 +107,6 @@ const SelectProperty = (props: PropertyProps) => {
         loadTransitionRules()
     }, [open, isStatusProperty, board, propertyValue, propertyTemplate.options])
 
-    const onCreate = useCallback((newValue) => {
-        const option: IPropertyOption = {
-            id: Utils.createGuid(IDType.BlockID),
-            value: newValue,
-            color: 'propColorDefault',
-        }
-        mutator.insertPropertyOption(board.id, board.cardProperties, propertyTemplate, option, 'add property option').then(() => {
-            mutator.changePropertyValue(board.id, card, propertyTemplate.id, option.id)
-        })
-    }, [board, board.id, props.card, propertyTemplate.id])
-
     const emptyDisplayValue = props.showEmptyPlaceholder ? intl.formatMessage({id: 'PropertyValueElement.empty', defaultMessage: 'Empty'}) : ''
 
     const onChange = useCallback((newValue) => mutator.changePropertyValue(board.id, card, propertyTemplate.id, newValue), [board.id, card, propertyTemplate])
@@ -153,7 +142,6 @@ const SelectProperty = (props: PropertyProps) => {
             emptyValue={emptyDisplayValue}
             options={filteredOptions}
             value={propertyTemplate.options.find((p: IPropertyOption) => p.id === propertyValue)}
-            onCreate={onCreate}
             onChange={onChange}
             onChangeColor={onChangeColor}
             onDeleteOption={onDeleteOption}

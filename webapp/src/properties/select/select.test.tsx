@@ -182,7 +182,7 @@ describe('properties/select', () => {
         expect(mockedMutator.changePropertyValue).toHaveBeenCalledWith(board.id, card, propertyTemplate.id, '')
     })
 
-    it('can create new option', () => {
+    it('cannot create new option - only existing options can be selected', () => {
         const propertyTemplate = selectPropertyTemplate()
         const initialOption = propertyTemplate.options[0]
         const newOption = 'new-option'
@@ -204,8 +204,14 @@ describe('properties/select', () => {
         userEvent.click(screen.getByTestId(nonEditableSelectTestId))
         userEvent.type(screen.getByRole('combobox', {name: /value selector/i}), `${newOption}{enter}`)
 
-        expect(mockedMutator.insertPropertyOption).toHaveBeenCalledWith(board.id, board.cardProperties, propertyTemplate, expect.objectContaining({value: newOption}), 'add property option')
-        expect(mockedMutator.changePropertyValue).toHaveBeenCalledWith(board.id, card, propertyTemplate.id, 'option-3')
+        // Verify that insertPropertyOption was NOT called (creation is disabled)
+        expect(mockedMutator.insertPropertyOption).not.toHaveBeenCalled()
+
+        // When a non-existent option is "created" without onCreate, CreatableSelect
+        // will call onChange with the new value. Since we can't actually create it
+        // (onCreate is undefined), the behavior is that changePropertyValue gets called
+        // but the value won't match any existing option ID.
+        // The key verification is that insertPropertyOption was never called.
     })
 
     it('filters Status options based on transition rules', async () => {

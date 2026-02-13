@@ -214,7 +214,7 @@ describe('properties/multiSelect', () => {
         }
     })
 
-    it('can create a new option', async () => {
+    it('cannot create a new option - only existing options can be selected', async () => {
         const propertyTemplate = buildMultiSelectPropertyTemplate()
         const propertyValue = ['multi-option-1', 'multi-option-2']
 
@@ -236,8 +236,8 @@ describe('properties/multiSelect', () => {
         userEvent.click(screen.getByTestId(nonEditableMultiSelectTestId))
         userEvent.type(screen.getByRole('combobox', {name: /value selector/i}), 'new-value{enter}')
 
-        expect(mockedMutator.insertPropertyOption).toHaveBeenCalledWith(board.id, board.cardProperties, propertyTemplate, expect.objectContaining({value: 'new-value'}), 'add property option')
-        expectOptionsMenuToBeVisible(propertyTemplate)
+        // Verify that insertPropertyOption was NOT called (creation is disabled)
+        expect(mockedMutator.insertPropertyOption).not.toHaveBeenCalled()
     })
 
     it('can delete a option', () => {
