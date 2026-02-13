@@ -145,24 +145,41 @@ func (a *API) handleServeFile(w http.ResponseWriter, r *http.Request) {
 
 	// Try to generate presigned URL for direct S3 access
 	if linkGen, ok := a.app.GetFilesBackend().(filestore.FileBackendWithLinkGenerator); ok {
-		_, filePath, pathErr := a.app.GetFilePath(board.TeamID, boardID, filename)
-		if pathErr == nil {
-			link, _, linkErr := linkGen.GeneratePublicLink(filePath)
-			if linkErr == nil {
-				auditRec := a.makeAuditRecord(r, "getFile", audit.Fail)
-				defer a.audit.LogRecord(audit.LevelRead, auditRec)
-				auditRec.AddMeta("boardID", boardID)
-				auditRec.AddMeta("teamID", board.TeamID)
-				auditRec.AddMeta("filename", filename)
-				auditRec.Success()
+		// First validate file ownership to prevent path traversal attacks
+		if validErr := a.app.ValidateFileOwnership(board.TeamID, boardID, filename); validErr == nil {
+			fileInfo, filePath, pathErr := a.app.GetFilePath(board.TeamID, boardID, filename)
+			if pathErr == nil {
+				// Skip presigned URLs for unsafe content types - they need security headers
+				// that can only be applied via proxy mode
+				isUnsafe := false
+				if fileInfo != nil && fileInfo.MimeType != "" {
+					for _, unsafeType := range UnsafeContentTypes {
+						if strings.HasPrefix(fileInfo.MimeType, unsafeType) {
+							isUnsafe = true
+							break
+						}
+					}
+				}
 
-				http.Redirect(w, r, link, http.StatusTemporaryRedirect)
-				return
+				if !isUnsafe {
+					link, _, linkErr := linkGen.GeneratePublicLink(filePath)
+					if linkErr == nil {
+						auditRec := a.makeAuditRecord(r, "getFile", audit.Fail)
+						defer a.audit.LogRecord(audit.LevelRead, auditRec)
+						auditRec.AddMeta("boardID", boardID)
+						auditRec.AddMeta("teamID", board.TeamID)
+						auditRec.AddMeta("filename", filename)
+						auditRec.Success()
+
+						http.Redirect(w, r, link, http.StatusTemporaryRedirect)
+						return
+					}
+					// Log the error but fall through to proxy mode
+					a.logger.Debug("Failed to generate presigned URL, falling back to proxy",
+						mlog.String("filePath", filePath),
+						mlog.Err(linkErr))
+				}
 			}
-			// Log the error but fall through to proxy mode
-			a.logger.Debug("Failed to generate presigned URL, falling back to proxy",
-				mlog.String("filePath", filePath),
-				mlog.Err(linkErr))
 		}
 	}
 

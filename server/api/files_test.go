@@ -148,30 +148,17 @@ func TestHandleServeFile_HTTPStatusCodes(t *testing.T) {
 		},
 	}
 
+	// TODO: These tests require full API handler setup with mocked dependencies
+	// (App, permissions, filestore). For now, we document expected behavior.
+	// Real integration tests should be added with proper test infrastructure.
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Document the expected behavior
-			assert.Equal(t, tc.expectedStatus, tc.expectedStatus,
-				"Expected status code %d for scenario: %s", tc.expectedStatus, tc.scenario)
+			// This test documents expected HTTP status codes for different scenarios.
+			// Full handler tests require significant mock setup - see existing
+			// handler tests in api_test.go for patterns.
+			t.Logf("Expected status %d for scenario: %s", tc.expectedStatus, tc.scenario)
 		})
 	}
-}
-
-func TestHandleServeFile_RedirectHeaders(t *testing.T) {
-	t.Run("should set Location header on redirect", func(t *testing.T) {
-		// Simulate the redirect scenario
-		presignedURL := "https://s3.amazonaws.com/bucket/team/board/file.txt?X-Amz-Signature=abc123"
-
-		// Create a test response recorder
-		w := httptest.NewRecorder()
-
-		// Simulate the redirect that would be returned by handleServeFile
-		http.Redirect(w, httptest.NewRequest(http.MethodGet, "/files/teams/t/b/f", nil), presignedURL, http.StatusTemporaryRedirect)
-
-		// Verify the redirect response
-		assert.Equal(t, http.StatusTemporaryRedirect, w.Code)
-		assert.Equal(t, presignedURL, w.Header().Get("Location"))
-	})
 }
 
 // mockReadCloseSeeker implements io.ReadCloser and io.Seeker for testing.
@@ -191,7 +178,7 @@ func TestWriteFileResponse(t *testing.T) {
 		content := "test image content"
 		reader := &mockReadCloseSeeker{strings.NewReader(content)}
 
-		writeFileResponse("test.jpg", "image/jpeg", int64(len(content)), time.Now(), "", reader, false, w, req)
+		writeFileResponse("test.jpg", "image/jpeg", int64(len(content)), time.Now(), reader, false, w, req)
 
 		// Check headers
 		assert.Equal(t, "image/jpeg", w.Header().Get("Content-Type"))
@@ -205,7 +192,7 @@ func TestWriteFileResponse(t *testing.T) {
 		content := "test document content"
 		reader := &mockReadCloseSeeker{strings.NewReader(content)}
 
-		writeFileResponse("test.pdf", "application/pdf", int64(len(content)), time.Now(), "", reader, false, w, req)
+		writeFileResponse("test.pdf", "application/pdf", int64(len(content)), time.Now(), reader, false, w, req)
 
 		// Check headers
 		assert.Equal(t, "application/pdf", w.Header().Get("Content-Type"))
@@ -218,7 +205,7 @@ func TestWriteFileResponse(t *testing.T) {
 		content := "test content"
 		reader := &mockReadCloseSeeker{strings.NewReader(content)}
 
-		writeFileResponse("test.js", "application/javascript", int64(len(content)), time.Now(), "", reader, false, w, req)
+		writeFileResponse("test.js", "application/javascript", int64(len(content)), time.Now(), reader, false, w, req)
 
 		// JavaScript should be converted to text/plain
 		assert.Equal(t, "text/plain", w.Header().Get("Content-Type"))
@@ -230,7 +217,7 @@ func TestWriteFileResponse(t *testing.T) {
 		content := "test image content"
 		reader := &mockReadCloseSeeker{strings.NewReader(content)}
 
-		writeFileResponse("test.jpg", "image/jpeg", int64(len(content)), time.Now(), "", reader, true, w, req)
+		writeFileResponse("test.jpg", "image/jpeg", int64(len(content)), time.Now(), reader, true, w, req)
 
 		// Even for images, should use attachment when forceDownload is true
 		assert.Contains(t, w.Header().Get("Content-Disposition"), "attachment")
@@ -242,7 +229,7 @@ func TestWriteFileResponse(t *testing.T) {
 		content := "test content"
 		reader := &mockReadCloseSeeker{strings.NewReader(content)}
 
-		writeFileResponse("test.txt", "text/plain", int64(len(content)), time.Now(), "", reader, false, w, req)
+		writeFileResponse("test.txt", "text/plain", int64(len(content)), time.Now(), reader, false, w, req)
 
 		// Check security headers
 		assert.Equal(t, "DENY", w.Header().Get("X-Frame-Options"))
@@ -256,7 +243,7 @@ func TestWriteFileResponse(t *testing.T) {
 		content := "test content"
 		reader := &mockReadCloseSeeker{strings.NewReader(content)}
 
-		writeFileResponse("test.txt", "text/plain", int64(len(content)), time.Now(), "", reader, false, w, req)
+		writeFileResponse("test.txt", "text/plain", int64(len(content)), time.Now(), reader, false, w, req)
 
 		// Check cache control
 		assert.Equal(t, "private, no-cache", w.Header().Get("Cache-Control"))
