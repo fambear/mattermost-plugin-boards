@@ -36,6 +36,7 @@ type Props = {
     onDeleteValue?: (value: IPropertyOption) => void
     onBlur?: () => void
     readonly?: boolean
+    disableOptionEditing?: boolean
 }
 
 type LabelProps = {
@@ -46,10 +47,11 @@ type LabelProps = {
     onDeleteValue?: (value: IPropertyOption) => void
     isMulti?: boolean
     readonly?: boolean
+    disableOptionEditing?: boolean
 }
 
 const ValueSelectorLabel = (props: LabelProps): JSX.Element => {
-    const {option, onDeleteValue, meta, isMulti, readonly} = props
+    const {option, onDeleteValue, meta, isMulti, readonly, disableOptionEditing} = props
     const intl = useIntl()
     if (meta.context === 'value') {
         let className = onDeleteValue ? 'Label-no-padding' : 'Label-single-select'
@@ -81,7 +83,7 @@ const ValueSelectorLabel = (props: LabelProps): JSX.Element => {
             <div className='label-container'>
                 <Label color={option.color}>{option.value}</Label>
             </div>
-            {!readonly && (
+            {!readonly && !disableOptionEditing && (
                 <MenuWrapper stopPropagationOnToggle={true}>
                     <IconButton
                         title={intl.formatMessage({id: 'ValueSelectorLabel.openMenu', defaultMessage: 'Open menu'})}
@@ -181,6 +183,7 @@ function ValueSelector(props: Props): JSX.Element {
                     onDeleteOption={props.onDeleteOption}
                     onDeleteValue={props.onDeleteValue}
                     readonly={props.readonly}
+                    disableOptionEditing={props.disableOptionEditing}
                 />
             )}
             className='ValueSelector'

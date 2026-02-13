@@ -147,7 +147,8 @@ const SelectProperty = (props: PropertyProps) => {
             onDeleteOption={onDeleteOption}
             onDeleteValue={onDeleteValue}
             onBlur={() => setOpen(false)}
-            readonly={props.readOnly || props.disableOptionEditing}
+            readonly={props.readOnly}
+            disableOptionEditing={props.disableOptionEditing}
         />
     )
 }
