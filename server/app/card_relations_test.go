@@ -138,7 +138,7 @@ func TestDeleteCardRelation(t *testing.T) {
 		// GetMembersForBoard is called twice: once by wsAdapter.BroadcastCardRelationDelete and once by InsertBlockAndNotify
 		th.Store.EXPECT().GetMembersForBoard(boardID).Return([]*model.BoardMember{}, nil).Times(2)
 
-		err := th.App.DeleteCardRelation(relation.ID)
+		err := th.App.DeleteCardRelation(relation.ID, userID)
 
 		require.NoError(t, err)
 	})
@@ -155,7 +155,7 @@ func TestDeleteCardRelation(t *testing.T) {
 		// GetMembersForBoard is called twice: once by wsAdapter.BroadcastCardRelationDelete and once by InsertBlockAndNotify
 		th.Store.EXPECT().GetMembersForBoard(boardID).Return([]*model.BoardMember{}, nil).Times(2)
 
-		err := th.App.DeleteCardRelation(relation.ID)
+		err := th.App.DeleteCardRelation(relation.ID, userID)
 
 		require.NoError(t, err)
 	})
@@ -163,7 +163,7 @@ func TestDeleteCardRelation(t *testing.T) {
 	t.Run("error scenario - relation not found", func(t *testing.T) {
 		th.Store.EXPECT().GetCardRelation(relation.ID).Return(nil, model.NewErrNotFound("relation not found"))
 
-		err := th.App.DeleteCardRelation(relation.ID)
+		err := th.App.DeleteCardRelation(relation.ID, userID)
 
 		require.Error(t, err)
 	})
@@ -172,7 +172,7 @@ func TestDeleteCardRelation(t *testing.T) {
 		th.Store.EXPECT().GetCardRelation(relation.ID).Return(relation, nil)
 		th.Store.EXPECT().DeleteCardRelation(relation.ID).Return(model.NewErrNotFound("failed to delete"))
 
-		err := th.App.DeleteCardRelation(relation.ID)
+		err := th.App.DeleteCardRelation(relation.ID, userID)
 
 		require.Error(t, err)
 	})
@@ -183,7 +183,7 @@ func TestDeleteCardRelation(t *testing.T) {
 		th.Store.EXPECT().GetBoardAndCardByID(sourceCardID).Return(&model.Board{ID: boardID, TeamID: "team1"}, sourceCardBlock, nil)
 		th.Store.EXPECT().GetBoardAndCardByID(targetCardID).Return(nil, nil, model.NewErrNotFound("card not found"))
 
-		err := th.App.DeleteCardRelation(relation.ID)
+		err := th.App.DeleteCardRelation(relation.ID, userID)
 
 		require.NoError(t, err)
 	})
@@ -291,6 +291,7 @@ func TestDeleteCardRelationsByCard(t *testing.T) {
 	defer tearDown()
 
 	cardID := utils.NewID(utils.IDTypeBlock)
+	userID := utils.NewID(utils.IDTypeUser)
 
 	t.Run("success scenario", func(t *testing.T) {
 		relations := []*model.CardRelationWithCard{
@@ -302,7 +303,7 @@ func TestDeleteCardRelationsByCard(t *testing.T) {
 		th.Store.EXPECT().DeleteCardRelation(relations[0].ID).Return(nil)
 		th.Store.EXPECT().DeleteCardRelation(relations[1].ID).Return(nil)
 
-		err := th.App.DeleteCardRelationsByCard(cardID)
+		err := th.App.DeleteCardRelationsByCard(cardID, userID)
 
 		require.NoError(t, err)
 	})
@@ -317,7 +318,7 @@ func TestDeleteCardRelationsByCard(t *testing.T) {
 		th.Store.EXPECT().DeleteCardRelation(relations[0].ID).Return(nil)
 		th.Store.EXPECT().DeleteCardRelation(relations[1].ID).Return(model.NewErrNotFound("failed to delete"))
 
-		err := th.App.DeleteCardRelationsByCard(cardID)
+		err := th.App.DeleteCardRelationsByCard(cardID, userID)
 
 		// Should not error even if one deletion fails
 		require.NoError(t, err)
@@ -326,7 +327,7 @@ func TestDeleteCardRelationsByCard(t *testing.T) {
 	t.Run("error scenario - fails to get relations", func(t *testing.T) {
 		th.Store.EXPECT().GetCardRelations(cardID).Return(nil, model.NewErrNotFound("failed to get relations"))
 
-		err := th.App.DeleteCardRelationsByCard(cardID)
+		err := th.App.DeleteCardRelationsByCard(cardID, userID)
 
 		require.Error(t, err)
 	})
