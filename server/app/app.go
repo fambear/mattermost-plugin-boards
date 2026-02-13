@@ -4,7 +4,6 @@
 package app
 
 import (
-	"io"
 	"sync"
 	"time"
 
@@ -42,15 +41,6 @@ type servicesAPI interface {
 }
 
 type ReadCloseSeeker = filestore.ReadCloseSeeker
-
-type fileBackend interface {
-	Reader(path string) (ReadCloseSeeker, error)
-	FileExists(path string) (bool, error)
-	CopyFile(oldPath, newPath string) error
-	MoveFile(oldPath, newPath string) error
-	WriteFile(fr io.Reader, path string) (int64, error)
-	RemoveFile(path string) error
-}
 
 type Services struct {
 	Auth             *auth.Auth
