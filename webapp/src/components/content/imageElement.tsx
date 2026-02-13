@@ -124,7 +124,7 @@ const ImageElement = (props: Props): JSX.Element|null => {
                 <div className='ImageElement__wrapper'>
                     <img
                         className='ImageElement'
-                        src={imageDataUrl || ''}
+                        src={imageDataUrl ?? undefined}
                         alt=''
                         aria-label={block.title || intl.formatMessage({id: 'ImageElement.view-fullscreen', defaultMessage: 'View image in full screen'})}
                         onLoad={handleImageLoad}

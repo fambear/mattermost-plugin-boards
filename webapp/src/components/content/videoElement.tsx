@@ -45,6 +45,8 @@ const VideoElement = (props: Props): JSX.Element|null => {
     }, [])
 
     useEffect(() => {
+        let cancelled = false
+
         if (sourceType !== 'file') {
             setIsLoading(false)
             return
@@ -58,6 +60,9 @@ const VideoElement = (props: Props): JSX.Element|null => {
             if (fileId) {
                 try {
                     const fileURL = await octoClient.getFileAsDataUrl(block.boardId, fileId)
+                    if (cancelled) {
+                        return
+                    }
                     if (fileURL.url && fileURL.url.length > 0) {
                         setVideoDataUrl(fileURL.url)
                         setIsLoading(false)
@@ -69,6 +74,9 @@ const VideoElement = (props: Props): JSX.Element|null => {
                         setIsLoading(false)
                     }
                 } catch (error) {
+                    if (cancelled) {
+                        return
+                    }
                     Utils.logError(`Failed to load video file: ${error}`)
                     setLoadError(intl.formatMessage({
                         id: 'VideoElement.load-failed',
@@ -77,10 +85,16 @@ const VideoElement = (props: Props): JSX.Element|null => {
                     setIsLoading(false)
                 }
             } else {
-                setIsLoading(false)
+                if (!cancelled) {
+                    setIsLoading(false)
+                }
             }
         }
         loadVideo()
+
+        return () => {
+            cancelled = true
+        }
     }, [videoBlock.fields.fileId, block.boardId, sourceType, retryCount, intl])
 
     const handleVideoClick = useCallback((e: React.MouseEvent) => {

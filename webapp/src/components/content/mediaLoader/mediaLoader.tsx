@@ -21,7 +21,7 @@ const MediaLoader = (props: Props): JSX.Element => {
     const {isLoading, error, onRetry, children, className} = props
 
     return (
-        <div className={`MediaLoader ${className || ''}`}>
+        <div className={`MediaLoader${className ? ` ${className}` : ''}`}>
             {isLoading && (
                 <div className='MediaLoader__loading'>
                     <div className='MediaLoader__spinner'/>

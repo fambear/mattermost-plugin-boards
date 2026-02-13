@@ -55,9 +55,11 @@ const AttachmentElement = (props: Props): JSX.Element|null => {
     useEffect(() => {
         if (block.isUploading) {
             setIsLoading(false)
+            const parts = block.title.split('.')
+            const ext = parts.length > 1 ? `.${parts.pop()}` : ''
             setFileInfo({
-                name: block.title,
-                extension: block.title.split('.').slice(0, -1).join('.'),
+                name: parts.join('.'),
+                extension: ext,
             })
             return
         }
