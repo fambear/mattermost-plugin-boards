@@ -446,10 +446,10 @@ func (a *App) createOrUpdateAuditComment(cardID, boardID, userID, commentType st
 	// Check if we should aggregate with an existing comment
 	latestComment, err := a.getLastAuditComment(cardID, commentType)
 	if err == nil && latestComment != nil {
-		// Check if within aggregation window
+		// Check if within aggregation window AND same user
 		now := utils.GetMillis()
-		if now-latestComment.CreateAt < aggregationWindowMs {
-			// Append to existing comment
+		if now-latestComment.CreateAt < aggregationWindowMs && latestComment.ModifiedBy == userID {
+			// Append to existing comment (same user within time window)
 			return a.appendAuditComment(latestComment, changes, userID)
 		}
 	}
