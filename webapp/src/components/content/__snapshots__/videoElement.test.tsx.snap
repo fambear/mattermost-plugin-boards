@@ -88,42 +88,46 @@ exports[`components/content/VideoElement YouTube video type should match snapsho
 exports[`components/content/VideoElement file video type should match snapshot for file video 1`] = `
 <div>
   <div
-    class="VideoElement__container"
+    class="MediaLoader VideoElement__loader"
   >
     <div
-      class="VideoElement__wrapper"
+      class="VideoElement__container"
     >
-      <video
-        class="VideoElement__preview"
-        data-testid="video"
-      >
-        <source
-          src="blob:test-video.mp4"
-        />
-      </video>
       <div
-        aria-label="Play video in full screen"
-        class="VideoElement__overlay"
-        role="button"
-        tabindex="0"
+        class="VideoElement__wrapper"
       >
-        <div
-          class="VideoElement__play-icon"
+        <video
+          class="VideoElement__preview"
+          data-testid="video"
         >
-          <i
-            class="CompassIcon icon-play PlayIcon"
+          <source
+            src="blob:test-video.mp4"
           />
+        </video>
+        <div
+          aria-label="Play video in full screen"
+          class="VideoElement__overlay"
+          role="button"
+          tabindex="0"
+        >
+          <div
+            class="VideoElement__play-icon"
+          >
+            <i
+              class="CompassIcon icon-play PlayIcon"
+            />
+          </div>
         </div>
       </div>
-    </div>
-    <div
-      class="VideoElement__metadata"
-    >
-      <span
-        class="VideoElement__source"
+      <div
+        class="VideoElement__metadata"
       >
-        test-video.mp4
-      </span>
+        <span
+          class="VideoElement__source"
+        >
+          test-video.mp4
+        </span>
+      </div>
     </div>
   </div>
 </div>

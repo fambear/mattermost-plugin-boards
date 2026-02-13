@@ -3,65 +3,24 @@
 exports[`component/content/FileBlock archived file 1`] = `
 <div>
   <div
-    class="FileElement mr-4"
+    class="ArchivedFile"
   >
+    <i
+      class="CompassIcon icon-file-image-broken-outline BrokenFile"
+    />
     <div
-      class="fileElement-icon-division"
+      class="fileMetadata"
     >
-      <i
-        class="CompassIcon icon-file-text-outline-large fileElement-icon"
-      />
-    </div>
-    <div
-      class="fileElement-file-details mt-3"
-    >
-      <div
-        class="octo-tooltip tooltip-bottom"
-        data-tooltip="test.txt"
+      <p
+        class="filename"
       >
-        <div
-          class="fileElement-file-name"
-        >
-          test.txt
-        </div>
-      </div>
-      <div
-        class="fileElement-file-ext-and-size"
-      >
-        txt
+        FileName
+      </p>
+      <p>
+        TXT
          
-        2.2 KiB
-      </div>
-    </div>
-    <div
-      class="fileElement-delete-download"
-    >
-      <div
-        aria-label="menuwrapper"
-        class="MenuWrapper mt-3 fileElement-menu-icon"
-        role="button"
-      >
-        <button
-          class="IconButton size--medium"
-          type="button"
-        >
-          <i
-            class="CompassIcon icon-dots-vertical"
-          />
-        </button>
-      </div>
-      <div
-        class="octo-tooltip tooltip-bottom"
-        data-tooltip="Download"
-      >
-        <div
-          class="fileElement-download-btn mt-3 mr-2"
-        >
-          <i
-            class="CompassIcon icon-download-outline"
-          />
-        </div>
-      </div>
+        161.1 KiB
+      </p>
     </div>
   </div>
 </div>
@@ -70,63 +29,67 @@ exports[`component/content/FileBlock archived file 1`] = `
 exports[`component/content/FileBlock should match snapshot 1`] = `
 <div>
   <div
-    class="FileElement mr-4"
+    class="MediaLoader FileElement__loader"
   >
     <div
-      class="fileElement-icon-division"
-    >
-      <i
-        class="CompassIcon icon-file-text-outline-large fileElement-icon"
-      />
-    </div>
-    <div
-      class="fileElement-file-details mt-3"
+      class="FileElement mr-4"
     >
       <div
-        class="octo-tooltip tooltip-bottom"
-        data-tooltip="test.txt"
+        class="fileElement-icon-division"
+      >
+        <i
+          class="CompassIcon icon-file-text-outline-large fileElement-icon"
+        />
+      </div>
+      <div
+        class="fileElement-file-details mt-3"
       >
         <div
-          class="fileElement-file-name"
+          class="octo-tooltip tooltip-bottom"
+          data-tooltip="test.txt"
         >
-          test.txt
+          <div
+            class="fileElement-file-name"
+          >
+            test.txt
+          </div>
+        </div>
+        <div
+          class="fileElement-file-ext-and-size"
+        >
+          txt
+           
+          2.2 KiB
         </div>
       </div>
       <div
-        class="fileElement-file-ext-and-size"
-      >
-        txt
-         
-        2.2 KiB
-      </div>
-    </div>
-    <div
-      class="fileElement-delete-download"
-    >
-      <div
-        aria-label="menuwrapper"
-        class="MenuWrapper mt-3 fileElement-menu-icon"
-        role="button"
-      >
-        <button
-          class="IconButton size--medium"
-          type="button"
-        >
-          <i
-            class="CompassIcon icon-dots-vertical"
-          />
-        </button>
-      </div>
-      <div
-        class="octo-tooltip tooltip-bottom"
-        data-tooltip="Download"
+        class="fileElement-delete-download"
       >
         <div
-          class="fileElement-download-btn mt-3 mr-2"
+          aria-label="menuwrapper"
+          class="MenuWrapper mt-3 fileElement-menu-icon"
+          role="button"
         >
-          <i
-            class="CompassIcon icon-download-outline"
-          />
+          <button
+            class="IconButton size--medium"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-dots-vertical"
+            />
+          </button>
+        </div>
+        <div
+          class="octo-tooltip tooltip-bottom"
+          data-tooltip="Download"
+        >
+          <div
+            class="fileElement-download-btn mt-3 mr-2"
+          >
+            <i
+              class="CompassIcon icon-download-outline"
+            />
+          </div>
         </div>
       </div>
     </div>

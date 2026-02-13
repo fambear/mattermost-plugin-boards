@@ -126,7 +126,7 @@ const ImageElement = (props: Props): JSX.Element|null => {
                         className='ImageElement'
                         src={imageDataUrl || ''}
                         alt=''
-                        aria-label={block.title || 'View image in full screen'}
+                        aria-label={block.title || intl.formatMessage({id: 'ImageElement.view-fullscreen', defaultMessage: 'View image in full screen'})}
                         onLoad={handleImageLoad}
                     />
                     <div
@@ -135,7 +135,7 @@ const ImageElement = (props: Props): JSX.Element|null => {
                         onKeyDown={handleImageKeyDown}
                         tabIndex={0}
                         role='button'
-                        aria-label='View image in full screen'
+                        aria-label={intl.formatMessage({id: 'ImageElement.view-fullscreen', defaultMessage: 'View image in full screen'})}
                     >
                         <div className='ImageElement__magnify-icon'>
                             <CompassIcon
@@ -165,7 +165,7 @@ const ImageElement = (props: Props): JSX.Element|null => {
                                 className='ImageElement__download'
                                 onClick={(e) => e.stopPropagation()}
                             >
-                                Download
+                                {intl.formatMessage({id: 'ImageElement.download', defaultMessage: 'Download'})}
                             </a>
                         )}
                     </div>

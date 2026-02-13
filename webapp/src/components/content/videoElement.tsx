@@ -110,7 +110,7 @@ const VideoElement = (props: Props): JSX.Element|null => {
                         <img
                             className='VideoElement__thumbnail'
                             src={thumbnailUrl}
-                            alt='Video thumbnail'
+                            alt={intl.formatMessage({id: 'VideoElement.thumbnail', defaultMessage: 'Video thumbnail'})}
                             data-testid='video-thumbnail'
                         />
                         <div
@@ -119,7 +119,7 @@ const VideoElement = (props: Props): JSX.Element|null => {
                             onKeyDown={handleVideoKeyDown}
                             tabIndex={0}
                             role='button'
-                            aria-label='Play video in full screen'
+                            aria-label={intl.formatMessage({id: 'VideoElement.play-fullscreen', defaultMessage: 'Play video in full screen'})}
                         >
                             <div className='VideoElement__play-icon'>
                                 <CompassIcon
@@ -164,7 +164,7 @@ const VideoElement = (props: Props): JSX.Element|null => {
                             onKeyDown={handleVideoKeyDown}
                             tabIndex={0}
                             role='button'
-                            aria-label='Play video in full screen'
+                            aria-label={intl.formatMessage({id: 'VideoElement.play-fullscreen', defaultMessage: 'Play video in full screen'})}
                         >
                             <div className='VideoElement__play-icon'>
                                 <CompassIcon
@@ -216,7 +216,7 @@ const VideoElement = (props: Props): JSX.Element|null => {
                                     onKeyDown={handleVideoKeyDown}
                                     tabIndex={0}
                                     role='button'
-                                    aria-label='Play video in full screen'
+                                    aria-label={intl.formatMessage({id: 'VideoElement.play-fullscreen', defaultMessage: 'Play video in full screen'})}
                                 >
                                     <div className='VideoElement__play-icon'>
                                         <CompassIcon

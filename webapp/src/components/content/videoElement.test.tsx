@@ -307,6 +307,38 @@ describe('components/content/VideoElement', () => {
             // Should have called getFileAsDataUrl twice (initial + retry)
             expect(mockedOcto.getFileAsDataUrl).toHaveBeenCalledTimes(2)
         })
+
+        test('should track multiple retry attempts', async () => {
+            // All calls fail
+            mockedOcto.getFileAsDataUrl.mockResolvedValue({url: ''})
+
+            const component = wrapIntl(
+                <VideoElement
+                    block={defaultBlock}
+                />,
+            )
+            await act(async () => {
+                render(component)
+            })
+
+            // Click retry button 3 times
+            for (let i = 0; i < 3; i++) {
+                await waitFor(() => {
+                    const retryButton = document.querySelector('.MediaLoader__retry-button')
+                    expect(retryButton).toBeTruthy()
+                })
+
+                await act(async () => {
+                    const retryButton = document.querySelector('.MediaLoader__retry-button')
+                    if (retryButton) {
+                        fireEvent.click(retryButton)
+                    }
+                })
+            }
+
+            // Should have called getFileAsDataUrl 4 times (initial + 3 retries)
+            expect(mockedOcto.getFileAsDataUrl).toHaveBeenCalledTimes(4)
+        })
     })
 
     describe('YouTube video type', () => {
@@ -513,7 +545,7 @@ describe('components/content/VideoElement', () => {
             expect(container?.firstChild).toBeNull()
         })
 
-        test('should return null for file video without fileId', async () => {
+        test('should render empty MediaLoader for file video without fileId', async () => {
             const invalidBlock: VideoBlock = {
                 ...defaultBlock,
                 fields: {
@@ -527,14 +559,21 @@ describe('components/content/VideoElement', () => {
                     block={invalidBlock}
                 />,
             )
-            let container: Element | undefined
             await act(async () => {
-                const {container: c} = render(component)
-                container = c
+                render(component)
             })
 
-            // Should render null (empty container)
-            expect(container?.firstChild).toBeNull()
+            // Should render MediaLoader with no content (empty file video)
+            await waitFor(() => {
+                const mediaLoader = document.querySelector('.MediaLoader.VideoElement__loader')
+                expect(mediaLoader).toBeTruthy()
+                // No loading spinner since loading completes immediately
+                const spinner = document.querySelector('.MediaLoader__spinner')
+                expect(spinner).toBeNull()
+                // No error since it's not a failure case
+                const errorElement = document.querySelector('.MediaLoader__error')
+                expect(errorElement).toBeNull()
+            })
         })
     })
 

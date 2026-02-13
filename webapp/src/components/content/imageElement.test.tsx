@@ -3,7 +3,7 @@
 
 
 import React from 'react'
-import {render, screen, fireEvent, waitFor} from '@testing-library/react'
+import {render, fireEvent, waitFor} from '@testing-library/react'
 
 import {act} from 'react-dom/test-utils'
 
@@ -231,6 +231,58 @@ describe('components/content/ImageElement', () => {
 
             // Should have called getFileAsDataUrl twice (initial + retry)
             expect(mockedOcto.getFileAsDataUrl).toHaveBeenCalledTimes(2)
+        })
+
+        test('should track multiple retry attempts', async () => {
+            // All calls fail
+            mockedOcto.getFileAsDataUrl.mockResolvedValue({url: ''})
+
+            const component = wrapIntl(
+                <ImageElement
+                    block={defaultBlock}
+                />,
+            )
+            await act(async () => {
+                render(component)
+            })
+
+            // Click retry button 3 times
+            for (let i = 0; i < 3; i++) {
+                await waitFor(() => {
+                    const retryButton = document.querySelector('.MediaLoader__retry-button')
+                    expect(retryButton).toBeTruthy()
+                })
+
+                await act(async () => {
+                    const retryButton = document.querySelector('.MediaLoader__retry-button')
+                    if (retryButton) {
+                        fireEvent.click(retryButton)
+                    }
+                })
+            }
+
+            // Should have called getFileAsDataUrl 4 times (initial + 3 retries)
+            expect(mockedOcto.getFileAsDataUrl).toHaveBeenCalledTimes(4)
+        })
+    })
+
+    describe('accessibility', () => {
+        test('should have proper ARIA labels for image overlay', async () => {
+            const component = wrapIntl(
+                <ImageElement
+                    block={defaultBlock}
+                />,
+            )
+            await act(async () => {
+                render(component)
+            })
+
+            await waitFor(() => {
+                const overlay = document.querySelector('.ImageElement__overlay')
+                expect(overlay).toBeTruthy()
+                expect(overlay?.getAttribute('role')).toBe('button')
+                expect(overlay?.getAttribute('tabindex')).toBe('0')
+            })
         })
     })
 

@@ -50,8 +50,8 @@
         display: flex;
         align-items: center;
         gap: 4px;
-        background: none;
-        border: none;
+        background: transparent;
+        border: 0;
         color: rgb(var(--link-color-rgb));
         cursor: pointer;
         font-size: 14px;
@@ -68,6 +68,7 @@
     from {
         transform: rotate(0deg);
     }
+
     to {
         transform: rotate(360deg);
     }

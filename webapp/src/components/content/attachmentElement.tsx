@@ -217,7 +217,7 @@ const AttachmentElement = (props: Props): JSX.Element|null => {
                                             <CompassIcon
                                                 icon='trash-can-outline'
                                             />}
-                                        name='Delete'
+                                        name={intl.formatMessage({id: 'AttachmentElement.delete', defaultMessage: 'Delete'})}
                                         onClick={handleDeleteButtonClick}
                                     />
                                 </Menu>

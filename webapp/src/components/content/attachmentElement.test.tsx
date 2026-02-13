@@ -4,7 +4,7 @@
 
 import React from 'react'
 import {Provider as ReduxProvider} from 'react-redux'
-import {render, screen, fireEvent, waitFor} from '@testing-library/react'
+import {render, fireEvent, waitFor} from '@testing-library/react'
 import {act} from 'react-dom/test-utils'
 import {mocked} from 'jest-mock'
 
