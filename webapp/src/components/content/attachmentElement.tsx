@@ -105,10 +105,10 @@ const AttachmentElement = (props: Props): JSX.Element|null => {
     }, [block.boardId, block.fields.fileId, block.isUploading, block.title, retryCount, intl])
 
     useEffect(() => {
-        if (fileInfo.size && !fileSize) {
+        if (fileInfo.size) {
             setFileSize(Utils.humanFileSize(fileInfo.size))
         }
-        if (fileInfo.name && !fileName) {
+        if (fileInfo.name) {
             const generateFileName = (fName: string) => {
                 if (fName.length > 18) {
                     let result = fName.slice(0, 15)
