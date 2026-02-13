@@ -106,9 +106,27 @@ func (a *App) DetectAndLogPropertyChangesFromBlock(oldBlock *model.Block, blockP
 		return
 	}
 
+	// Build UpdatedProperties map that includes:
+	// 1. All properties in the new state (changed or added)
+	// 2. Properties that were removed (existed before but not in new state) - set to nil
+	updatedProperties := make(map[string]interface{})
+
+	// Copy all new properties
+	for k, v := range properties {
+		updatedProperties[k] = v
+	}
+
+	// Check for removed properties (existed in old card but not in new properties)
+	for propID := range currentCard.Properties {
+		if _, exists := properties[propID]; !exists {
+			// Property was removed - mark with nil to trigger "cleared" audit
+			updatedProperties[propID] = nil
+		}
+	}
+
 	// Create a CardPatch with UpdatedProperties
 	cardPatch := &model.CardPatch{
-		UpdatedProperties: properties,
+		UpdatedProperties: updatedProperties,
 	}
 
 	// Call the existing function
