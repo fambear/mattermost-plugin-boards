@@ -4,7 +4,7 @@
 import React, {useCallback} from 'react'
 import {FormattedMessage, useIntl} from 'react-intl'
 
-import {IPropertyTemplate, IPropertyOption} from '../../blocks/board'
+import {IPropertyTemplate, IPropertyOption, WorkflowTag} from '../../blocks/board'
 import Editable from '../../widgets/editable'
 import IconButton from '../../widgets/buttons/iconButton'
 import DeleteIcon from '../../widgets/icons/delete'
@@ -19,12 +19,13 @@ import './propertyOptionsEditor.scss'
 
 type Props = {
     property: IPropertyTemplate
+    isStatusProperty?: boolean
     onUpdate: (options: IPropertyOption[]) => void
     onPropertyUpdate: (updates: Partial<IPropertyTemplate>) => void
 }
 
 const PropertyOptionsEditor = (props: Props): JSX.Element => {
-    const {property} = props
+    const {property, isStatusProperty} = props
     const intl = useIntl()
 
     const handleAddOption = useCallback(() => {
@@ -36,6 +37,13 @@ const PropertyOptionsEditor = (props: Props): JSX.Element => {
         }
         props.onUpdate([...property.options, newOption])
     }, [property.options, props, intl])
+
+    const handleTagChange = useCallback((optionId: string, tag: WorkflowTag | '') => {
+        const updatedOptions = property.options.map((opt) =>
+            opt.id === optionId ? {...opt, tag: tag || undefined} : opt
+        )
+        props.onUpdate(updatedOptions)
+    }, [property.options, props])
 
     const handleUpdateOption = useCallback((optionId: string, updates: Partial<IPropertyOption>) => {
         const updatedOptions = property.options.map((opt) =>
@@ -74,6 +82,15 @@ const PropertyOptionsEditor = (props: Props): JSX.Element => {
         'propColorPink',
         'propColorRed',
     ]
+
+    const tagOptions: Array<{id: WorkflowTag | '', name: string}> = isStatusProperty ? [
+        {id: '', name: intl.formatMessage({id: 'PropertyOptionsEditor.no-tag', defaultMessage: 'No tag'})},
+        {id: 'Preparation', name: 'Preparation'},
+        {id: 'Execution', name: 'Execution'},
+        {id: 'Review', name: 'Review'},
+        {id: 'Finished', name: 'Finished'},
+        {id: 'Rejected', name: 'Rejected'},
+    ] : []
 
     return (
         <div className='PropertyOptionsEditor'>
@@ -124,6 +141,29 @@ const PropertyOptionsEditor = (props: Props): JSX.Element => {
                                 saveOnEsc={true}
                             />
                         </div>
+
+                        {isStatusProperty && (
+                            <div className='PropertyOptionsEditor__option-tag'>
+                                <MenuWrapper>
+                                    <button
+                                        type='button'
+                                        className='PropertyItem__dropdown'
+                                    >
+                                        {tagOptions.find((t) => t.id === (option.tag || ''))?.name || tagOptions[0].name}
+                                    </button>
+                                    <Menu>
+                                        {tagOptions.map((tag) => (
+                                            <Menu.Text
+                                                key={tag.id}
+                                                id={tag.id}
+                                                name={tag.name}
+                                                onClick={() => handleTagChange(option.id, tag.id)}
+                                            />
+                                        ))}
+                                    </Menu>
+                                </MenuWrapper>
+                            </div>
+                        )}
 
                         <div className='PropertyOptionsEditor__option-actions'>
                             {index > 0 && (

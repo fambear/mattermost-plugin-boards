@@ -429,5 +429,7 @@
   "tutorial_tip.got_it": "Понятно",
   "tutorial_tip.ok": "Следующий",
   "tutorial_tip.out": "Отказаться от этих советов.",
-  "tutorial_tip.seen": "Видели это раньше?"
+  "tutorial_tip.seen": "Видели это раньше?",
+    "PropertyOptionsEditor.no-tag": "Нет тега",
+    "PropertyItem.status-protected": "Свойство Status нельзя удалить"
 }

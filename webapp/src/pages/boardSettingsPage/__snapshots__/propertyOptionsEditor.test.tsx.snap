@@ -1,0 +1,556 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`pages/boardSettingsPage/PropertyOptionsEditor Snapshots should match snapshot for Status property with workflow tags 1`] = `
+<div>
+  <div
+    class="PropertyOptionsEditor"
+  >
+    <div
+      class="PropertyOptionsEditor__header"
+    >
+      Options
+    </div>
+    <div
+      class="PropertyOptionsEditor__list"
+    >
+      <div
+        class="PropertyOptionsEditor__option"
+      >
+        <div
+          class="PropertyOptionsEditor__option-color"
+        >
+          <div
+            aria-label="menuwrapper"
+            class="MenuWrapper"
+            role="button"
+          >
+            <button
+              class="PropertyOptionsEditor__color-button propColorDefault"
+              type="button"
+            >
+              <span
+                class="PropertyOptionsEditor__color-swatch propColorDefault"
+              />
+              Default
+            </button>
+          </div>
+        </div>
+        <div
+          class="PropertyOptionsEditor__option-value"
+        >
+          <input
+            class="Editable "
+            placeholder="Option value"
+            title="Todo"
+            value="Todo"
+          />
+        </div>
+        <div
+          class="PropertyOptionsEditor__option-tag"
+        >
+          <div
+            aria-label="menuwrapper"
+            class="MenuWrapper"
+            role="button"
+          >
+            <button
+              class="PropertyItem__dropdown"
+              type="button"
+            >
+              Preparation
+            </button>
+          </div>
+        </div>
+        <div
+          class="PropertyOptionsEditor__option-actions"
+        >
+          <button
+            class="IconButton"
+            type="button"
+          >
+            <svg
+              class="SortDownIcon Icon"
+              viewBox="0 0 100 100"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <polyline
+                points="50,20 50,80"
+              />
+              <polyline
+                points="30,60 50,80 70,60"
+              />
+            </svg>
+          </button>
+          <button
+            class="IconButton"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-trash-can-outline DeleteIcon trash-can-outline"
+            />
+          </button>
+        </div>
+      </div>
+      <div
+        class="PropertyOptionsEditor__option"
+      >
+        <div
+          class="PropertyOptionsEditor__option-color"
+        >
+          <div
+            aria-label="menuwrapper"
+            class="MenuWrapper"
+            role="button"
+          >
+            <button
+              class="PropertyOptionsEditor__color-button propColorGreen"
+              type="button"
+            >
+              <span
+                class="PropertyOptionsEditor__color-swatch propColorGreen"
+              />
+              Green
+            </button>
+          </div>
+        </div>
+        <div
+          class="PropertyOptionsEditor__option-value"
+        >
+          <input
+            class="Editable "
+            placeholder="Option value"
+            title="Done"
+            value="Done"
+          />
+        </div>
+        <div
+          class="PropertyOptionsEditor__option-tag"
+        >
+          <div
+            aria-label="menuwrapper"
+            class="MenuWrapper"
+            role="button"
+          >
+            <button
+              class="PropertyItem__dropdown"
+              type="button"
+            >
+              Finished
+            </button>
+          </div>
+        </div>
+        <div
+          class="PropertyOptionsEditor__option-actions"
+        >
+          <button
+            class="IconButton"
+            type="button"
+          >
+            <svg
+              class="SortUpIcon Icon"
+              viewBox="0 0 100 100"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <polyline
+                points="50,20 50,80"
+              />
+              <polyline
+                points="30,40 50,20 70,40"
+              />
+            </svg>
+          </button>
+          <button
+            class="IconButton"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-trash-can-outline DeleteIcon trash-can-outline"
+            />
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
+      class="PropertyOptionsEditor__add"
+    >
+      <button
+        class="Button"
+        type="button"
+      >
+        <span>
+          + Add Option
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`pages/boardSettingsPage/PropertyOptionsEditor Snapshots should match snapshot for Status property without tags 1`] = `
+<div>
+  <div
+    class="PropertyOptionsEditor"
+  >
+    <div
+      class="PropertyOptionsEditor__header"
+    >
+      Options
+    </div>
+    <div
+      class="PropertyOptionsEditor__list"
+    >
+      <div
+        class="PropertyOptionsEditor__option"
+      >
+        <div
+          class="PropertyOptionsEditor__option-color"
+        >
+          <div
+            aria-label="menuwrapper"
+            class="MenuWrapper"
+            role="button"
+          >
+            <button
+              class="PropertyOptionsEditor__color-button propColorDefault"
+              type="button"
+            >
+              <span
+                class="PropertyOptionsEditor__color-swatch propColorDefault"
+              />
+              Default
+            </button>
+          </div>
+        </div>
+        <div
+          class="PropertyOptionsEditor__option-value"
+        >
+          <input
+            class="Editable "
+            placeholder="Option value"
+            title="Todo"
+            value="Todo"
+          />
+        </div>
+        <div
+          class="PropertyOptionsEditor__option-tag"
+        >
+          <div
+            aria-label="menuwrapper"
+            class="MenuWrapper"
+            role="button"
+          >
+            <button
+              class="PropertyItem__dropdown"
+              type="button"
+            >
+              No tag
+            </button>
+          </div>
+        </div>
+        <div
+          class="PropertyOptionsEditor__option-actions"
+        >
+          <button
+            class="IconButton"
+            type="button"
+          >
+            <svg
+              class="SortDownIcon Icon"
+              viewBox="0 0 100 100"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <polyline
+                points="50,20 50,80"
+              />
+              <polyline
+                points="30,60 50,80 70,60"
+              />
+            </svg>
+          </button>
+          <button
+            class="IconButton"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-trash-can-outline DeleteIcon trash-can-outline"
+            />
+          </button>
+        </div>
+      </div>
+      <div
+        class="PropertyOptionsEditor__option"
+      >
+        <div
+          class="PropertyOptionsEditor__option-color"
+        >
+          <div
+            aria-label="menuwrapper"
+            class="MenuWrapper"
+            role="button"
+          >
+            <button
+              class="PropertyOptionsEditor__color-button propColorBlue"
+              type="button"
+            >
+              <span
+                class="PropertyOptionsEditor__color-swatch propColorBlue"
+              />
+              Blue
+            </button>
+          </div>
+        </div>
+        <div
+          class="PropertyOptionsEditor__option-value"
+        >
+          <input
+            class="Editable "
+            placeholder="Option value"
+            title="In Progress"
+            value="In Progress"
+          />
+        </div>
+        <div
+          class="PropertyOptionsEditor__option-tag"
+        >
+          <div
+            aria-label="menuwrapper"
+            class="MenuWrapper"
+            role="button"
+          >
+            <button
+              class="PropertyItem__dropdown"
+              type="button"
+            >
+              No tag
+            </button>
+          </div>
+        </div>
+        <div
+          class="PropertyOptionsEditor__option-actions"
+        >
+          <button
+            class="IconButton"
+            type="button"
+          >
+            <svg
+              class="SortUpIcon Icon"
+              viewBox="0 0 100 100"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <polyline
+                points="50,20 50,80"
+              />
+              <polyline
+                points="30,40 50,20 70,40"
+              />
+            </svg>
+          </button>
+          <button
+            class="IconButton"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-trash-can-outline DeleteIcon trash-can-outline"
+            />
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
+      class="PropertyOptionsEditor__add"
+    >
+      <button
+        class="Button"
+        type="button"
+      >
+        <span>
+          + Add Option
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`pages/boardSettingsPage/PropertyOptionsEditor Snapshots should match snapshot for empty options 1`] = `
+<div>
+  <div
+    class="PropertyOptionsEditor"
+  >
+    <div
+      class="PropertyOptionsEditor__header"
+    >
+      Options
+    </div>
+    <div
+      class="PropertyOptionsEditor__list"
+    />
+    <div
+      class="PropertyOptionsEditor__add"
+    >
+      <button
+        class="Button"
+        type="button"
+      >
+        <span>
+          + Add Option
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`pages/boardSettingsPage/PropertyOptionsEditor Snapshots should match snapshot for non-Status property 1`] = `
+<div>
+  <div
+    class="PropertyOptionsEditor"
+  >
+    <div
+      class="PropertyOptionsEditor__header"
+    >
+      Options
+    </div>
+    <div
+      class="PropertyOptionsEditor__list"
+    >
+      <div
+        class="PropertyOptionsEditor__option"
+      >
+        <div
+          class="PropertyOptionsEditor__option-color"
+        >
+          <div
+            aria-label="menuwrapper"
+            class="MenuWrapper"
+            role="button"
+          >
+            <button
+              class="PropertyOptionsEditor__color-button propColorDefault"
+              type="button"
+            >
+              <span
+                class="PropertyOptionsEditor__color-swatch propColorDefault"
+              />
+              Default
+            </button>
+          </div>
+        </div>
+        <div
+          class="PropertyOptionsEditor__option-value"
+        >
+          <input
+            class="Editable "
+            placeholder="Option value"
+            title="Low"
+            value="Low"
+          />
+        </div>
+        <div
+          class="PropertyOptionsEditor__option-actions"
+        >
+          <button
+            class="IconButton"
+            type="button"
+          >
+            <svg
+              class="SortDownIcon Icon"
+              viewBox="0 0 100 100"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <polyline
+                points="50,20 50,80"
+              />
+              <polyline
+                points="30,60 50,80 70,60"
+              />
+            </svg>
+          </button>
+          <button
+            class="IconButton"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-trash-can-outline DeleteIcon trash-can-outline"
+            />
+          </button>
+        </div>
+      </div>
+      <div
+        class="PropertyOptionsEditor__option"
+      >
+        <div
+          class="PropertyOptionsEditor__option-color"
+        >
+          <div
+            aria-label="menuwrapper"
+            class="MenuWrapper"
+            role="button"
+          >
+            <button
+              class="PropertyOptionsEditor__color-button propColorRed"
+              type="button"
+            >
+              <span
+                class="PropertyOptionsEditor__color-swatch propColorRed"
+              />
+              Red
+            </button>
+          </div>
+        </div>
+        <div
+          class="PropertyOptionsEditor__option-value"
+        >
+          <input
+            class="Editable "
+            placeholder="Option value"
+            title="High"
+            value="High"
+          />
+        </div>
+        <div
+          class="PropertyOptionsEditor__option-actions"
+        >
+          <button
+            class="IconButton"
+            type="button"
+          >
+            <svg
+              class="SortUpIcon Icon"
+              viewBox="0 0 100 100"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <polyline
+                points="50,20 50,80"
+              />
+              <polyline
+                points="30,40 50,20 70,40"
+              />
+            </svg>
+          </button>
+          <button
+            class="IconButton"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-trash-can-outline DeleteIcon trash-can-outline"
+            />
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
+      class="PropertyOptionsEditor__add"
+    >
+      <button
+        class="Button"
+        type="button"
+      >
+        <span>
+          + Add Option
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+`;

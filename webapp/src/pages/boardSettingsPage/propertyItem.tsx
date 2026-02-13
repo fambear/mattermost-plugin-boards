@@ -8,6 +8,7 @@ import {IPropertyTemplate, IPropertyOption, PropertySortRule} from '../../blocks
 import Editable from '../../widgets/editable'
 import IconButton from '../../widgets/buttons/iconButton'
 import DeleteIcon from '../../widgets/icons/delete'
+import LockOutline from '../../widgets/icons/lockOutline'
 import UpIcon from '../../widgets/icons/sortUp'
 import DownIcon from '../../widgets/icons/sortDown'
 import ExpandIcon from '../../widgets/icons/chevronDown'
@@ -34,6 +35,7 @@ type Props = {
 const PropertyItem = (props: Props): JSX.Element => {
     const {property, index, totalCount, isExpanded} = props
     const intl = useIntl()
+    const isStatusProperty = property.name.toLowerCase() === 'status'
     const [name, setName] = useState(property.name)
     const [sortRule, setSortRule] = useState<PropertySortRule>(property.sortRule || 'default')
 
@@ -90,6 +92,7 @@ const PropertyItem = (props: Props): JSX.Element => {
                         onChange={setName}
                         onSave={handleNameSave}
                         saveOnEsc={true}
+                        readonly={isStatusProperty}
                     />
                 </div>
                 <div className='PropertyItem__type'>
@@ -108,10 +111,18 @@ const PropertyItem = (props: Props): JSX.Element => {
                             onClick={() => props.onReorder(property.id, index + 1)}
                         />
                     )}
-                    <IconButton
-                        icon={<DeleteIcon/>}
-                        onClick={() => props.onDelete(property.id)}
-                    />
+                    {isStatusProperty ? (
+                        <IconButton
+                            icon={<LockOutline/>}
+                            title={intl.formatMessage({id: 'PropertyItem.status-protected', defaultMessage: 'Status property cannot be deleted'})}
+                            className='PropertyItem__lock-icon'
+                        />
+                    ) : (
+                        <IconButton
+                            icon={<DeleteIcon/>}
+                            onClick={() => props.onDelete(property.id)}
+                        />
+                    )}
                 </div>
             </div>
 
@@ -162,6 +173,7 @@ const PropertyItem = (props: Props): JSX.Element => {
                     {hasOptions && (
                         <PropertyOptionsEditor
                             property={property}
+                            isStatusProperty={isStatusProperty}
                             onUpdate={handleOptionsUpdate}
                             onPropertyUpdate={handlePropertyUpdate}
                         />
