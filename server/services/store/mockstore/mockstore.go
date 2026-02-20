@@ -1407,6 +1407,20 @@ func (mr *MockStoreMockRecorder) PatchBlock(arg0, arg1, arg2 interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchBlock", reflect.TypeOf((*MockStore)(nil).PatchBlock), arg0, arg1, arg2)
 }
 
+// PatchBlockNumber mocks base method.
+func (m *MockStore) PatchBlockNumber(arg0 string, arg1 int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PatchBlockNumber", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PatchBlockNumber indicates an expected call of PatchBlockNumber.
+func (mr *MockStoreMockRecorder) PatchBlockNumber(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PatchBlockNumber", reflect.TypeOf((*MockStore)(nil).PatchBlockNumber), arg0, arg1)
+}
+
 // PatchBlocks mocks base method.
 func (m *MockStore) PatchBlocks(arg0 *model.BlockPatchBatch, arg1 string) error {
 	m.ctrl.T.Helper()

@@ -16,7 +16,9 @@ import (
 	"context"
 	"time"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/mattermost/mattermost-plugin-boards/server/model"
+	"github.com/mattermost/mattermost-plugin-boards/server/utils"
 
 	mmModel "github.com/mattermost/mattermost/server/public/model"
 	"github.com/mattermost/mattermost/server/public/shared/mlog"
@@ -774,6 +776,19 @@ func (s *SQLStore) PatchBlock(blockID string, blockPatch *model.BlockPatch, user
 
 	return nil
 
+}
+
+func (s *SQLStore) PatchBlockNumber(blockID string, number int64) error {
+	query := s.getQueryBuilder(s.db).
+		Update(s.tablePrefix + "blocks").
+		Set("number", number).
+		Set("update_at", utils.GetMillis()).
+		Where(sq.Eq{"id": blockID})
+
+	if _, err := query.Exec(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *SQLStore) PatchBlocks(blockPatches *model.BlockPatchBatch, userID string) error {

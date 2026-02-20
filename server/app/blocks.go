@@ -53,6 +53,49 @@ func (a *App) DuplicateBlock(boardID string, blockID string, userID string, asTe
 		return nil, err
 	}
 
+	// Assign new card numbers and codes to duplicated card blocks.
+	// The store-level DuplicateBlock copies the original Number, which causes
+	// duplicate codes. We need to assign fresh numbers and update the DB.
+	var duplicatedCardID string
+	for _, block := range blocks {
+		if block.Type == model.TypeCard {
+			nextNumber, numErr := a.store.GetNextCardNumber(boardID)
+			if numErr != nil {
+				a.logger.Error("DuplicateBlock: could not get next card number",
+					mlog.String("boardID", boardID),
+					mlog.Err(numErr))
+				continue
+			}
+			block.Number = nextNumber
+			a.PopulateBlockCode(block, board)
+			duplicatedCardID = block.ID
+
+			// Update the block in the database with the new number
+			if patchErr := a.store.PatchBlockNumber(block.ID, block.Number); patchErr != nil {
+				a.logger.Error("DuplicateBlock: could not update block number",
+					mlog.String("blockID", block.ID),
+					mlog.Err(patchErr))
+			}
+		}
+	}
+
+	// Create a "clones/is_cloned_by" relation between original and duplicate
+	if duplicatedCardID != "" {
+		relation := &model.CardRelation{
+			SourceCardID: duplicatedCardID,
+			TargetCardID: blockID,
+			RelationType: model.RelationTypeClones,
+			CreatedBy:    userID,
+		}
+		relation.Populate()
+		if _, relErr := a.CreateCardRelation(relation, boardID); relErr != nil {
+			a.logger.Error("DuplicateBlock: could not create clone relation",
+				mlog.String("sourceCardID", duplicatedCardID),
+				mlog.String("targetCardID", blockID),
+				mlog.Err(relErr))
+		}
+	}
+
 	err = a.CopyAndUpdateCardFiles(boardID, userID, blocks, asTemplate)
 	if err != nil {
 		return nil, err
