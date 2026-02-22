@@ -41,8 +41,8 @@ describe('components/content/ImageElement', () => {
 
     beforeEach(() => {
         jest.clearAllMocks()
-        (octoClient.getFileAsDataUrl as jest.Mock).mockResolvedValue({url: 'test.jpg'})
-        (octoClient.getFileInfo as jest.Mock).mockResolvedValue({
+        ;(octoClient.getFileAsDataUrl as jest.Mock).mockResolvedValue({url: 'test.jpg'})
+        ;(octoClient.getFileInfo as jest.Mock).mockResolvedValue({
             url: 'test.jpg',
             name: 'test-image.jpg',
             extension: '.jpg',

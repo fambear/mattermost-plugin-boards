@@ -38,7 +38,7 @@ describe('components/content/FileGenericElement', () => {
 
     beforeEach(() => {
         jest.clearAllMocks()
-        (octoClient.getFileAsDataUrl as jest.Mock).mockResolvedValue({url: 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,test'})
+        ;(octoClient.getFileAsDataUrl as jest.Mock).mockResolvedValue({url: 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,test'})
     })
 
     test('should match snapshot', async () => {
