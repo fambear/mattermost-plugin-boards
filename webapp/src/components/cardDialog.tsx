@@ -228,7 +228,7 @@ const CardDialog = (props: Props): JSX.Element => {
             return
         }
 
-        const textBlockTypes = ['text', 'markdown', 'h1', 'h2', 'h3', 'list-item', 'quote', 'checkbox']
+        const textBlockTypes = ['text', 'h1', 'h2', 'h3', 'list-item', 'quote', 'checkbox']
         const emptyBlocks: Block[] = []
         const flatContents = contents.flat()
         for (const content of flatContents) {

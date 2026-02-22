@@ -14,7 +14,6 @@ import {contentRegistry} from './contentRegistry'
 // Need to require here to prevent webpack from tree-shaking these away
 // TODO: Update webpack to avoid this
 import './textElement'
-import './markdownElement'
 import './imageElement'
 import './dividerElement'
 import './checkboxElement'
