@@ -164,19 +164,20 @@ const FilePdfElement = (props: Props): JSX.Element|null => {
 
     const handleDownload = useCallback((e: React.MouseEvent) => {
         e.stopPropagation()
-        if (!pdfBlock.fields.fileId) {
+        if (!pdfDataUrl) {
             return
         }
 
-        // Use direct API URL instead of blob: URL to avoid Electron "Non http(s) protocol" dialog
-        const fileUrl = octoClient.getFileUrl(block.boardId, pdfBlock.fields.fileId)
+        // Use data URL directly — works in both browser and Electron desktop client.
+        // blob: URLs trigger "Non http(s) protocol" dialog in Electron.
+        // Direct API URLs fail CSRF check (no X-Requested-With header from <a> click).
         const link = document.createElement('a')
-        link.href = fileUrl
+        link.href = pdfDataUrl
         link.download = pdfBlock.fields.fileName || 'document.pdf'
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
-    }, [block.boardId, pdfBlock.fields.fileId, pdfBlock.fields.fileName])
+    }, [pdfDataUrl, pdfBlock.fields.fileName])
 
     const fileName = pdfBlock.fields.fileName || 'document.pdf'
     const fileSize = pdfBlock.fields.fileSize ? Utils.humanFileSize(pdfBlock.fields.fileSize) : ''
