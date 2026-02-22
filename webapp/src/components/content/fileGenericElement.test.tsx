@@ -12,6 +12,9 @@ import octoClient from '../../octoClient'
 
 import FileGenericElement from './fileGenericElement'
 
+// Mock octoClient for @swc/jest compatibility
+jest.mock('../../octoClient')
+
 // octoClient is automatically mocked via __mocks__/octoClient.ts
 
 describe('components/content/FileGenericElement', () => {
