@@ -104,20 +104,20 @@ export default function useImagePaste(
             )
         }
 
-        const uploaded = await Promise.all(uploads)
+        const results = await Promise.allSettled(uploads)
         const blocksToInsert: Block[] = []
         let someFilesNotUploaded = false
 
         const editingContext = options?.getEditingContext?.() || {blockId: null, blockIndex: -1}
         const insertIndex = editingContext.blockIndex >= 0 ? editingContext.blockIndex + 1 : contentOrder.length
 
-        for (const uploadInfo of uploaded) {
-            if (!uploadInfo.fileId) {
+        for (const result of results) {
+            if (result.status === 'rejected' || !result.value.fileId) {
                 someFilesNotUploaded = true
                 continue
             }
 
-            const {file, fileId, type} = uploadInfo
+            const {file, fileId, type} = result.value
 
             if (type === 'image') {
                 const imageBlock = createImageBlock()

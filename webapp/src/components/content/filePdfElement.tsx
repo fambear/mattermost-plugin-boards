@@ -91,15 +91,29 @@ const FilePdfElement = (props: Props): JSX.Element|null => {
     // Render PDF thumbnail using pdf.js
     useEffect(() => {
         if (!pdfDataUrl) {
-            return
+            return undefined
         }
+
+        let cancelled = false
 
         const renderThumbnail = async () => {
             try {
                 const pdfjsLib = await import('pdfjs-dist')
-                pdfjsLib.GlobalWorkerOptions.workerSrc = '//cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'
+
+                // Use webpack 5 URL constructor to bundle the worker file
+                // This creates an asset and returns a URL, avoiding CDN dependency
+                const workerUrl = new URL('pdfjs-dist/build/pdf.worker.min.js', import.meta.url)
+                pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl.toString()
+
+                if (cancelled) {
+                    return
+                }
 
                 const pdf = await pdfjsLib.getDocument(pdfDataUrl).promise
+
+                if (cancelled) {
+                    return
+                }
 
                 // Update page count if not already set
                 if (!pdfBlock.fields.pageCount) {
@@ -107,6 +121,11 @@ const FilePdfElement = (props: Props): JSX.Element|null => {
                 }
 
                 const page = await pdf.getPage(1)
+
+                if (cancelled) {
+                    return
+                }
+
                 const canvas = canvasRef.current
                 if (!canvas) {
                     return
@@ -126,12 +145,22 @@ const FilePdfElement = (props: Props): JSX.Element|null => {
                     viewport,
                 }).promise
 
+                if (cancelled) {
+                    return
+                }
+
                 setThumbnailUrl(canvas.toDataURL('image/png'))
             } catch (error) {
-                Utils.logError(`Failed to render PDF thumbnail: ${error}`)
+                if (!cancelled) {
+                    Utils.logError(`Failed to render PDF thumbnail: ${error}`)
+                }
             }
         }
         renderThumbnail()
+
+        return () => {
+            cancelled = true
+        }
     }, [pdfDataUrl, pdfBlock.fields.pageCount])
 
     const handleDownload = useCallback((e: React.MouseEvent) => {
@@ -140,12 +169,29 @@ const FilePdfElement = (props: Props): JSX.Element|null => {
             return
         }
 
-        const link = document.createElement('a')
-        link.href = pdfDataUrl
-        link.download = pdfBlock.fields.fileName || 'document.pdf'
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
+        try {
+            // Convert data URL to Blob to avoid memory issues with large files
+            const byteString = atob(pdfDataUrl.split(',')[1])
+            const mimeString = pdfDataUrl.split(',')[0].split(':')[1].split(';')[0]
+            const ab = new ArrayBuffer(byteString.length)
+            const ia = new Uint8Array(ab)
+            for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i)
+            }
+            const blob = new Blob([ab], {type: mimeString})
+            const blobUrl = URL.createObjectURL(blob)
+
+            const link = document.createElement('a')
+            link.href = blobUrl
+            link.download = pdfBlock.fields.fileName || 'document.pdf'
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+            URL.revokeObjectURL(blobUrl)
+        } catch {
+            // Fallback: open data URL directly
+            window.open(pdfDataUrl)
+        }
     }, [pdfDataUrl, pdfBlock.fields.fileName])
 
     const fileName = pdfBlock.fields.fileName || 'document.pdf'
@@ -207,7 +253,7 @@ contentRegistry.registerContentType({
     getIcon: () => <CompassIcon icon='file-pdf-outline-large'/>,
     createBlock: async (boardId: string, intl: IntlShape) => {
         return new Promise<FilePdfBlock>(
-            (resolve) => {
+            (resolve, reject) => {
                 Utils.selectLocalFile(async (file) => {
                     const fileId = await octoClient.uploadFile(boardId, file)
 
@@ -220,7 +266,7 @@ contentRegistry.registerContentType({
                         resolve(block)
                     } else {
                         sendFlashMessage({content: intl.formatMessage({id: 'createFilePdfBlock.failed', defaultMessage: 'Unable to upload the file. File size limit reached.'}), severity: 'normal'})
-                        resolve(createFilePdfBlock())
+                        reject(new Error('Upload failed'))
                     }
                 },
                 '.pdf')

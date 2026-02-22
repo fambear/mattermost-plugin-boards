@@ -128,7 +128,7 @@ contentRegistry.registerContentType({
     getIcon: () => <CompassIcon icon='file-outline'/>,
     createBlock: async (boardId: string, intl: IntlShape) => {
         return new Promise<FileGenericBlock>(
-            (resolve) => {
+            (resolve, reject) => {
                 Utils.selectLocalFile(async (file) => {
                     const fileId = await octoClient.uploadFile(boardId, file)
 
@@ -141,7 +141,7 @@ contentRegistry.registerContentType({
                         resolve(block)
                     } else {
                         sendFlashMessage({content: intl.formatMessage({id: 'createFileGenericBlock.failed', defaultMessage: 'Unable to upload the file. File size limit reached.'}), severity: 'normal'})
-                        resolve(createFileGenericBlock())
+                        reject(new Error('Upload failed'))
                     }
                 })
             },

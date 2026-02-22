@@ -92,6 +92,6 @@ func (e ErrInvalidBlockType) Error() string {
 
 // IsErrInvalidBlockType returns true if `err` is a IsErrInvalidBlockType or wraps one.
 func IsErrInvalidBlockType(err error) bool {
-	var eibt *ErrInvalidBlockType
+	var eibt ErrInvalidBlockType
 	return errors.As(err, &eibt)
 }

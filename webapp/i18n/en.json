@@ -146,7 +146,7 @@
     "ContentBlock.file-pdf": "PDF file",
     "ContentBlock.file-generic": "File attachment",
     "FilePdfElement.load-failed": "Unable to load PDF",
-    "FilePdfElement.pages": "{count} pages",
+    "FilePdfElement.pages": "{count, plural, one {1 page} other {{count} pages}}",
     "FilePdfElement.download": "Download",
     "FileGenericElement.load-failed": "Unable to load file",
     "FileGenericElement.download": "Click to download",

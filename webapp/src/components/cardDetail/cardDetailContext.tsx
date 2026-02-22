@@ -46,7 +46,12 @@ export const CardDetailProvider = (props: CardDetailProps): ReactElement => {
     })
     const {card} = props
     const addBlock = useCallback(async (handler: ContentHandler, index: number, auto: boolean) => {
-        const block = await handler.createBlock(card.boardId, intl)
+        let block: Block
+        try {
+            block = await handler.createBlock(card.boardId, intl)
+        } catch {
+            return
+        }
         block.parentId = card.id
         block.boardId = card.boardId
         const typeName = handler.getDisplayText(intl)
