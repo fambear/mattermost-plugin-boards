@@ -92,7 +92,7 @@ describe('components/content/FilePdfElement', () => {
 
     beforeEach(() => {
         jest.clearAllMocks()
-        mockedOcto.getFileAsDataUrl = jest.fn().mockResolvedValue({url: 'data:application/pdf;base64,testpdfdata'})
+        mockedOcto.getFileAsDataUrl.mockResolvedValue({url: 'data:application/pdf;base64,testpdfdata'})
     })
 
     test('should match snapshot', async () => {
