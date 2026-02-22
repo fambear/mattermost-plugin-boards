@@ -42,7 +42,7 @@ func BlockTypeFromString(s string) (BlockType, error) {
 		return TypeCard, nil
 	case "view":
 		return TypeView, nil
-	case "text":
+	case "text", "markdown":
 		return TypeText, nil
 	case "checkbox":
 		return TypeCheckbox, nil

@@ -8,7 +8,6 @@ import H3 from './h3'
 import Image from './image'
 import Text from './text'
 import Divider from './divider'
-import Markdown from './markdown'
 import ListItem from './list-item'
 import Attachment from './attachment'
 import Quote from './quote'
@@ -67,7 +66,6 @@ register(H3)
 register(Image)
 register(Text)
 register(Divider)
-register(Markdown)
 register(ListItem)
 register(Attachment)
 register(Quote)
