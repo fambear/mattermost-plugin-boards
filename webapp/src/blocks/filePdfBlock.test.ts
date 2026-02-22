@@ -1,8 +1,9 @@
 // Copyright (c) 2020-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {createFilePdfBlock, FilePdfBlock, FilePdfBlockFields} from './filePdfBlock'
 import {TestBlockFactory} from '../test/testBlockFactory'
+
+import {createFilePdfBlock, FilePdfBlock, FilePdfBlockFields} from './filePdfBlock'
 
 describe('filePdfBlock tests', () => {
     const board = TestBlockFactory.createBoard()

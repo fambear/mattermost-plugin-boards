@@ -1,8 +1,9 @@
 // Copyright (c) 2020-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {createFileGenericBlock, FileGenericBlock, FileGenericBlockFields} from './fileGenericBlock'
 import {TestBlockFactory} from '../test/testBlockFactory'
+
+import {createFileGenericBlock, FileGenericBlock, FileGenericBlockFields} from './fileGenericBlock'
 
 describe('fileGenericBlock tests', () => {
     const board = TestBlockFactory.createBoard()
