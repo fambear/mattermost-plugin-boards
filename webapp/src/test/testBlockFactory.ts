@@ -146,7 +146,7 @@ class TestBlockFactory {
         return block
     }
 
-        static createImage(card: Card): ImageBlock {
+    static createImage(card: Card): ImageBlock {
         const block = this.addToCard(createImageBlock(), card)
         block.fields.fileId = 'fileId'
         return block
