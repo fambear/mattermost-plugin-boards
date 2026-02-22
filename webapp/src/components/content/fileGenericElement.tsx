@@ -143,7 +143,8 @@ contentRegistry.registerContentType({
                         sendFlashMessage({content: intl.formatMessage({id: 'createFileGenericBlock.failed', defaultMessage: 'Unable to upload the file. File size limit reached.'}), severity: 'normal'})
                         reject(new Error('Upload failed'))
                     }
-                })
+                },
+                '*')
             },
         )
     },
