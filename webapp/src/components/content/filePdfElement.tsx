@@ -100,10 +100,9 @@ const FilePdfElement = (props: Props): JSX.Element|null => {
             try {
                 const pdfjsLib = await import('pdfjs-dist')
 
-                // Use webpack 5 URL constructor to bundle the worker file
-                // This creates an asset and returns a URL, avoiding CDN dependency
-                const workerUrl = new URL('pdfjs-dist/build/pdf.worker.min.js', import.meta.url)
-                pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl.toString()
+                // Import the worker entry which registers window.pdfjsWorker
+                // This bundles the worker with webpack, avoiding external CDN dependency
+                await import('pdfjs-dist/build/pdf.worker.entry')
 
                 if (cancelled) {
                     return
