@@ -36,7 +36,7 @@ const getFileIcon = (fileName: string): string => {
 }
 
 const FileGenericElement = (props: Props): JSX.Element|null => {
-    const [isLoading, setIsLoading] = useState(false)
+    const [isLoading] = useState(false)
     const [loadError, setLoadError] = useState<string|null>(null)
     const intl = useIntl()
 
