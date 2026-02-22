@@ -43,38 +43,21 @@ const FileGenericElement = (props: Props): JSX.Element|null => {
     const {block} = props
     const fileBlock = block as FileGenericBlock
 
-    const handleDownload = useCallback(async (e: React.MouseEvent) => {
+    const handleDownload = useCallback((e: React.MouseEvent) => {
         e.stopPropagation()
-        setIsLoading(true)
-        setLoadError(null)
-
-        try {
-            const fileURL = await octoClient.getFileAsDataUrl(block.boardId, fileBlock.fields.fileId)
-            if (!fileURL.url || fileURL.url.length === 0) {
-                setLoadError(intl.formatMessage({
-                    id: 'FileGenericElement.load-failed',
-                    defaultMessage: 'Unable to load file',
-                }))
-                setIsLoading(false)
-                return
-            }
-
-            const link = document.createElement('a')
-            link.href = fileURL.url
-            link.download = fileBlock.fields.fileName || 'file'
-            document.body.appendChild(link)
-            link.click()
-            document.body.removeChild(link)
-            setIsLoading(false)
-        } catch (error) {
-            Utils.logError(`Failed to download file: ${error}`)
-            setLoadError(intl.formatMessage({
-                id: 'FileGenericElement.load-failed',
-                defaultMessage: 'Unable to load file',
-            }))
-            setIsLoading(false)
+        if (!fileBlock.fields.fileId) {
+            return
         }
-    }, [block.boardId, fileBlock.fields.fileId, fileBlock.fields.fileName, intl])
+
+        // Use direct API URL instead of blob: URL to avoid Electron "Non http(s) protocol" dialog
+        const fileUrl = octoClient.getFileUrl(block.boardId, fileBlock.fields.fileId)
+        const link = document.createElement('a')
+        link.href = fileUrl
+        link.download = fileBlock.fields.fileName || 'file'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+    }, [block.boardId, fileBlock.fields.fileId, fileBlock.fields.fileName])
 
     const handleRetry = useCallback(() => {
         setLoadError(null)
