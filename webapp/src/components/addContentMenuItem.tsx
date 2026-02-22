@@ -38,7 +38,12 @@ const AddContentMenuItem = (props: Props): JSX.Element => {
             name={handler.getDisplayText(intl)}
             icon={handler.getIcon()}
             onClick={async () => {
-                const newBlock = await handler.createBlock(card.boardId, intl)
+                let newBlock: Block
+                try {
+                    newBlock = await handler.createBlock(card.boardId, intl)
+                } catch {
+                    return
+                }
                 newBlock.parentId = card.id
                 newBlock.boardId = card.boardId
 

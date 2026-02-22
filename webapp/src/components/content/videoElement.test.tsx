@@ -15,12 +15,13 @@ import octoClient from '../../octoClient'
 import VideoElement from './videoElement'
 
 jest.mock('../../octoClient')
+
+const mockedOcto = mocked(octoClient, true)
+
 jest.mock('../rootPortal', () => ({
     __esModule: true,
     default: ({children}: {children: React.ReactNode}) => <div data-testid='root-portal'>{children}</div>,
 }))
-
-const mockedOcto = mocked(octoClient, true)
 
 describe('components/content/VideoElement', () => {
     const defaultBlock: VideoBlock = {

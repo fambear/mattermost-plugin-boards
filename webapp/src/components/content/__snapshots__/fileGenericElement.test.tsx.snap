@@ -1,0 +1,77 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`components/content/FileGenericElement should match snapshot 1`] = `
+<div>
+  <div
+    class="MediaLoader FileGenericElement__loader"
+  >
+    <div
+      class="FileGenericElement__container"
+      role="button"
+      tabindex="0"
+    >
+      <div
+        class="FileGenericElement__icon"
+      >
+        <i
+          class="CompassIcon icon-file-excel-outline-large FileGenericElement__icon-image"
+        />
+      </div>
+      <div
+        class="FileGenericElement__info"
+      >
+        <span
+          class="FileGenericElement__filename"
+        >
+          document.xlsx
+        </span>
+        <span
+          class="FileGenericElement__metadata"
+        >
+          100.0 KiB
+           · 
+          Click to download
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`components/content/FileGenericElement should match snapshot for different file types 1`] = `
+<div>
+  <div
+    class="MediaLoader FileGenericElement__loader"
+  >
+    <div
+      class="FileGenericElement__container"
+      role="button"
+      tabindex="0"
+    >
+      <div
+        class="FileGenericElement__icon"
+      >
+        <i
+          class="CompassIcon icon-file-zip-outline-large FileGenericElement__icon-image"
+        />
+      </div>
+      <div
+        class="FileGenericElement__info"
+      >
+        <span
+          class="FileGenericElement__filename"
+        >
+          backup.zip
+        </span>
+        <span
+          class="FileGenericElement__metadata"
+        >
+          4.8 MiB
+           · 
+          Click to download
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+`;

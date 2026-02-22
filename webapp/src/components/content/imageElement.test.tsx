@@ -1,13 +1,9 @@
 // Copyright (c) 2020-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-
 import React from 'react'
-import {render, fireEvent, waitFor} from '@testing-library/react'
-
+import {render, fireEvent, waitFor, cleanup} from '@testing-library/react'
 import {act} from 'react-dom/test-utils'
-
-import {mocked} from 'jest-mock'
 
 import {ImageBlock} from '../../blocks/imageBlock'
 
@@ -18,12 +14,12 @@ import octoClient from '../../octoClient'
 import ImageElement from './imageElement'
 
 jest.mock('../../octoClient')
+
+
 jest.mock('../rootPortal', () => ({
     __esModule: true,
     default: ({children}: {children: React.ReactNode}) => <div data-testid='root-portal'>{children}</div>,
 }))
-
-const mockedOcto = mocked(octoClient, true)
 
 describe('components/content/ImageElement', () => {
     const defaultBlock: ImageBlock = {
@@ -44,10 +40,15 @@ describe('components/content/ImageElement', () => {
         limited: false,
     }
 
+    afterEach(async () => {
+        cleanup()
+        await new Promise((resolve) => setTimeout(resolve, 0))
+    })
+
     beforeEach(() => {
         jest.clearAllMocks()
-        mockedOcto.getFileAsDataUrl.mockResolvedValue({url: 'test.jpg'})
-        mockedOcto.getFileInfo.mockResolvedValue({
+        ;(octoClient.getFileAsDataUrl as jest.Mock).mockResolvedValue({url: 'test.jpg'})
+        ;(octoClient.getFileInfo as jest.Mock).mockResolvedValue({
             url: 'test.jpg',
             name: 'test-image.jpg',
             extension: '.jpg',
@@ -70,13 +71,13 @@ describe('components/content/ImageElement', () => {
     })
 
     test('archived file', async () => {
-        mockedOcto.getFileAsDataUrl.mockResolvedValue({
+        (octoClient.getFileAsDataUrl as jest.Mock).mockResolvedValue({
             archived: true,
             name: 'Filename',
             extension: '.txt',
             size: 165002,
         })
-        mockedOcto.getFileInfo.mockResolvedValue({
+        ;(octoClient.getFileInfo as jest.Mock).mockResolvedValue({
             archived: true,
             name: 'Filename',
             extension: '.txt',
@@ -100,7 +101,7 @@ describe('components/content/ImageElement', () => {
         test('should show loading spinner while image is loading', async () => {
             // Create a promise that we can resolve manually
             let resolveLoad: (value: {url: string}) => void
-            mockedOcto.getFileAsDataUrl.mockImplementation(() => new Promise((resolve) => {
+            (octoClient.getFileAsDataUrl as jest.Mock).mockImplementation(() => new Promise((resolve) => {
                 resolveLoad = resolve
             }))
 
@@ -148,7 +149,7 @@ describe('components/content/ImageElement', () => {
 
     describe('error state', () => {
         test('should show error state when image fails to load (empty url)', async () => {
-            mockedOcto.getFileAsDataUrl.mockResolvedValue({url: ''})
+            (octoClient.getFileAsDataUrl as jest.Mock).mockResolvedValue({url: ''})
 
             const component = wrapIntl(
                 <ImageElement
@@ -166,7 +167,7 @@ describe('components/content/ImageElement', () => {
         })
 
         test('should show error state when getFileAsDataUrl throws exception', async () => {
-            mockedOcto.getFileAsDataUrl.mockRejectedValue(new Error('Network error'))
+            (octoClient.getFileAsDataUrl as jest.Mock).mockRejectedValue(new Error('Network error'))
 
             const component = wrapIntl(
                 <ImageElement
@@ -184,7 +185,7 @@ describe('components/content/ImageElement', () => {
         })
 
         test('should show retry button on error', async () => {
-            mockedOcto.getFileAsDataUrl.mockResolvedValue({url: ''})
+            (octoClient.getFileAsDataUrl as jest.Mock).mockResolvedValue({url: ''})
 
             const component = wrapIntl(
                 <ImageElement
@@ -203,7 +204,7 @@ describe('components/content/ImageElement', () => {
 
         test('should retry loading when retry button is clicked', async () => {
             // First call fails
-            mockedOcto.getFileAsDataUrl.mockResolvedValueOnce({url: ''})
+            (octoClient.getFileAsDataUrl as jest.Mock).mockResolvedValueOnce({url: ''})
 
             const component = wrapIntl(
                 <ImageElement
@@ -220,7 +221,7 @@ describe('components/content/ImageElement', () => {
             })
 
             // Second call succeeds
-            mockedOcto.getFileAsDataUrl.mockResolvedValue({url: 'test.jpg'})
+            ;(octoClient.getFileAsDataUrl as jest.Mock).mockResolvedValue({url: 'test.jpg'})
 
             await act(async () => {
                 const retryButton = document.querySelector('.MediaLoader__retry-button')
@@ -230,12 +231,12 @@ describe('components/content/ImageElement', () => {
             })
 
             // Should have called getFileAsDataUrl twice (initial + retry)
-            expect(mockedOcto.getFileAsDataUrl).toHaveBeenCalledTimes(2)
+            expect((octoClient.getFileAsDataUrl as jest.Mock)).toHaveBeenCalledTimes(2)
         })
 
         test('should track multiple retry attempts', async () => {
             // All calls fail
-            mockedOcto.getFileAsDataUrl.mockResolvedValue({url: ''})
+            (octoClient.getFileAsDataUrl as jest.Mock).mockResolvedValue({url: ''})
 
             const component = wrapIntl(
                 <ImageElement
@@ -262,7 +263,7 @@ describe('components/content/ImageElement', () => {
             }
 
             // Should have called getFileAsDataUrl 4 times (initial + 3 retries)
-            expect(mockedOcto.getFileAsDataUrl).toHaveBeenCalledTimes(4)
+            expect((octoClient.getFileAsDataUrl as jest.Mock)).toHaveBeenCalledTimes(4)
         })
     })
 

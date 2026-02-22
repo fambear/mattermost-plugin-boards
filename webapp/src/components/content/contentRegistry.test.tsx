@@ -5,12 +5,14 @@ import '../content/textElement'
 import '../content/imageElement'
 import '../content/dividerElement'
 import '../content/checkboxElement'
+import '../content/fileGenericElement'
+import '../content/filePdfElement'
 
 import {ContentBlockTypes} from '../../blocks/block'
 
 import {contentRegistry} from './contentRegistry'
 
-const contentBlockTypes = ['text', 'image', 'divider', 'checkbox'] as ContentBlockTypes[]
+const contentBlockTypes = ['text', 'image', 'divider', 'checkbox', 'file-generic', 'file-pdf'] as ContentBlockTypes[]
 
 describe('components/content/ContentRegistry', () => {
     test('have all contentTypes', () => {

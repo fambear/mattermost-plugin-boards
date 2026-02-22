@@ -51,6 +51,7 @@
 		"mattermost-redux": "10.8.0",
 		"moment": "^2.29.1",
 		"nanoevents": "^5.1.13",
+		"pdfjs-dist": "^3.11.174",
 		"react": "17.0.2",
 		"react-beautiful-dnd": "^13.1.1",
 		"react-day-picker": "^7.4.10",

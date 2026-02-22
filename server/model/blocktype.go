@@ -14,17 +14,19 @@ import (
 type BlockType string
 
 const (
-	TypeUnknown    = "unknown"
-	TypeBoard      = "board"
-	TypeCard       = "card"
-	TypeView       = "view"
-	TypeText       = "text"
-	TypeCheckbox   = "checkbox"
-	TypeComment    = "comment"
-	TypeImage      = "image"
-	TypeAttachment = "attachment"
-	TypeDivider    = "divider"
-	TypeVideo      = "video"
+	TypeUnknown     = "unknown"
+	TypeBoard       = "board"
+	TypeCard        = "card"
+	TypeView        = "view"
+	TypeText        = "text"
+	TypeCheckbox    = "checkbox"
+	TypeComment     = "comment"
+	TypeImage       = "image"
+	TypeAttachment  = "attachment"
+	TypeDivider     = "divider"
+	TypeVideo       = "video"
+	TypeFilePDF     = "file-pdf"
+	TypeFileGeneric = "file-generic"
 )
 
 func (bt BlockType) String() string {
@@ -54,6 +56,10 @@ func BlockTypeFromString(s string) (BlockType, error) {
 		return TypeDivider, nil
 	case "video":
 		return TypeVideo, nil
+	case "file-pdf":
+		return TypeFilePDF, nil
+	case "file-generic":
+		return TypeFileGeneric, nil
 	}
 	return TypeUnknown, ErrInvalidBlockType{s}
 }
@@ -69,7 +75,7 @@ func BlockType2IDType(blockType BlockType) utils.IDType {
 		return utils.IDTypeView
 	case TypeText, TypeCheckbox, TypeComment, TypeDivider:
 		return utils.IDTypeBlock
-	case TypeImage, TypeAttachment, TypeVideo:
+	case TypeImage, TypeAttachment, TypeVideo, TypeFilePDF, TypeFileGeneric:
 		return utils.IDTypeAttachment
 	}
 	return utils.IDTypeNone
@@ -86,6 +92,6 @@ func (e ErrInvalidBlockType) Error() string {
 
 // IsErrInvalidBlockType returns true if `err` is a IsErrInvalidBlockType or wraps one.
 func IsErrInvalidBlockType(err error) bool {
-	var eibt *ErrInvalidBlockType
+	var eibt ErrInvalidBlockType
 	return errors.As(err, &eibt)
 }

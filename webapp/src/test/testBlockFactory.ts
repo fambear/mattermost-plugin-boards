@@ -15,6 +15,8 @@ import {MarkdownBlock, createMarkdownBlock} from '../blocks/markdownBlock'
 import {Category, CategoryBoards} from '../store/sidebar'
 import {Utils} from '../utils'
 import {CheckboxBlock, createCheckboxBlock} from '../blocks/checkboxBlock'
+import {FileGenericBlock, createFileGenericBlock} from '../blocks/fileGenericBlock'
+import {FilePdfBlock, createFilePdfBlock} from '../blocks/filePdfBlock'
 import {Block} from '../blocks/block'
 import {IUser} from '../user'
 
@@ -166,6 +168,25 @@ class TestBlockFactory {
     static createCheckbox(card: Card): CheckboxBlock {
         const block = this.addToCard(createCheckboxBlock(), card)
         block.title = 'title'
+        return block
+    }
+
+    static createFileGeneric(card: Card): FileGenericBlock {
+        const block = this.addToCard(createFileGenericBlock(), card)
+        block.fields.fileId = 'test-file-id'
+        block.fields.fileName = 'document.xlsx'
+        block.fields.fileSize = 102400
+        block.fields.mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        return block
+    }
+
+    static createFilePdf(card: Card): FilePdfBlock {
+        const block = this.addToCard(createFilePdfBlock(), card)
+        block.fields.fileId = 'test-pdf-id'
+        block.fields.fileName = 'document.pdf'
+        block.fields.fileSize = 2457600
+        block.fields.mimeType = 'application/pdf'
+        block.fields.pageCount = 12
         return block
     }
 
