@@ -40,7 +40,7 @@ describe('components/content/FileGenericElement', () => {
 
     beforeEach(() => {
         jest.clearAllMocks()
-        ;(octoClient.getFileUrl as jest.Mock).mockReturnValue('http://localhost/api/v2/files/teams/team-1/board-1/test-file-id')
+        ;(octoClient.getFileAsDataUrl as jest.Mock).mockResolvedValue({url: 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,test'})
     })
 
     test('should match snapshot', async () => {
@@ -180,7 +180,7 @@ describe('components/content/FileGenericElement', () => {
     })
 
     describe('download functionality', () => {
-        test('should create download link with direct API URL on click', async () => {
+        test('should call getFileAsDataUrl on click', async () => {
             const component = wrapIntl(
                 <FileGenericElement
                     block={defaultBlock}
@@ -202,10 +202,10 @@ describe('components/content/FileGenericElement', () => {
                 }
             })
 
-            expect((octoClient.getFileUrl as jest.Mock)).toHaveBeenCalledWith('board-1', 'test-file-id')
+            expect((octoClient.getFileAsDataUrl as jest.Mock)).toHaveBeenCalledWith('board-1', 'test-file-id')
         })
 
-        test('should trigger download on Enter key', async () => {
+        test('should call getFileAsDataUrl on Enter key', async () => {
             const component = wrapIntl(
                 <FileGenericElement
                     block={defaultBlock}
@@ -227,10 +227,10 @@ describe('components/content/FileGenericElement', () => {
                 }
             })
 
-            expect((octoClient.getFileUrl as jest.Mock)).toHaveBeenCalled()
+            expect((octoClient.getFileAsDataUrl as jest.Mock)).toHaveBeenCalled()
         })
 
-        test('should trigger download on Space key', async () => {
+        test('should call getFileAsDataUrl on Space key', async () => {
             const component = wrapIntl(
                 <FileGenericElement
                     block={defaultBlock}
@@ -252,7 +252,125 @@ describe('components/content/FileGenericElement', () => {
                 }
             })
 
-            expect((octoClient.getFileUrl as jest.Mock)).toHaveBeenCalled()
+            expect((octoClient.getFileAsDataUrl as jest.Mock)).toHaveBeenCalled()
+        })
+    })
+
+    describe('error handling', () => {
+        test('should show error state when file fails to load (empty url)', async () => {
+            (octoClient.getFileAsDataUrl as jest.Mock).mockResolvedValue({url: ''})
+
+            const component = wrapIntl(
+                <FileGenericElement
+                    block={defaultBlock}
+                />,
+            )
+            await act(async () => {
+                render(component)
+            })
+
+            // Click to trigger download which will fail
+            const container = document.querySelector('.FileGenericElement__container')
+            await act(async () => {
+                if (container) {
+                    fireEvent.click(container)
+                }
+            })
+
+            await waitFor(() => {
+                const errorElement = document.querySelector('.MediaLoader__error')
+                expect(errorElement).toBeTruthy()
+            })
+        })
+
+        test('should show error state when getFileAsDataUrl throws exception', async () => {
+            (octoClient.getFileAsDataUrl as jest.Mock).mockRejectedValue(new Error('Network error'))
+
+            const component = wrapIntl(
+                <FileGenericElement
+                    block={defaultBlock}
+                />,
+            )
+            await act(async () => {
+                render(component)
+            })
+
+            // Click to trigger download which will fail
+            const container = document.querySelector('.FileGenericElement__container')
+            await act(async () => {
+                if (container) {
+                    fireEvent.click(container)
+                }
+            })
+
+            await waitFor(() => {
+                const errorElement = document.querySelector('.MediaLoader__error')
+                expect(errorElement).toBeTruthy()
+            })
+        })
+
+        test('should show retry button on error', async () => {
+            (octoClient.getFileAsDataUrl as jest.Mock).mockResolvedValue({url: ''})
+
+            const component = wrapIntl(
+                <FileGenericElement
+                    block={defaultBlock}
+                />,
+            )
+            await act(async () => {
+                render(component)
+            })
+
+            // Click to trigger download which will fail
+            const container = document.querySelector('.FileGenericElement__container')
+            await act(async () => {
+                if (container) {
+                    fireEvent.click(container)
+                }
+            })
+
+            await waitFor(() => {
+                const retryButton = document.querySelector('.MediaLoader__retry-button')
+                expect(retryButton).toBeTruthy()
+            })
+        })
+
+        test('should retry loading when retry button is clicked', async () => {
+            // First call fails
+            (octoClient.getFileAsDataUrl as jest.Mock).mockResolvedValueOnce({url: ''})
+
+            const component = wrapIntl(
+                <FileGenericElement
+                    block={defaultBlock}
+                />,
+            )
+            await act(async () => {
+                render(component)
+            })
+
+            // Click to trigger download which will fail
+            const container = document.querySelector('.FileGenericElement__container')
+            await act(async () => {
+                if (container) {
+                    fireEvent.click(container)
+                }
+            })
+
+            await waitFor(() => {
+                const retryButton = document.querySelector('.MediaLoader__retry-button')
+                expect(retryButton).toBeTruthy()
+            })
+
+            // Click retry button
+            await act(async () => {
+                const retryButton = document.querySelector('.MediaLoader__retry-button')
+                if (retryButton) {
+                    fireEvent.click(retryButton)
+                }
+            })
+
+            // Should have called getFileAsDataUrl (at least once for the retry)
+            expect((octoClient.getFileAsDataUrl as jest.Mock)).toHaveBeenCalled()
         })
     })
 
