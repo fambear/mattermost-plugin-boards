@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react'
-import {render, fireEvent, waitFor} from '@testing-library/react'
+import {render, fireEvent, waitFor, cleanup} from '@testing-library/react'
 import {act} from 'react-dom/test-utils'
 
 import {ImageBlock} from '../../blocks/imageBlock'
@@ -40,6 +40,11 @@ describe('components/content/ImageElement', () => {
         limited: false,
     }
 
+    afterEach(async () => {
+        cleanup()
+        await new Promise((resolve) => setTimeout(resolve, 0))
+    })
+
     beforeEach(() => {
         jest.clearAllMocks()
         ;(octoClient.getFileAsDataUrl as jest.Mock).mockResolvedValue({url: 'test.jpg'})
@@ -72,7 +77,7 @@ describe('components/content/ImageElement', () => {
             extension: '.txt',
             size: 165002,
         })
-        (octoClient.getFileInfo as jest.Mock).mockResolvedValue({
+        ;(octoClient.getFileInfo as jest.Mock).mockResolvedValue({
             archived: true,
             name: 'Filename',
             extension: '.txt',
@@ -216,7 +221,7 @@ describe('components/content/ImageElement', () => {
             })
 
             // Second call succeeds
-            (octoClient.getFileAsDataUrl as jest.Mock).mockResolvedValue({url: 'test.jpg'})
+            ;(octoClient.getFileAsDataUrl as jest.Mock).mockResolvedValue({url: 'test.jpg'})
 
             await act(async () => {
                 const retryButton = document.querySelector('.MediaLoader__retry-button')

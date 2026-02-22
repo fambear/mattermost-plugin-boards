@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react'
-import {render, waitFor, fireEvent} from '@testing-library/react'
+import {render, waitFor, fireEvent, cleanup} from '@testing-library/react'
 import {act} from 'react-dom/test-utils'
 
 import {FilePdfBlock} from '../../blocks/filePdfBlock'
@@ -89,6 +89,11 @@ describe('components/content/FilePdfElement', () => {
         deleteAt: 0,
         limited: false,
     }
+
+    afterEach(async () => {
+        cleanup()
+        await new Promise((resolve) => setTimeout(resolve, 0))
+    })
 
     beforeEach(() => {
         jest.clearAllMocks()
@@ -480,7 +485,7 @@ describe('components/content/FilePdfElement', () => {
             })
 
             // Second call succeeds
-            (octoClient.getFileAsDataUrl as jest.Mock).mockResolvedValue({url: 'data:application/pdf;base64,test'})
+            ;(octoClient.getFileAsDataUrl as jest.Mock).mockResolvedValue({url: 'data:application/pdf;base64,test'})
 
             await act(async () => {
                 const retryButton = document.querySelector('.MediaLoader__retry-button')
