@@ -780,7 +780,7 @@ func (s *SQLStore) PatchBlock(blockID string, blockPatch *model.BlockPatch, user
 
 func (s *SQLStore) PatchBlockNumber(blockID string, number int64) error {
 	query := s.getQueryBuilder(s.db).
-		Update(s.tablePrefix + "blocks").
+		Update(s.tablePrefix+"blocks").
 		Set("number", number).
 		Set("update_at", utils.GetMillis()).
 		Where(sq.Eq{"id": blockID})
