@@ -120,7 +120,7 @@ func (a *App) validateFileReferencedByBoard(boardID, filename string) error {
 
 	for _, block := range blocks {
 		switch block.Type {
-		case model.TypeImage, model.TypeAttachment, model.TypeVideo:
+		case model.TypeImage, model.TypeAttachment, model.TypeVideo, model.TypeFilePDF, model.TypeFileGeneric:
 			if fileID, ok := block.Fields[model.BlockFieldFileId].(string); ok && fileID == filename {
 				return nil
 			}
