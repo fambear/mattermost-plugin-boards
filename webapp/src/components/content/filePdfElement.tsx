@@ -164,34 +164,19 @@ const FilePdfElement = (props: Props): JSX.Element|null => {
 
     const handleDownload = useCallback((e: React.MouseEvent) => {
         e.stopPropagation()
-        if (!pdfDataUrl) {
+        if (!pdfBlock.fields.fileId) {
             return
         }
 
-        try {
-            // Convert data URL to Blob to avoid memory issues with large files
-            const byteString = atob(pdfDataUrl.split(',')[1])
-            const mimeString = pdfDataUrl.split(',')[0].split(':')[1].split(';')[0]
-            const ab = new ArrayBuffer(byteString.length)
-            const ia = new Uint8Array(ab)
-            for (let i = 0; i < byteString.length; i++) {
-                ia[i] = byteString.charCodeAt(i)
-            }
-            const blob = new Blob([ab], {type: mimeString})
-            const blobUrl = URL.createObjectURL(blob)
-
-            const link = document.createElement('a')
-            link.href = blobUrl
-            link.download = pdfBlock.fields.fileName || 'document.pdf'
-            document.body.appendChild(link)
-            link.click()
-            document.body.removeChild(link)
-            URL.revokeObjectURL(blobUrl)
-        } catch {
-            // Fallback: open data URL directly
-            window.open(pdfDataUrl)
-        }
-    }, [pdfDataUrl, pdfBlock.fields.fileName])
+        // Use direct API URL instead of blob: URL to avoid Electron "Non http(s) protocol" dialog
+        const fileUrl = octoClient.getFileUrl(block.boardId, pdfBlock.fields.fileId)
+        const link = document.createElement('a')
+        link.href = fileUrl
+        link.download = pdfBlock.fields.fileName || 'document.pdf'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+    }, [block.boardId, pdfBlock.fields.fileId, pdfBlock.fields.fileName])
 
     const fileName = pdfBlock.fields.fileName || 'document.pdf'
     const fileSize = pdfBlock.fields.fileSize ? Utils.humanFileSize(pdfBlock.fields.fileSize) : ''
