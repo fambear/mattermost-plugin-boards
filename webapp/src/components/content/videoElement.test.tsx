@@ -14,7 +14,8 @@ import octoClient from '../../octoClient'
 
 import VideoElement from './videoElement'
 
-// octoClient is automatically mocked via __mocks__/octoClient.ts
+jest.mock('../../octoClient')
+
 const mockedOcto = mocked(octoClient, true)
 
 jest.mock('../rootPortal', () => ({

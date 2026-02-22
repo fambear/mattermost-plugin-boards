@@ -13,7 +13,8 @@ import octoClient from '../../octoClient'
 
 import ImageElement from './imageElement'
 
-// octoClient is automatically mocked via __mocks__/octoClient.ts
+jest.mock('../../octoClient')
+
 
 jest.mock('../rootPortal', () => ({
     __esModule: true,

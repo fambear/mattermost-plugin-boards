@@ -15,7 +15,6 @@ import FilePdfElement from './filePdfElement'
 // Mock octoClient for @swc/jest compatibility
 jest.mock('../../octoClient')
 
-// octoClient is automatically mocked via __mocks__/octoClient.ts
 
 // Mock canvas getContext and toDataURL
 beforeAll(() => {
