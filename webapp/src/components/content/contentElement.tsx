@@ -19,6 +19,8 @@ import './imageElement'
 import './dividerElement'
 import './checkboxElement'
 import './videoElement'
+import './filePdfElement'
+import './fileGenericElement'
 
 type Props = {
     block: ContentBlock

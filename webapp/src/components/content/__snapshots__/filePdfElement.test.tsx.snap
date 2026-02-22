@@ -1,0 +1,111 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`components/content/FilePdfElement should match snapshot 1`] = `
+<div>
+  <div
+    class="MediaLoader FilePdfElement__loader"
+  >
+    <div
+      class="FilePdfElement__container"
+    >
+      <div
+        class="FilePdfElement__content"
+      >
+        <div
+          class="FilePdfElement__thumbnail"
+        >
+          <img
+            alt="report-q4.pdf"
+            class="FilePdfElement__thumbnail-image"
+            src="data:image/png;base64,mockImageData"
+          />
+          <canvas
+            height="300"
+            style="display: none;"
+            width="200"
+          />
+        </div>
+        <div
+          class="FilePdfElement__info"
+        >
+          <span
+            class="FilePdfElement__filename"
+          >
+            report-q4.pdf
+          </span>
+          <span
+            class="FilePdfElement__metadata"
+          >
+            2.3 MiB
+             · 12 pages
+          </span>
+          <button
+            class="FilePdfElement__download"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-download-outline"
+            />
+            Download
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`components/content/FilePdfElement should match snapshot for PDF without page count 1`] = `
+<div>
+  <div
+    class="MediaLoader FilePdfElement__loader"
+  >
+    <div
+      class="FilePdfElement__container"
+    >
+      <div
+        class="FilePdfElement__content"
+      >
+        <div
+          class="FilePdfElement__thumbnail"
+        >
+          <img
+            alt="report-q4.pdf"
+            class="FilePdfElement__thumbnail-image"
+            src="data:image/png;base64,mockImageData"
+          />
+          <canvas
+            height="300"
+            style="display: none;"
+            width="200"
+          />
+        </div>
+        <div
+          class="FilePdfElement__info"
+        >
+          <span
+            class="FilePdfElement__filename"
+          >
+            report-q4.pdf
+          </span>
+          <span
+            class="FilePdfElement__metadata"
+          >
+            2.3 MiB
+             · 5 pages
+          </span>
+          <button
+            class="FilePdfElement__download"
+            type="button"
+          >
+            <i
+              class="CompassIcon icon-download-outline"
+            />
+            Download
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
