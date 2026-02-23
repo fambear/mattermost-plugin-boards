@@ -88,6 +88,7 @@ func (a *API) registerFilesRoutes(r *mux.Router) {
 	// Files API
 	r.HandleFunc("/files/teams/{teamID}/{boardID}/{filename}", a.attachSession(a.handleServeFile)).Methods("GET")
 	r.HandleFunc("/files/teams/{teamID}/{boardID}/{filename}/info", a.attachSession(a.getFileInfo)).Methods("GET")
+	r.HandleFunc("/files/teams/{teamID}/{boardID}/{filename}/metadata", a.attachSession(a.handleGetFileMetadata)).Methods("GET")
 	r.HandleFunc("/teams/{teamID}/{boardID}/files", a.sessionRequired(a.handleUploadFile)).Methods("POST")
 }
 
@@ -371,6 +372,54 @@ func (a *API) getFileInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data, err := json.Marshal(fileInfo)
+	if err != nil {
+		a.errorResponse(w, r, err)
+		return
+	}
+
+	jsonBytesResponse(w, http.StatusOK, data)
+	auditRec.Success()
+}
+
+func (a *API) handleGetFileMetadata(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	boardID := vars["boardID"]
+	teamID := vars["teamID"]
+	filename := vars["filename"]
+
+	userID := getUserID(r)
+
+	hasValidReadToken := a.hasValidReadTokenForBoard(r, boardID)
+	if userID == "" && !hasValidReadToken {
+		a.errorResponse(w, r, model.NewErrUnauthorized("access denied to board"))
+		return
+	}
+
+	if !hasValidReadToken && !a.permissions.HasPermissionToBoard(userID, boardID, model.PermissionViewBoard) {
+		a.errorResponse(w, r, model.NewErrPermission("access denied to board"))
+		return
+	}
+
+	auditRec := a.makeAuditRecord(r, "getFileMetadata", audit.Fail)
+	defer a.audit.LogRecord(audit.LevelRead, auditRec)
+	auditRec.AddMeta("boardID", boardID)
+	auditRec.AddMeta("teamID", teamID)
+	auditRec.AddMeta("filename", filename)
+
+	metadata, err := a.app.GetFileImageMetadata(teamID, boardID, filename)
+	if err != nil {
+		a.errorResponse(w, r, err)
+		return
+	}
+
+	if metadata == nil {
+		// Not an image or couldn't extract metadata
+		jsonBytesResponse(w, http.StatusOK, []byte(`{}`))
+		auditRec.Success()
+		return
+	}
+
+	data, err := json.Marshal(metadata)
 	if err != nil {
 		a.errorResponse(w, r, err)
 		return

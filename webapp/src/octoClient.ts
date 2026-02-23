@@ -728,6 +728,19 @@ class OctoClient {
         return fileInfo
     }
 
+    async getFileImageMetadata(boardId: string, fileId: string): Promise<{width?: number, height?: number, miniPreview?: string}> {
+        let path = '/api/v2/files/teams/' + this.teamId + '/' + boardId + '/' + fileId + '/metadata'
+        const readToken = Utils.getReadToken()
+        if (readToken) {
+            path += `?read_token=${readToken}`
+        }
+        const response = await fetch(this.getBaseURL() + path, {headers: this.headers()})
+        if (response.status === 200) {
+            return this.getJson(response, {})
+        }
+        return {}
+    }
+
     async getFileAsDataUrl(boardId: string, fileId: string): Promise<FileInfo> {
         let path = '/api/v2/files/teams/' + this.teamId + '/' + boardId + '/' + fileId
         const readToken = Utils.getReadToken()

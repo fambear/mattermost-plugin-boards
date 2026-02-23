@@ -180,6 +180,34 @@ func (a *App) validateFileReferencedByBoard(boardID, filename string) error {
 	return fmt.Errorf("%w: file %s is not referenced by any block in board %s", ErrFileNotReferencedByBoard, filename, boardID)
 }
 
+// GetFileImageMetadata reads an existing file from storage and extracts image
+// dimensions + mini preview. Used for backfilling metadata on legacy images
+// that were uploaded before metadata extraction was added.
+func (a *App) GetFileImageMetadata(teamID, boardID, filename string) (*ImageMetadata, error) {
+	if err := a.ValidateFileOwnership(teamID, boardID, filename); err != nil {
+		return nil, err
+	}
+
+	_, filePath, err := a.GetFilePath(teamID, boardID, filename)
+	if err != nil {
+		return nil, err
+	}
+
+	reader, err := a.filesBackend.Reader(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer reader.Close()
+
+	// filesBackend.Reader returns a ReadCloseSeeker, which satisfies io.ReadSeeker
+	metadata := a.ExtractImageMetadata(reader, filename)
+	if metadata == nil {
+		return nil, nil
+	}
+
+	return metadata, nil
+}
+
 func (a *App) GetFile(teamID, boardID, fileName string) (*mm_model.FileInfo, filestore.ReadCloseSeeker, error) {
 	if err := a.ValidateFileOwnership(teamID, boardID, fileName); err != nil {
 		a.logger.Error("GetFile: File ownership validation failed",
