@@ -92,7 +92,7 @@ func (a *App) SaveFile(reader io.Reader, teamID, boardID, filename string, asTem
 		fileInfo.Height = metadata.Height
 		if metadata.MiniPreview != "" {
 			if decoded, err := base64.StdEncoding.DecodeString(metadata.MiniPreview); err == nil {
-				fileInfo.MiniPreview = decoded
+				fileInfo.MiniPreview = &decoded
 			}
 		}
 	}
