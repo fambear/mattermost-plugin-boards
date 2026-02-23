@@ -4,9 +4,11 @@
 package app
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -25,7 +27,13 @@ var errEmptyFilename = errors.New("IsFileArchived: empty filename not allowed")
 var ErrFileNotFound = errors.New("file not found")
 var ErrFileNotReferencedByBoard = errors.New("file not referenced by board")
 
-func (a *App) SaveFile(reader io.Reader, teamID, boardID, filename string, asTemplate bool) (string, error) {
+// SaveFileResult contains the result of a file upload including optional image metadata.
+type SaveFileResult struct {
+	FileID   string         `json:"fileId"`
+	Metadata *ImageMetadata `json:"imageMetadata,omitempty"`
+}
+
+func (a *App) SaveFile(reader io.Reader, teamID, boardID, filename string, asTemplate bool) (*SaveFileResult, error) {
 	// NOTE: File extension includes the dot
 	fileExtension := strings.ToLower(filepath.Ext(filename))
 	if fileExtension == ".jpeg" {
@@ -39,12 +47,39 @@ func (a *App) SaveFile(reader io.Reader, teamID, boardID, filename string, asTem
 	}
 	filePath, pathErr := getDestinationFilePath(asTemplate, teamID, boardID, newFileName)
 	if pathErr != nil {
-		return "", fmt.Errorf("invalid file path parameters: %w", pathErr)
+		return nil, fmt.Errorf("invalid file path parameters: %w", pathErr)
 	}
 
-	fileSize, appErr := a.filesBackend.WriteFile(reader, filePath)
+	// Write upload to a temp file so we can stream to storage and extract metadata
+	// without holding the full payload in memory.
+	tmpFile, err := os.CreateTemp("", "boards-upload-*")
+	if err != nil {
+		return nil, fmt.Errorf("unable to create temp file: %w", err)
+	}
+	tmpPath := tmpFile.Name()
+	defer os.Remove(tmpPath)
+
+	if _, err := io.Copy(tmpFile, reader); err != nil {
+		tmpFile.Close()
+		return nil, fmt.Errorf("unable to buffer upload: %w", err)
+	}
+
+	// Extract image metadata (dimensions + mini preview)
+	var metadata *ImageMetadata
+	if _, err := tmpFile.Seek(0, io.SeekStart); err == nil {
+		metadata = a.ExtractImageMetadata(tmpFile, filename)
+	}
+
+	// Seek back and write to storage
+	if _, err := tmpFile.Seek(0, io.SeekStart); err != nil {
+		tmpFile.Close()
+		return nil, fmt.Errorf("unable to seek temp file: %w", err)
+	}
+
+	fileSize, appErr := a.filesBackend.WriteFile(tmpFile, filePath)
+	tmpFile.Close()
 	if appErr != nil {
-		return "", fmt.Errorf("unable to store the file in the files storage: %w", appErr)
+		return nil, fmt.Errorf("unable to store the file in the files storage: %w", appErr)
 	}
 
 	fileInfo := model.NewFileInfo(filename)
@@ -52,12 +87,24 @@ func (a *App) SaveFile(reader io.Reader, teamID, boardID, filename string, asTem
 	fileInfo.Path = filePath
 	fileInfo.Size = fileSize
 
-	err := a.store.SaveFileInfo(fileInfo)
-	if err != nil {
-		return "", err
+	if metadata != nil {
+		fileInfo.Width = metadata.Width
+		fileInfo.Height = metadata.Height
+		if metadata.MiniPreview != "" {
+			if decoded, err := base64.StdEncoding.DecodeString(metadata.MiniPreview); err == nil {
+				fileInfo.MiniPreview = &decoded
+			}
+		}
 	}
 
-	return newFileName, nil
+	if err := a.store.SaveFileInfo(fileInfo); err != nil {
+		return nil, err
+	}
+
+	return &SaveFileResult{
+		FileID:   newFileName,
+		Metadata: metadata,
+	}, nil
 }
 
 func (a *App) GetFileInfo(filename string) (*mm_model.FileInfo, error) {

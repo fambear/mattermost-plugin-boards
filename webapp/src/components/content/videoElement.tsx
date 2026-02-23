@@ -304,10 +304,10 @@ contentRegistry.registerContentType({
                     resolve(block)
                 } else if (result.type === 'file') {
                     try {
-                        const fileId = await octoClient.uploadFile(boardId, result.file)
-                        if (fileId) {
+                        const uploadResult = await octoClient.uploadFile(boardId, result.file)
+                        if (uploadResult) {
                             const block = createVideoBlock()
-                            block.fields.fileId = fileId
+                            block.fields.fileId = uploadResult.fileId
                             block.fields.filename = result.file.name
                             block.fields.sourceType = 'file'
                             resolve(block)
