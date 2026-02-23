@@ -1,7 +1,7 @@
 // Copyright (c) 2020-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useState, useCallback} from 'react'
+import React, {useEffect, useState, useCallback, useRef} from 'react'
 import {IntlShape, useIntl} from 'react-intl'
 
 import {ContentBlock} from '../../blocks/contentBlock'
@@ -102,13 +102,35 @@ const ImageElement = (props: Props): JSX.Element|null => {
         }
     }, [block.boardId, props.block.fields.fileId, retryCount, intl])
 
+    const backfillInFlight = useRef(false)
+
     const handleImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
         const img = e.currentTarget
         setImageDimensions({
             width: img.naturalWidth,
             height: img.naturalHeight,
         })
-    }, [])
+
+        // Backfill: if block has no stored dimensions, fetch metadata from server
+        // and patch the block so future renders get instant placeholders.
+        if (!blockWidth && !blockHeight && !backfillInFlight.current && block.fields.fileId) {
+            backfillInFlight.current = true
+            octoClient.getFileImageMetadata(block.boardId, block.fields.fileId).then((meta) => {
+                if (meta.width && meta.height) {
+                    const updatedFields: Record<string, unknown> = {
+                        width: meta.width,
+                        height: meta.height,
+                    }
+                    if (meta.miniPreview) {
+                        updatedFields.miniPreview = meta.miniPreview
+                    }
+                    octoClient.patchBlock(block.boardId, block.id, {updatedFields})
+                }
+            }).catch(() => {
+                // Backfill is best-effort; ignore errors
+            })
+        }
+    }, [block.boardId, block.id, block.fields.fileId, blockWidth, blockHeight])
 
     const handleImageClick = useCallback((e: React.MouseEvent) => {
         e.stopPropagation()
