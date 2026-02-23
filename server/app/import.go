@@ -94,17 +94,17 @@ func (a *App) ImportArchive(r io.Reader, opt model.ImportArchiveOptions) error {
 				)
 				continue
 			}
-			newFileName, err := a.SaveFile(zr, opt.TeamID, board.ID, filename, board.IsTemplate)
+			saveResult, err := a.SaveFile(zr, opt.TeamID, board.ID, filename, board.IsTemplate)
 			if err != nil {
 				return fmt.Errorf("cannot import file %s for board %s: %w", filename, dir, err)
 			}
-			fileMap[filename] = newFileName
+			fileMap[filename] = saveResult.FileID
 
 			a.logger.Debug("import archive file",
 				mlog.String("TeamID", opt.TeamID),
 				mlog.String("boardID", board.ID),
 				mlog.String("filename", filename),
-				mlog.String("newFileName", newFileName),
+				mlog.String("newFileName", saveResult.FileID),
 			)
 		}
 	}

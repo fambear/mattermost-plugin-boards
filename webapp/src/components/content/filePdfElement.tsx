@@ -240,11 +240,11 @@ contentRegistry.registerContentType({
         return new Promise<FilePdfBlock>(
             (resolve, reject) => {
                 Utils.selectLocalFile(async (file) => {
-                    const fileId = await octoClient.uploadFile(boardId, file)
+                    const uploadResult = await octoClient.uploadFile(boardId, file)
 
-                    if (fileId) {
+                    if (uploadResult) {
                         const block = createFilePdfBlock()
-                        block.fields.fileId = fileId || ''
+                        block.fields.fileId = uploadResult.fileId || ''
                         block.fields.fileName = file.name
                         block.fields.fileSize = file.size
                         block.fields.mimeType = file.type || 'application/pdf'

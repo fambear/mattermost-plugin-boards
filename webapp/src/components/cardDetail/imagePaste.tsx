@@ -96,9 +96,12 @@ export default function useImagePaste(
             }
 
             uploads.push(
-                octoClient.uploadFile(boardId, file).then((fileId) => ({
+                octoClient.uploadFile(boardId, file).then((uploadResult) => ({
                     file,
-                    fileId,
+                    fileId: uploadResult?.fileId,
+                    width: uploadResult?.width,
+                    height: uploadResult?.height,
+                    miniPreview: uploadResult?.miniPreview,
                     type: fileType,
                 }))
             )
@@ -117,13 +120,16 @@ export default function useImagePaste(
                 continue
             }
 
-            const {file, fileId, type} = result.value
+            const {file, fileId, width, height, miniPreview, type} = result.value
 
             if (type === 'image') {
                 const imageBlock = createImageBlock()
                 imageBlock.parentId = cardId
                 imageBlock.boardId = boardId
                 imageBlock.fields.fileId = fileId || ''
+                imageBlock.fields.width = width
+                imageBlock.fields.height = height
+                imageBlock.fields.miniPreview = miniPreview
                 blocksToInsert.push(imageBlock)
             } else if (type === 'video') {
                 const videoBlock = createVideoBlock()

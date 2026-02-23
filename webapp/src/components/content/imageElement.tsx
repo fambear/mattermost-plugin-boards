@@ -41,6 +41,11 @@ const ImageElement = (props: Props): JSX.Element|null => {
     const [retryCount, setRetryCount] = useState(0)
     const intl = useIntl()
 
+    // Image metadata from block fields (instant, no API call needed)
+    const blockWidth = props.block.fields.width
+    const blockHeight = props.block.fields.height
+    const blockMiniPreview = props.block.fields.miniPreview
+
     const {block} = props
 
     const handleRetry = useCallback(() => {
@@ -128,6 +133,50 @@ const ImageElement = (props: Props): JSX.Element|null => {
         )
     }
 
+    // Calculate aspect ratio padding for placeholder
+    const hasBlockDimensions = blockWidth && blockHeight && blockWidth > 0 && blockHeight > 0
+    const aspectRatio = hasBlockDimensions ? (blockHeight / blockWidth) * 100 : 0
+    const miniPreviewSrc = blockMiniPreview ? `data:image/jpeg;base64,${blockMiniPreview}` : undefined
+
+    // Show placeholder with correct aspect ratio while loading
+    if (isLoading && hasBlockDimensions) {
+        return (
+            <div className='ImageElement__container'>
+                <div
+                    className='ImageElement__placeholder'
+                    style={{
+                        paddingBottom: `${aspectRatio}%`,
+                        maxWidth: `${blockWidth}px`,
+                    }}
+                >
+                    {miniPreviewSrc && (
+                        <img
+                            className='ImageElement__mini-preview'
+                            src={miniPreviewSrc}
+                            alt=''
+                        />
+                    )}
+                    <div className='ImageElement__placeholder-spinner'>
+                        <div className='MediaLoader__spinner'/>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    if (loadError) {
+        return (
+            <MediaLoader
+                isLoading={false}
+                error={loadError}
+                onRetry={handleRetry}
+                className='ImageElement__loader'
+            >
+                <div/>
+            </MediaLoader>
+        )
+    }
+
     return (
         <MediaLoader
             isLoading={isLoading}
@@ -206,11 +255,14 @@ contentRegistry.registerContentType({
         return new Promise<ImageBlock>(
             (resolve) => {
                 Utils.selectLocalFile(async (file) => {
-                    const fileId = await octoClient.uploadFile(boardId, file)
+                    const uploadResult = await octoClient.uploadFile(boardId, file)
 
-                    if (fileId) {
+                    if (uploadResult) {
                         const block = createImageBlock()
-                        block.fields.fileId = fileId || ''
+                        block.fields.fileId = uploadResult.fileId || ''
+                        block.fields.width = uploadResult.width
+                        block.fields.height = uploadResult.height
+                        block.fields.miniPreview = uploadResult.miniPreview
                         resolve(block)
                     } else {
                         sendFlashMessage({content: intl.formatMessage({id: 'createImageBlock.failed', defaultMessage: 'Unable to upload the file. File size limit reached.'}), severity: 'normal'})

@@ -55,6 +55,15 @@ type FileUploadResponse struct {
 	// The FileID to retrieve the uploaded file
 	// required: true
 	FileID string `json:"fileId"`
+
+	// Image width in pixels (only for image files)
+	Width int `json:"width,omitempty"`
+
+	// Image height in pixels (only for image files)
+	Height int `json:"height,omitempty"`
+
+	// Base64-encoded mini JPEG preview (only for image files)
+	MiniPreview string `json:"miniPreview,omitempty"`
 }
 
 func FileUploadResponseFromJSON(data io.Reader) (*FileUploadResponse, error) {
@@ -446,7 +455,7 @@ func (a *API) handleUploadFile(w http.ResponseWriter, r *http.Request) {
 	auditRec.AddMeta("teamID", board.TeamID)
 	auditRec.AddMeta("filename", handle.Filename)
 
-	fileID, err := a.app.SaveFile(file, board.TeamID, boardID, handle.Filename, board.IsTemplate)
+	result, err := a.app.SaveFile(file, board.TeamID, boardID, handle.Filename, board.IsTemplate)
 	if err != nil {
 		a.errorResponse(w, r, err)
 		return
@@ -454,9 +463,17 @@ func (a *API) handleUploadFile(w http.ResponseWriter, r *http.Request) {
 
 	a.logger.Debug("uploadFile",
 		mlog.String("filename", handle.Filename),
-		mlog.String("fileID", fileID),
+		mlog.String("fileID", result.FileID),
 	)
-	data, err := json.Marshal(FileUploadResponse{FileID: fileID})
+
+	response := FileUploadResponse{FileID: result.FileID}
+	if result.Metadata != nil {
+		response.Width = result.Metadata.Width
+		response.Height = result.Metadata.Height
+		response.MiniPreview = result.Metadata.MiniPreview
+	}
+
+	data, err := json.Marshal(response)
 	if err != nil {
 		a.errorResponse(w, r, err)
 		return
@@ -464,6 +481,6 @@ func (a *API) handleUploadFile(w http.ResponseWriter, r *http.Request) {
 
 	jsonBytesResponse(w, http.StatusOK, data)
 
-	auditRec.AddMeta("fileID", fileID)
+	auditRec.AddMeta("fileID", result.FileID)
 	auditRec.Success()
 }

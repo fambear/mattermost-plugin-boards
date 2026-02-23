@@ -6,6 +6,9 @@ import {ContentBlock} from './contentBlock'
 
 type ImageBlockFields = {
     fileId: string
+    width?: number
+    height?: number
+    miniPreview?: string
 }
 
 type ImageBlock = ContentBlock & {
@@ -19,6 +22,9 @@ function createImageBlock(block?: Block): ImageBlock {
         type: 'image',
         fields: {
             fileId: block?.fields.fileId || '',
+            width: block?.fields.width || undefined,
+            height: block?.fields.height || undefined,
+            miniPreview: block?.fields.miniPreview || undefined,
         },
     }
 }

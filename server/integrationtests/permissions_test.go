@@ -3265,12 +3265,12 @@ func TestPermissionsGetFile(t *testing.T) {
 		clients := setupClients(th)
 		testData := setupData(t, th)
 
-		newFileID, err := th.Server.App().SaveFile(bytes.NewBuffer([]byte("test")), "test-team", testData.privateBoard.ID, "test.png", false)
+		saveResult, err := th.Server.App().SaveFile(bytes.NewBuffer([]byte("test")), "test-team", testData.privateBoard.ID, "test.png", false)
 		require.NoError(t, err)
 
 		ttCases := ttCasesF()
 		for i, tc := range ttCases {
-			ttCases[i].url = strings.Replace(tc.url, "{NEW_FILE_ID}", newFileID, 1)
+			ttCases[i].url = strings.Replace(tc.url, "{NEW_FILE_ID}", saveResult.FileID, 1)
 		}
 		runTestCases(t, ttCases, testData, clients)
 	})
@@ -3280,12 +3280,12 @@ func TestPermissionsGetFile(t *testing.T) {
 		clients := setupLocalClients(th)
 		testData := setupData(t, th)
 
-		newFileID, err := th.Server.App().SaveFile(bytes.NewBuffer([]byte("test")), "test-team", testData.privateBoard.ID, "test.png", false)
+		saveResult, err := th.Server.App().SaveFile(bytes.NewBuffer([]byte("test")), "test-team", testData.privateBoard.ID, "test.png", false)
 		require.NoError(t, err)
 
 		ttCases := ttCasesF()
 		for i, tc := range ttCases {
-			ttCases[i].url = strings.Replace(tc.url, "{NEW_FILE_ID}", newFileID, 1)
+			ttCases[i].url = strings.Replace(tc.url, "{NEW_FILE_ID}", saveResult.FileID, 1)
 		}
 		runTestCases(t, ttCases, testData, clients)
 	})

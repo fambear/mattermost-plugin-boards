@@ -276,7 +276,7 @@ func (a *API) handleFigmaPreview(w http.ResponseWriter, r *http.Request) {
 
 	// Save the image file
 	filename := fmt.Sprintf("figma-%s-%s.png", req.FileKey, req.NodeID)
-	fileID, err := a.app.SaveFile(downloadResp.Body, board.TeamID, req.BoardID, filename, board.IsTemplate)
+	saveResult, err := a.app.SaveFile(downloadResp.Body, board.TeamID, req.BoardID, filename, board.IsTemplate)
 	if err != nil {
 		a.errorResponse(w, r, err)
 		return
@@ -285,11 +285,11 @@ func (a *API) handleFigmaPreview(w http.ResponseWriter, r *http.Request) {
 	a.logger.Debug("Figma preview generated",
 		mlog.String("fileKey", req.FileKey),
 		mlog.String("nodeId", req.NodeID),
-		mlog.String("fileID", fileID),
+		mlog.String("fileID", saveResult.FileID),
 	)
 
 	response := FigmaPreviewResponse{
-		FileID: fileID,
+		FileID: saveResult.FileID,
 	}
 
 	data, err := json.Marshal(response)
@@ -300,6 +300,6 @@ func (a *API) handleFigmaPreview(w http.ResponseWriter, r *http.Request) {
 
 	jsonBytesResponse(w, http.StatusOK, data)
 
-	auditRec.AddMeta("fileID", fileID)
+	auditRec.AddMeta("fileID", saveResult.FileID)
 	auditRec.Success()
 }

@@ -645,7 +645,7 @@ class OctoClient {
     // Files
 
     // Returns fileId of uploaded file, or undefined on failure
-    async uploadFile(rootID: string, file: File): Promise<string | undefined> {
+    async uploadFile(rootID: string, file: File): Promise<{fileId: string; width?: number; height?: number; miniPreview?: string} | undefined> {
         // IMPORTANT: We need to post the image as a form. The browser will convert this to a application/x-www-form-urlencoded POST
         const formData = new FormData()
         formData.append('file', file)
@@ -670,7 +670,12 @@ class OctoClient {
                 Utils.log(`uploadFile response: ${text}`)
                 const json = JSON.parse(text)
 
-                return json.fileId
+                return {
+                    fileId: json.fileId,
+                    width: json.width || undefined,
+                    height: json.height || undefined,
+                    miniPreview: json.miniPreview || undefined,
+                }
             } catch (e) {
                 Utils.logError(`uploadFile json ERROR: ${e}`)
             }

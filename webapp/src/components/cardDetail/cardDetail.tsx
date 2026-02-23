@@ -334,13 +334,19 @@ const CardDetail = (props: Props): JSX.Element|null => {
                                         if (block.contentType === 'checkbox') {
                                             newBlock = await addBlockNewEditor(card, intl, block.value.value, {value: block.value.checked}, block.contentType, afterBlock?.id, dispatch)
                                         } else if (block.contentType === 'image' || block.contentType === 'attachment') {
-                                            const newFileId = await octoClient.uploadFile(card.boardId, block.value.file)
-                                            newBlock = await addBlockNewEditor(card, intl, '', {fileId: newFileId, filename: block.value.filename}, block.contentType, afterBlock?.id, dispatch)
+                                            const uploadResult = await octoClient.uploadFile(card.boardId, block.value.file)
+                                            const fields: Record<string, unknown> = {fileId: uploadResult?.fileId, filename: block.value.filename}
+                                            if (block.contentType === 'image' && uploadResult) {
+                                                fields.width = uploadResult.width
+                                                fields.height = uploadResult.height
+                                                fields.miniPreview = uploadResult.miniPreview
+                                            }
+                                            newBlock = await addBlockNewEditor(card, intl, '', fields, block.contentType, afterBlock?.id, dispatch)
                                         } else if (block.contentType === 'video') {
                                             // Handle video blocks - file upload or URL (YouTube/GDrive)
                                             if (block.value.sourceType === 'file') {
-                                                const newFileId = await octoClient.uploadFile(card.boardId, block.value.file)
-                                                newBlock = await addBlockNewEditor(card, intl, '', {fileId: newFileId, filename: block.value.filename, sourceType: 'file'}, block.contentType, afterBlock?.id, dispatch)
+                                                const uploadResult = await octoClient.uploadFile(card.boardId, block.value.file)
+                                                newBlock = await addBlockNewEditor(card, intl, '', {fileId: uploadResult?.fileId, filename: block.value.filename, sourceType: 'file'}, block.contentType, afterBlock?.id, dispatch)
                                             } else {
                                                 // YouTube or Google Drive URL
                                                 newBlock = await addBlockNewEditor(card, intl, '', {sourceType: block.value.sourceType, videoId: block.value.videoId, videoUrl: block.value.videoUrl}, block.contentType, afterBlock?.id, dispatch)

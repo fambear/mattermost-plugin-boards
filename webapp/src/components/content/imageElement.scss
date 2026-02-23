@@ -3,6 +3,32 @@
     max-width: 100%;
 }
 
+.ImageElement__placeholder {
+    position: relative;
+    width: 100%;
+    background-color: rgba(var(--center-channel-color-rgb), 0.08);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.ImageElement__mini-preview {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: blur(20px);
+    transform: scale(1.1); // hide blur edges
+}
+
+.ImageElement__placeholder-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
 .ImageElement__wrapper {
     position: relative;
     display: inline-block;

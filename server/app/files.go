@@ -4,6 +4,7 @@
 package app
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -25,7 +26,13 @@ var errEmptyFilename = errors.New("IsFileArchived: empty filename not allowed")
 var ErrFileNotFound = errors.New("file not found")
 var ErrFileNotReferencedByBoard = errors.New("file not referenced by board")
 
-func (a *App) SaveFile(reader io.Reader, teamID, boardID, filename string, asTemplate bool) (string, error) {
+// SaveFileResult contains the result of a file upload including optional image metadata.
+type SaveFileResult struct {
+	FileID   string         `json:"fileId"`
+	Metadata *ImageMetadata `json:"imageMetadata,omitempty"`
+}
+
+func (a *App) SaveFile(reader io.Reader, teamID, boardID, filename string, asTemplate bool) (*SaveFileResult, error) {
 	// NOTE: File extension includes the dot
 	fileExtension := strings.ToLower(filepath.Ext(filename))
 	if fileExtension == ".jpeg" {
@@ -39,12 +46,22 @@ func (a *App) SaveFile(reader io.Reader, teamID, boardID, filename string, asTem
 	}
 	filePath, pathErr := getDestinationFilePath(asTemplate, teamID, boardID, newFileName)
 	if pathErr != nil {
-		return "", fmt.Errorf("invalid file path parameters: %w", pathErr)
+		return nil, fmt.Errorf("invalid file path parameters: %w", pathErr)
 	}
 
-	fileSize, appErr := a.filesBackend.WriteFile(reader, filePath)
+	// Buffer the file so we can both extract metadata and write to storage
+	fileBytes, err := io.ReadAll(reader)
+	if err != nil {
+		return nil, fmt.Errorf("unable to read file: %w", err)
+	}
+
+	// Extract image metadata (dimensions + mini preview) before writing
+	var metadata *ImageMetadata
+	metadata = a.ExtractImageMetadata(bytes.NewReader(fileBytes), filename)
+
+	fileSize, appErr := a.filesBackend.WriteFile(bytes.NewReader(fileBytes), filePath)
 	if appErr != nil {
-		return "", fmt.Errorf("unable to store the file in the files storage: %w", appErr)
+		return nil, fmt.Errorf("unable to store the file in the files storage: %w", appErr)
 	}
 
 	fileInfo := model.NewFileInfo(filename)
@@ -52,12 +69,20 @@ func (a *App) SaveFile(reader io.Reader, teamID, boardID, filename string, asTem
 	fileInfo.Path = filePath
 	fileInfo.Size = fileSize
 
-	err := a.store.SaveFileInfo(fileInfo)
-	if err != nil {
-		return "", err
+	if metadata != nil {
+		fileInfo.Width = metadata.Width
+		fileInfo.Height = metadata.Height
+		fileInfo.MiniPreview = []byte(metadata.MiniPreview)
 	}
 
-	return newFileName, nil
+	if err := a.store.SaveFileInfo(fileInfo); err != nil {
+		return nil, err
+	}
+
+	return &SaveFileResult{
+		FileID:   newFileName,
+		Metadata: metadata,
+	}, nil
 }
 
 func (a *App) GetFileInfo(filename string) (*mm_model.FileInfo, error) {
