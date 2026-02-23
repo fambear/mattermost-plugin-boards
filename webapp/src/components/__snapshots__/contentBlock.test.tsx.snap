@@ -416,51 +416,38 @@ exports[`components/contentBlock should match snapshot with imageBlock 1`] = `
         style="flex: 0 0 auto; height: 100%;"
       />
       <div
-        class="MediaLoader ImageElement__loader"
+        class="ImageElement__container"
       >
         <div
-          class="ImageElement__container"
+          class="MediaLoader__loading"
         >
           <div
-            class="ImageElement__wrapper"
-          >
-            <img
-              alt=""
-              aria-label="View image in full screen"
-              class="ImageElement"
-              src="test.jpg"
-            />
-            <div
-              aria-label="View image in full screen"
-              class="ImageElement__overlay"
-              role="button"
-              tabindex="0"
-            >
-              <div
-                class="ImageElement__magnify-icon"
-              >
-                <i
-                  class="CompassIcon icon-magnify MagnifyIcon"
-                />
-              </div>
-            </div>
-          </div>
+            class="MediaLoader__spinner"
+          />
+        </div>
+        <div
+          class="ImageElement__wrapper"
+          style="position: absolute; opacity: 0; pointer-events: none;"
+        >
+          <img
+            alt=""
+            aria-label="View image in full screen"
+            class="ImageElement"
+            src="test.jpg"
+          />
           <div
-            class="ImageElement__metadata"
+            aria-label="View image in full screen"
+            class="ImageElement__overlay"
+            role="button"
+            tabindex="0"
           >
-            <span
-              class="ImageElement__size"
+            <div
+              class="ImageElement__magnify-icon"
             >
-              161.1 KiB
-            </span>
-            <a
-              class="ImageElement__download"
-              href="test.jpg"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              Download
-            </a>
+              <i
+                class="CompassIcon icon-magnify MagnifyIcon"
+              />
+            </div>
           </div>
         </div>
       </div>
