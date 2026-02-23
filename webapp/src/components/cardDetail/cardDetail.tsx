@@ -335,8 +335,12 @@ const CardDetail = (props: Props): JSX.Element|null => {
                                             newBlock = await addBlockNewEditor(card, intl, block.value.value, {value: block.value.checked}, block.contentType, afterBlock?.id, dispatch)
                                         } else if (block.contentType === 'image' || block.contentType === 'attachment') {
                                             const uploadResult = await octoClient.uploadFile(card.boardId, block.value.file)
-                                            const fields: Record<string, unknown> = {fileId: uploadResult?.fileId, filename: block.value.filename}
-                                            if (block.contentType === 'image' && uploadResult) {
+                                            if (!uploadResult) {
+                                                sendFlashMessage({content: intl.formatMessage({id: 'createImageBlock.failed', defaultMessage: 'Unable to upload the file. File size limit reached.'}), severity: 'normal'})
+                                                return block
+                                            }
+                                            const fields: Record<string, unknown> = {fileId: uploadResult.fileId, filename: block.value.filename}
+                                            if (block.contentType === 'image') {
                                                 fields.width = uploadResult.width
                                                 fields.height = uploadResult.height
                                                 fields.miniPreview = uploadResult.miniPreview
@@ -346,7 +350,11 @@ const CardDetail = (props: Props): JSX.Element|null => {
                                             // Handle video blocks - file upload or URL (YouTube/GDrive)
                                             if (block.value.sourceType === 'file') {
                                                 const uploadResult = await octoClient.uploadFile(card.boardId, block.value.file)
-                                                newBlock = await addBlockNewEditor(card, intl, '', {fileId: uploadResult?.fileId, filename: block.value.filename, sourceType: 'file'}, block.contentType, afterBlock?.id, dispatch)
+                                                if (!uploadResult) {
+                                                    sendFlashMessage({content: intl.formatMessage({id: 'createVideoBlock.failed', defaultMessage: 'Unable to upload the file. File size limit reached.'}), severity: 'normal'})
+                                                    return block
+                                                }
+                                                newBlock = await addBlockNewEditor(card, intl, '', {fileId: uploadResult.fileId, filename: block.value.filename, sourceType: 'file'}, block.contentType, afterBlock?.id, dispatch)
                                             } else {
                                                 // YouTube or Google Drive URL
                                                 newBlock = await addBlockNewEditor(card, intl, '', {sourceType: block.value.sourceType, videoId: block.value.videoId, videoUrl: block.value.videoUrl}, block.contentType, afterBlock?.id, dispatch)

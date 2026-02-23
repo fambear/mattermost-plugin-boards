@@ -4,10 +4,11 @@
 package app
 
 import (
-	"bytes"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -49,17 +50,34 @@ func (a *App) SaveFile(reader io.Reader, teamID, boardID, filename string, asTem
 		return nil, fmt.Errorf("invalid file path parameters: %w", pathErr)
 	}
 
-	// Buffer the file so we can both extract metadata and write to storage
-	fileBytes, err := io.ReadAll(reader)
+	// Write upload to a temp file so we can stream to storage and extract metadata
+	// without holding the full payload in memory.
+	tmpFile, err := os.CreateTemp("", "boards-upload-*")
 	if err != nil {
-		return nil, fmt.Errorf("unable to read file: %w", err)
+		return nil, fmt.Errorf("unable to create temp file: %w", err)
+	}
+	tmpPath := tmpFile.Name()
+	defer os.Remove(tmpPath)
+
+	if _, err := io.Copy(tmpFile, reader); err != nil {
+		tmpFile.Close()
+		return nil, fmt.Errorf("unable to buffer upload: %w", err)
 	}
 
-	// Extract image metadata (dimensions + mini preview) before writing
+	// Extract image metadata (dimensions + mini preview)
 	var metadata *ImageMetadata
-	metadata = a.ExtractImageMetadata(bytes.NewReader(fileBytes), filename)
+	if _, err := tmpFile.Seek(0, io.SeekStart); err == nil {
+		metadata = a.ExtractImageMetadata(tmpFile, filename)
+	}
 
-	fileSize, appErr := a.filesBackend.WriteFile(bytes.NewReader(fileBytes), filePath)
+	// Seek back and write to storage
+	if _, err := tmpFile.Seek(0, io.SeekStart); err != nil {
+		tmpFile.Close()
+		return nil, fmt.Errorf("unable to seek temp file: %w", err)
+	}
+
+	fileSize, appErr := a.filesBackend.WriteFile(tmpFile, filePath)
+	tmpFile.Close()
 	if appErr != nil {
 		return nil, fmt.Errorf("unable to store the file in the files storage: %w", appErr)
 	}
@@ -72,7 +90,11 @@ func (a *App) SaveFile(reader io.Reader, teamID, boardID, filename string, asTem
 	if metadata != nil {
 		fileInfo.Width = metadata.Width
 		fileInfo.Height = metadata.Height
-		fileInfo.MiniPreview = []byte(metadata.MiniPreview)
+		if metadata.MiniPreview != "" {
+			if decoded, err := base64.StdEncoding.DecodeString(metadata.MiniPreview); err == nil {
+				fileInfo.MiniPreview = decoded
+			}
+		}
 	}
 
 	if err := a.store.SaveFileInfo(fileInfo); err != nil {

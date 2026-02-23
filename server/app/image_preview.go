@@ -40,7 +40,7 @@ func (a *App) ExtractImageMetadata(reader io.ReadSeeker, filename string) *Image
 		return nil
 	}
 
-	// Decode image config (reads only header — fast)
+	// Decode image config (reads only header — fast, no full decode)
 	imgConfig, _, err := image.DecodeConfig(reader)
 	if err != nil {
 		a.logger.Debug("ExtractImageMetadata: failed to decode config", mlog.Err(err))
@@ -51,22 +51,31 @@ func (a *App) ExtractImageMetadata(reader io.ReadSeeker, filename string) *Image
 		return nil
 	}
 
-	// Seek back to start for full decode (needed for mini preview)
-	if _, err := reader.Seek(0, io.SeekStart); err != nil {
-		return &ImageMetadata{
-			Width:  imgConfig.Width,
-			Height: imgConfig.Height,
-		}
+	result := &ImageMetadata{
+		Width:  imgConfig.Width,
+		Height: imgConfig.Height,
 	}
 
-	// Decode full image for resize
+	// Skip mini preview generation for very large images (>20MP) to bound memory usage.
+	// The full image.Decode allocates W*H*4 bytes in memory.
+	const maxPixelsForPreview = 20_000_000
+	if int64(imgConfig.Width)*int64(imgConfig.Height) > maxPixelsForPreview {
+		a.logger.Debug("ExtractImageMetadata: image too large for mini preview, returning dimensions only",
+			mlog.Int("width", imgConfig.Width),
+			mlog.Int("height", imgConfig.Height))
+		return result
+	}
+
+	// Seek back to start for full decode (needed for mini preview)
+	if _, err := reader.Seek(0, io.SeekStart); err != nil {
+		return result
+	}
+
+	// Decode full image for resize — bounded by maxPixelsForPreview check above
 	img, _, err := image.Decode(reader)
 	if err != nil {
 		a.logger.Debug("ExtractImageMetadata: failed to decode image", mlog.Err(err))
-		return &ImageMetadata{
-			Width:  imgConfig.Width,
-			Height: imgConfig.Height,
-		}
+		return result
 	}
 
 	// Calculate mini preview dimensions preserving aspect ratio
@@ -99,15 +108,9 @@ func (a *App) ExtractImageMetadata(reader io.ReadSeeker, filename string) *Image
 	var buf bytes.Buffer
 	if err := jpeg.Encode(&buf, dst, &jpeg.Options{Quality: miniPreviewQuality}); err != nil {
 		a.logger.Debug("ExtractImageMetadata: failed to encode mini preview", mlog.Err(err))
-		return &ImageMetadata{
-			Width:  imgConfig.Width,
-			Height: imgConfig.Height,
-		}
+		return result
 	}
 
-	return &ImageMetadata{
-		Width:       imgConfig.Width,
-		Height:      imgConfig.Height,
-		MiniPreview: base64.StdEncoding.EncodeToString(buf.Bytes()),
-	}
+	result.MiniPreview = base64.StdEncoding.EncodeToString(buf.Bytes())
+	return result
 }
