@@ -67,14 +67,14 @@ func (a *App) ExtractImageMetadata(reader io.ReadSeeker, filename string) *Image
 	}
 
 	// Seek back to start for full decode (needed for mini preview)
-	if _, err := reader.Seek(0, io.SeekStart); err != nil {
+	if _, seekErr := reader.Seek(0, io.SeekStart); seekErr != nil {
 		return result
 	}
 
 	// Decode full image for resize — bounded by maxPixelsForPreview check above
-	img, _, err := image.Decode(reader)
-	if err != nil {
-		a.logger.Debug("ExtractImageMetadata: failed to decode image", mlog.Err(err))
+	img, _, decodeErr := image.Decode(reader)
+	if decodeErr != nil {
+		a.logger.Debug("ExtractImageMetadata: failed to decode image", mlog.Err(decodeErr))
 		return result
 	}
 
