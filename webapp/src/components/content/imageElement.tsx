@@ -152,14 +152,15 @@ const ImageElement = (props: Props): JSX.Element|null => {
         )
     }
 
-    // Calculate aspect ratio padding for placeholder
-    const hasBlockDimensions = blockWidth && blockHeight && blockWidth > 0 && blockHeight > 0
-    const aspectRatio = hasBlockDimensions ? (blockHeight / blockWidth) * 100 : 0
+    // Calculate dimensions for placeholder
     const miniPreviewSrc = blockMiniPreview ? `data:image/jpeg;base64,${blockMiniPreview}` : undefined
 
-    // Determine container width: prefer block fields, fall back to measured dimensions
+    // Use height as the anchor — width will follow from aspect-ratio
+    const resolvedHeight = blockHeight || (imageDimensions?.height ?? 0)
     const resolvedWidth = blockWidth || (imageDimensions?.width ?? 0)
-    const containerStyle = resolvedWidth > 0 ? {width: `${resolvedWidth}px`, maxWidth: '100%'} : undefined
+    const placeholderStyle: React.CSSProperties | undefined = (resolvedWidth > 0 && resolvedHeight > 0)
+        ? {height: `${resolvedHeight}px`, aspectRatio: `${resolvedWidth} / ${resolvedHeight}`, maxWidth: '100%', maxHeight: '80vh'}
+        : undefined
 
     if (loadError) {
         return (
@@ -180,14 +181,12 @@ const ImageElement = (props: Props): JSX.Element|null => {
     const imageLoaded = imgRendered
 
     return (
-        <div className='ImageElement__container' style={containerStyle}>
-            {/* Placeholder: visible while loading, hidden once image loads */}
-            {!imageLoaded && hasBlockDimensions && (
+        <div className='ImageElement__container'>
+            {/* Placeholder: sized by height + aspect-ratio, visible while loading */}
+            {!imageLoaded && placeholderStyle && (
                 <div
                     className='ImageElement__placeholder'
-                    style={{
-                        paddingBottom: `${aspectRatio}%`,
-                    }}
+                    style={placeholderStyle}
                 >
                     {miniPreviewSrc && (
                         <img
@@ -201,7 +200,7 @@ const ImageElement = (props: Props): JSX.Element|null => {
                     </div>
                 </div>
             )}
-            {!imageLoaded && !hasBlockDimensions && (
+            {!imageLoaded && !placeholderStyle && (
                 <div className='MediaLoader__loading'>
                     <div className='MediaLoader__spinner'/>
                 </div>
