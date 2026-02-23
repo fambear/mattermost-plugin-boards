@@ -165,7 +165,7 @@ const ImageElement = (props: Props): JSX.Element|null => {
         return (
             <div
                 className='ImageElement__container'
-                style={{maxWidth: `${blockWidth}px`}}
+                style={{width: `${blockWidth}px`, maxWidth: '100%'}}
             >
                 <div
                     className='ImageElement__placeholder'
