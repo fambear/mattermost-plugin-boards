@@ -36,7 +36,6 @@ const ImageElement = (props: Props): JSX.Element|null => {
     const [fileInfo, setFileInfo] = useState<FileInfo>({})
     const [imageDimensions, setImageDimensions] = useState<ImageDimensions|null>(null)
     const [showViewer, setShowViewer] = useState(false)
-    const [, setIsLoading] = useState(true)
     const [imgRendered, setImgRendered] = useState(false)
     const [loadError, setLoadError] = useState<string|null>(null)
     const [retryCount, setRetryCount] = useState(0)
@@ -51,7 +50,6 @@ const ImageElement = (props: Props): JSX.Element|null => {
 
     const handleRetry = useCallback(() => {
         setLoadError(null)
-        setIsLoading(true)
         setImgRendered(false)
         setImageDataUrl(null)
         setRetryCount(prev => prev + 1)
@@ -60,7 +58,6 @@ const ImageElement = (props: Props): JSX.Element|null => {
     useEffect(() => {
         let cancelled = false
 
-        setIsLoading(true)
         setLoadError(null)
 
         const loadImage = async () => {
@@ -74,7 +71,6 @@ const ImageElement = (props: Props): JSX.Element|null => {
                         id: 'ImageElement.load-failed',
                         defaultMessage: 'Unable to load image',
                     }))
-                    setIsLoading(false)
                     return
                 }
                 setImageDataUrl(fileURL.url)
@@ -84,7 +80,6 @@ const ImageElement = (props: Props): JSX.Element|null => {
                     return
                 }
                 setFileInfo(fullFileInfo)
-                setIsLoading(false)
             } catch (error) {
                 if (cancelled) {
                     return
@@ -94,7 +89,6 @@ const ImageElement = (props: Props): JSX.Element|null => {
                     id: 'ImageElement.load-failed',
                     defaultMessage: 'Unable to load image',
                 }))
-                setIsLoading(false)
             }
         }
         loadImage()
