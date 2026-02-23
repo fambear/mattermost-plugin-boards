@@ -163,12 +163,14 @@ const ImageElement = (props: Props): JSX.Element|null => {
     // Show placeholder with correct aspect ratio while loading
     if (isLoading && hasBlockDimensions) {
         return (
-            <div className='ImageElement__container'>
+            <div
+                className='ImageElement__container'
+                style={{maxWidth: `${blockWidth}px`}}
+            >
                 <div
                     className='ImageElement__placeholder'
                     style={{
                         paddingBottom: `${aspectRatio}%`,
-                        maxWidth: `${blockWidth}px`,
                     }}
                 >
                     {miniPreviewSrc && (
