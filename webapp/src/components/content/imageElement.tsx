@@ -37,6 +37,7 @@ const ImageElement = (props: Props): JSX.Element|null => {
     const [imageDimensions, setImageDimensions] = useState<ImageDimensions|null>(null)
     const [showViewer, setShowViewer] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
+    const [imgRendered, setImgRendered] = useState(false)
     const [loadError, setLoadError] = useState<string|null>(null)
     const [retryCount, setRetryCount] = useState(0)
     const intl = useIntl()
@@ -51,6 +52,7 @@ const ImageElement = (props: Props): JSX.Element|null => {
     const handleRetry = useCallback(() => {
         setLoadError(null)
         setIsLoading(true)
+        setImgRendered(false)
         setImageDataUrl(null)
         setRetryCount(prev => prev + 1)
     }, [])
@@ -110,6 +112,7 @@ const ImageElement = (props: Props): JSX.Element|null => {
             width: img.naturalWidth,
             height: img.naturalHeight,
         })
+        setImgRendered(true)
 
         // Backfill: if block has no stored dimensions, fetch metadata from server
         // and patch the block so future renders get instant placeholders.
@@ -164,13 +167,28 @@ const ImageElement = (props: Props): JSX.Element|null => {
     const resolvedWidth = blockWidth || (imageDimensions?.width ?? 0)
     const containerStyle = resolvedWidth > 0 ? {width: `${resolvedWidth}px`, maxWidth: '100%'} : undefined
 
-    // Show placeholder with correct aspect ratio while loading
-    if (isLoading && hasBlockDimensions) {
+    if (loadError) {
         return (
-            <div
-                className='ImageElement__container'
-                style={containerStyle}
+            <MediaLoader
+                isLoading={false}
+                error={loadError}
+                onRetry={handleRetry}
+                className='ImageElement__loader'
             >
+                <div/>
+            </MediaLoader>
+        )
+    }
+
+    // Single DOM tree for both loading and loaded states to prevent layout shift.
+    // The container always has explicit width; the placeholder sits behind/over the
+    // image and fades away once the image fires onLoad.
+    const imageLoaded = imgRendered
+
+    return (
+        <div className='ImageElement__container' style={containerStyle}>
+            {/* Placeholder: visible while loading, hidden once image loads */}
+            {!imageLoaded && hasBlockDimensions && (
                 <div
                     className='ImageElement__placeholder'
                     style={{
@@ -188,35 +206,19 @@ const ImageElement = (props: Props): JSX.Element|null => {
                         <div className='MediaLoader__spinner'/>
                     </div>
                 </div>
-            </div>
-        )
-    }
+            )}
+            {!imageLoaded && !hasBlockDimensions && (
+                <div className='MediaLoader__loading'>
+                    <div className='MediaLoader__spinner'/>
+                </div>
+            )}
 
-    if (loadError) {
-        return (
-            <MediaLoader
-                isLoading={false}
-                error={loadError}
-                onRetry={handleRetry}
-                className='ImageElement__loader'
-            >
-                <div/>
-            </MediaLoader>
-        )
-    }
-
-    return (
-        <MediaLoader
-            isLoading={isLoading}
-            error={loadError}
-            onRetry={handleRetry}
-            className='ImageElement__loader'
-        >
-            <div className='ImageElement__container' style={containerStyle}>
-                <div className='ImageElement__wrapper'>
+            {/* Image: rendered as soon as we have a URL (hidden until loaded) */}
+            {imageDataUrl && (
+                <div className='ImageElement__wrapper' style={!imageLoaded ? {position: 'absolute', opacity: 0, pointerEvents: 'none'} : undefined}>
                     <img
                         className='ImageElement'
-                        src={imageDataUrl ?? undefined}
+                        src={imageDataUrl}
                         alt=''
                         aria-label={block.title || intl.formatMessage({id: 'ImageElement.view-fullscreen', defaultMessage: 'View image in full screen'})}
                         onLoad={handleImageLoad}
@@ -237,32 +239,32 @@ const ImageElement = (props: Props): JSX.Element|null => {
                         </div>
                     </div>
                 </div>
-                {(imageDimensions || (fileInfo && fileInfo.size) || imageDataUrl) && (
-                    <div className='ImageElement__metadata'>
-                        {imageDimensions && (
-                            <span className='ImageElement__dimensions'>
-                                {imageDimensions.width}×{imageDimensions.height}
-                            </span>
-                        )}
-                        {fileInfo && fileInfo.size && (
-                            <span className='ImageElement__size'>
-                                {Utils.humanFileSize(fileInfo.size)}
-                            </span>
-                        )}
-                        {imageDataUrl && (
-                            <a
-                                href={imageDataUrl}
-                                target='_blank'
-                                rel='noopener noreferrer'
-                                className='ImageElement__download'
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                {intl.formatMessage({id: 'ImageElement.download', defaultMessage: 'Download'})}
-                            </a>
-                        )}
-                    </div>
-                )}
-            </div>
+            )}
+            {imageLoaded && (imageDimensions || (fileInfo && fileInfo.size)) && (
+                <div className='ImageElement__metadata'>
+                    {imageDimensions && (
+                        <span className='ImageElement__dimensions'>
+                            {imageDimensions.width}×{imageDimensions.height}
+                        </span>
+                    )}
+                    {fileInfo && fileInfo.size && (
+                        <span className='ImageElement__size'>
+                            {Utils.humanFileSize(fileInfo.size)}
+                        </span>
+                    )}
+                    {imageDataUrl && (
+                        <a
+                            href={imageDataUrl}
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            className='ImageElement__download'
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {intl.formatMessage({id: 'ImageElement.download', defaultMessage: 'Download'})}
+                        </a>
+                    )}
+                </div>
+            )}
             {showViewer && (
                 <RootPortal>
                     <ImageViewer
@@ -271,7 +273,7 @@ const ImageElement = (props: Props): JSX.Element|null => {
                     />
                 </RootPortal>
             )}
-        </MediaLoader>
+        </div>
     )
 }
 
