@@ -158,8 +158,24 @@ const ImageElement = (props: Props): JSX.Element|null => {
     // Use height as the anchor — width will follow from aspect-ratio
     const resolvedHeight = blockHeight || (imageDimensions?.height ?? 0)
     const resolvedWidth = blockWidth || (imageDimensions?.width ?? 0)
-    const placeholderStyle: React.CSSProperties | undefined = (resolvedWidth > 0 && resolvedHeight > 0)
-        ? {height: `${resolvedHeight}px`, aspectRatio: `${resolvedWidth} / ${resolvedHeight}`, maxWidth: '100%', maxHeight: '80vh'}
+    // Match the same constraints as .focalboard-body .octo-block img (max-width/max-height: 500px)
+    const MAX_DISPLAY = 500
+    const displayWidth = resolvedWidth > 0 ? Math.min(resolvedWidth, MAX_DISPLAY) : 0
+    const displayHeight = resolvedHeight > 0 ? Math.min(resolvedHeight, MAX_DISPLAY) : 0
+
+    // Scale proportionally if either dimension was clamped
+    let finalWidth = displayWidth
+    let finalHeight = displayHeight
+    if (resolvedWidth > 0 && resolvedHeight > 0) {
+        const scaleW = MAX_DISPLAY / resolvedWidth
+        const scaleH = MAX_DISPLAY / resolvedHeight
+        const scale = Math.min(scaleW, scaleH, 1) // don't upscale
+        finalWidth = Math.round(resolvedWidth * scale)
+        finalHeight = Math.round(resolvedHeight * scale)
+    }
+
+    const placeholderStyle: React.CSSProperties | undefined = (finalWidth > 0 && finalHeight > 0)
+        ? {width: `${finalWidth}px`, height: `${finalHeight}px`, maxWidth: '100%'}
         : undefined
 
     if (loadError) {
