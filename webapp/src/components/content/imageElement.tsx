@@ -160,12 +160,16 @@ const ImageElement = (props: Props): JSX.Element|null => {
     const aspectRatio = hasBlockDimensions ? (blockHeight / blockWidth) * 100 : 0
     const miniPreviewSrc = blockMiniPreview ? `data:image/jpeg;base64,${blockMiniPreview}` : undefined
 
+    // Determine container width: prefer block fields, fall back to measured dimensions
+    const resolvedWidth = blockWidth || (imageDimensions?.width ?? 0)
+    const containerStyle = resolvedWidth > 0 ? {width: `${resolvedWidth}px`, maxWidth: '100%'} : undefined
+
     // Show placeholder with correct aspect ratio while loading
     if (isLoading && hasBlockDimensions) {
         return (
             <div
                 className='ImageElement__container'
-                style={{maxWidth: `${blockWidth}px`}}
+                style={containerStyle}
             >
                 <div
                     className='ImageElement__placeholder'
@@ -208,7 +212,7 @@ const ImageElement = (props: Props): JSX.Element|null => {
             onRetry={handleRetry}
             className='ImageElement__loader'
         >
-            <div className='ImageElement__container'>
+            <div className='ImageElement__container' style={containerStyle}>
                 <div className='ImageElement__wrapper'>
                     <img
                         className='ImageElement'
