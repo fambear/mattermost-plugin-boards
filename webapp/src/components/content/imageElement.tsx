@@ -36,7 +36,7 @@ const ImageElement = (props: Props): JSX.Element|null => {
     const [fileInfo, setFileInfo] = useState<FileInfo>({})
     const [imageDimensions, setImageDimensions] = useState<ImageDimensions|null>(null)
     const [showViewer, setShowViewer] = useState(false)
-    const [isLoading, setIsLoading] = useState(true)
+    const [, setIsLoading] = useState(true)
     const [imgRendered, setImgRendered] = useState(false)
     const [loadError, setLoadError] = useState<string|null>(null)
     const [retryCount, setRetryCount] = useState(0)
