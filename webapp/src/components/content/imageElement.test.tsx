@@ -54,6 +54,8 @@ describe('components/content/ImageElement', () => {
             extension: '.jpg',
             size: 165002,
         })
+        ;(octoClient.getFileImageMetadata as jest.Mock).mockResolvedValue({width: 800, height: 600})
+        ;(octoClient.patchBlock as jest.Mock).mockResolvedValue({})
     })
 
     test('should match snapshot', async () => {
@@ -114,16 +116,24 @@ describe('components/content/ImageElement', () => {
                 render(component)
             })
 
-            // Should show loading spinner
-            const loadingElement = document.querySelector('.MediaLoader__loading')
-            expect(loadingElement).toBeTruthy()
+            // Should show loading spinner (rendered directly, not via MediaLoader wrapper)
+            const spinnerElement = document.querySelector('.MediaLoader__spinner')
+            expect(spinnerElement).toBeTruthy()
 
             // Resolve the promise
             await act(async () => {
                 resolveLoad!({url: 'test.jpg'})
             })
 
-            // Wait for loading to complete
+            // Spinner stays until img onLoad fires
+            await act(async () => {
+                const img = document.querySelector('.ImageElement') as HTMLImageElement
+                if (img) {
+                    fireEvent.load(img)
+                }
+            })
+
+            // Wait for spinner to disappear
             await waitFor(() => {
                 const spinner = document.querySelector('.MediaLoader__spinner')
                 expect(spinner).toBeNull()
@@ -138,6 +148,14 @@ describe('components/content/ImageElement', () => {
             )
             await act(async () => {
                 render(component)
+            })
+
+            // Fire onLoad on the img element
+            await act(async () => {
+                const img = document.querySelector('.ImageElement') as HTMLImageElement
+                if (img) {
+                    fireEvent.load(img)
+                }
             })
 
             await waitFor(() => {
@@ -315,6 +333,14 @@ describe('components/content/ImageElement', () => {
                 render(component)
             })
 
+            // Fire onLoad to transition to loaded state
+            await act(async () => {
+                const img = document.querySelector('.ImageElement') as HTMLImageElement
+                if (img) {
+                    fireEvent.load(img)
+                }
+            })
+
             await waitFor(() => {
                 const metadata = document.querySelector('.ImageElement__metadata')
                 expect(metadata).toBeTruthy()
@@ -329,6 +355,14 @@ describe('components/content/ImageElement', () => {
             )
             await act(async () => {
                 render(component)
+            })
+
+            // Fire onLoad to transition to loaded state
+            await act(async () => {
+                const img = document.querySelector('.ImageElement') as HTMLImageElement
+                if (img) {
+                    fireEvent.load(img)
+                }
             })
 
             await waitFor(() => {
