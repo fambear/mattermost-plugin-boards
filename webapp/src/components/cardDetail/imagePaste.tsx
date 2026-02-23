@@ -74,6 +74,9 @@ export default function useImagePaste(
         type UploadInfo = {
             file: File
             fileId: string | undefined
+            width?: number
+            height?: number
+            miniPreview?: string
             type: 'image' | 'video' | 'pdf' | 'generic'
         }
 
