@@ -5,32 +5,34 @@ exports[`components/cardDetail/CardDetail should render hidden view if limited 1
   <div
     class="CardDetail  CardDetail--is-limited"
   >
-    <div
-      class="EditableAreaWrap"
-    >
-      <textarea
-        class="EditableArea Editable readonly title"
-        height="0"
-        placeholder="Untitled"
-        readonly=""
-        rows="1"
-        spellcheck="true"
-        title="title"
-      >
-        title
-      </textarea>
+    <div>
       <div
-        class="EditableAreaContainer"
+        class="EditableAreaWrap"
       >
         <textarea
-          aria-hidden="true"
-          class="EditableAreaReference Editable readonly title"
-          dir="auto"
-          disabled=""
+          class="EditableArea Editable readonly title"
+          height="0"
+          placeholder="Untitled"
+          readonly=""
           rows="1"
+          spellcheck="true"
+          title="title"
         >
           title
         </textarea>
+        <div
+          class="EditableAreaContainer"
+        >
+          <textarea
+            aria-hidden="true"
+            class="EditableAreaReference Editable readonly title"
+            dir="auto"
+            disabled=""
+            rows="1"
+          >
+            title
+          </textarea>
+        </div>
       </div>
     </div>
     <div
