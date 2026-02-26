@@ -324,7 +324,10 @@ const CardDialog = (props: Props): JSX.Element => {
 
         if (typeof IntersectionObserver === 'undefined') {
             const updateStickyContextVisibility = () => {
-                const toolbarBottom = toolbarElement?.getBoundingClientRect().bottom || 0
+                if (!toolbarElement) {
+                    return
+                }
+                const toolbarBottom = toolbarElement.getBoundingClientRect().bottom
                 setShowStickyCardContext(target.getBoundingClientRect().top <= toolbarBottom)
             }
             updateStickyContextVisibility()

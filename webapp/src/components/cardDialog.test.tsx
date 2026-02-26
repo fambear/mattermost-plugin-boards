@@ -133,8 +133,11 @@ describe('components/cardDialog', () => {
     })
 
     const getRect = (rect: Partial<DOMRect> = {}): DOMRect => {
-        const defaultRect = new DOMRect(0, 0, 100, 40)
-        return Object.assign(defaultRect, rect)
+        const x = rect.x ?? rect.left ?? 0
+        const y = rect.y ?? rect.top ?? 0
+        const width = rect.width ?? (rect.right !== undefined ? rect.right - x : 100)
+        const height = rect.height ?? (rect.bottom !== undefined ? rect.bottom - y : 40)
+        return new DOMRect(x, y, width, height)
     }
 
     const createIntersectionObserverEntry = (isIntersecting: boolean): IntersectionObserverEntry => {
@@ -591,27 +594,29 @@ describe('components/cardDialog', () => {
         expect(toolbar).toBeTruthy()
         expect(cardIdentityElement).toBeTruthy()
         if (!dialog || !toolbar || !cardIdentityElement) {
-            return
+            throw new Error('Expected dialog, toolbar, and cardIdentityElement to be present in DOM')
         }
 
         const toolbarRectSpy = jest.spyOn(toolbar, 'getBoundingClientRect').mockReturnValue(getRect({top: 0, bottom: 64}))
         const identityRectSpy = jest.spyOn(cardIdentityElement, 'getBoundingClientRect').mockReturnValue(getRect({top: 32, bottom: 72}))
 
-        act(() => {
-            dialog.dispatchEvent(new Event('scroll'))
-        })
+        try {
+            act(() => {
+                dialog.dispatchEvent(new Event('scroll'))
+            })
 
-        expect(container.querySelector('.cardDialog__toolbar-card-context')).toBeInTheDocument()
+            expect(container.querySelector('.cardDialog__toolbar-card-context')).toBeInTheDocument()
 
-        identityRectSpy.mockReturnValue(getRect({top: 120, bottom: 160}))
-        act(() => {
-            window.dispatchEvent(new Event('resize'))
-        })
+            identityRectSpy.mockReturnValue(getRect({top: 120, bottom: 160}))
+            act(() => {
+                window.dispatchEvent(new Event('resize'))
+            })
 
-        expect(container.querySelector('.cardDialog__toolbar-card-context')).not.toBeInTheDocument()
-
-        toolbarRectSpy.mockRestore()
-        identityRectSpy.mockRestore()
+            expect(container.querySelector('.cardDialog__toolbar-card-context')).not.toBeInTheDocument()
+        } finally {
+            toolbarRectSpy.mockRestore()
+            identityRectSpy.mockRestore()
+        }
     })
 
     test('does not render sticky card context when card code and title are missing', async () => {
