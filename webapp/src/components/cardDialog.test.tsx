@@ -497,7 +497,7 @@ describe('components/cardDialog', () => {
         const observeMock = jest.fn()
         const mockObserver = createIntersectionObserverMock(intersectionObserverCallbackRef, observeMock)
 
-        let container
+        let container: any
         await act(async () => {
             const result = render(wrapDNDIntl(
                 <ReduxProvider store={localStore}>
@@ -564,7 +564,7 @@ describe('components/cardDialog', () => {
             value: undefined,
         })
 
-        let container
+        let container: any
         await act(async () => {
             const result = render(wrapDNDIntl(
                 <ReduxProvider store={localStore}>
@@ -636,7 +636,7 @@ describe('components/cardDialog', () => {
         }
         const localStore = mockStateStore([], localState)
 
-        let container
+        let container: any
         await act(async () => {
             const result = render(wrapDNDIntl(
                 <ReduxProvider store={localStore}>
