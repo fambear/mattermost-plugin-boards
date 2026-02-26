@@ -114,4 +114,21 @@ describe('components/dialog', () => {
         userEvent.click(buttonTest)
         expect(container).toMatchSnapshot()
     })
+
+    test('should render toolbarLeft and assign dialogRef', () => {
+        const dialogRef = React.createRef<HTMLDivElement>()
+        render(wrapDNDIntl(
+            <Dialog
+                onClose={jest.fn()}
+                toolbarLeft={<span>Sticky context</span>}
+                dialogRef={dialogRef}
+            >
+                <div id='test'/>
+            </Dialog>,
+        ))
+
+        expect(screen.getByText('Sticky context')).toBeInTheDocument()
+        expect(dialogRef.current).toBeInTheDocument()
+        expect(dialogRef.current).toHaveClass('dialog')
+    })
 })
