@@ -18,7 +18,9 @@ exports[`components/dialog should match snapshot 1`] = `
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
             <h1
               class="dialog-title"
             />
@@ -65,7 +67,9 @@ exports[`components/dialog should return dialog and click on cancel button 1`] =
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
             <h1
               class="dialog-title"
             />

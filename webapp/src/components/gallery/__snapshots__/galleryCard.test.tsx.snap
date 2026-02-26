@@ -937,7 +937,9 @@ exports[`src/components/gallery/GalleryCard without block content return Gallery
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
             <h1
               class="dialog-title"
             />

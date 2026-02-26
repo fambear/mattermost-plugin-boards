@@ -21,7 +21,9 @@ exports[`components/boardSelector escape button should unmount the component 1`]
           <div
             class="toolbar"
           >
-            <div>
+            <div
+              class="toolbar--left"
+            >
               <h1
                 class="dialog-title"
               >
@@ -126,7 +128,9 @@ exports[`components/boardSelector renders with no results 1`] = `
           <div
             class="toolbar"
           >
-            <div>
+            <div
+              class="toolbar--left"
+            >
               <h1
                 class="dialog-title"
               >
@@ -232,7 +236,9 @@ exports[`components/boardSelector renders with some results 1`] = `
           <div
             class="toolbar"
           >
-            <div>
+            <div
+              class="toolbar--left"
+            >
               <h1
                 class="dialog-title"
               >
@@ -436,7 +442,9 @@ exports[`components/boardSelector renders without start searching 1`] = `
           <div
             class="toolbar"
           >
-            <div>
+            <div
+              class="toolbar--left"
+            >
               <h1
                 class="dialog-title"
               >

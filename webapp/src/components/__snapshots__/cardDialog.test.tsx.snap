@@ -18,7 +18,9 @@ exports[`components/cardDialog already following card 1`] = `
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
             <h1
               class="dialog-title"
             >
@@ -264,7 +266,9 @@ exports[`components/cardDialog limited card shows hidden view (no toolbar) 1`] =
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
             <h1
               class="dialog-title"
             >
@@ -499,7 +503,9 @@ exports[`components/cardDialog return a cardDialog readonly 1`] = `
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
             <h1
               class="dialog-title"
             >
@@ -676,7 +682,9 @@ exports[`components/cardDialog return cardDialog menu content 1`] = `
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
             <h1
               class="dialog-title"
             >
@@ -1059,7 +1067,9 @@ exports[`components/cardDialog return cardDialog menu content and cancel delete 
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
             <h1
               class="dialog-title"
             >
@@ -1305,7 +1315,9 @@ exports[`components/cardDialog should match snapshot 1`] = `
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
             <h1
               class="dialog-title"
             >
@@ -1551,7 +1563,9 @@ exports[`components/cardDialog should match snapshot without permissions 1`] = `
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
             <h1
               class="dialog-title"
             >
