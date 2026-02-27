@@ -32,10 +32,10 @@ import {getMe} from '../store/users'
 import {Permission} from '../constants'
 import {Block, createBlock} from '../blocks/block'
 import {AttachmentBlock, createAttachmentBlock} from '../blocks/attachmentBlock'
+import IconButton from '../widgets/buttons/iconButton'
 
 import BoardPermissionGate from './permissions/boardPermissionGate'
 
-import IconButton from '../widgets/buttons/iconButton'
 import CardDetail from './cardDetail/cardDetail'
 import Dialog from './dialog'
 
