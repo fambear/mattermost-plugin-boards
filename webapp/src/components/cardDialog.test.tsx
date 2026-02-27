@@ -61,6 +61,7 @@ const mockedMutator = mocked(mutator, true)
 const mockedOctoClient = mocked(octoClient, true)
 mockedUtils.createGuid.mockReturnValue('test-id')
 mockedUtils.isFocalboardPlugin.mockReturnValue(true)
+mockedMutator.duplicateCard.mockResolvedValue([[], 'new-card-id'] as any)
 
 beforeAll(() => {
     mockDOM()
@@ -363,7 +364,7 @@ describe('components/cardDialog', () => {
         expect(container).toMatchSnapshot()
     })
 
-    test('return cardDialog menu content and do a New template from card', async () => {
+    test('return cardDialog menu content and do a Duplicate card', async () => {
         await act(async () => {
             render(wrapDNDIntl(
                 <ReduxProvider store={store}>
@@ -382,8 +383,8 @@ describe('components/cardDialog', () => {
         })
         const buttonMenu = screen.getAllByRole('button', {name: 'menuwrapper'})[0]
         userEvent.click(buttonMenu)
-        const buttonTemplate = screen.getByRole('button', {name: 'New template from card'})
-        userEvent.click(buttonTemplate)
+        const buttonDuplicate = screen.getByRole('button', {name: 'Duplicate'})
+        userEvent.click(buttonDuplicate)
         expect(mockedMutator.duplicateCard).toBeCalledTimes(1)
     })
 

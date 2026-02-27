@@ -22,7 +22,6 @@ import {sendFlashMessage} from '../components/flashMessages'
 
 import ConfirmationDialogBox, {ConfirmationDialogBoxProps} from '../components/confirmationDialogBox'
 
-import Button from '../widgets/buttons/button'
 
 import {getUserBlockSubscriptionList} from '../store/initialLoad'
 import {getClientConfig} from '../store/clientConfig'
@@ -32,6 +31,7 @@ import {getMe} from '../store/users'
 import {Permission} from '../constants'
 import {Block, createBlock} from '../blocks/block'
 import {AttachmentBlock, createAttachmentBlock} from '../blocks/attachmentBlock'
+import IconButton from '../widgets/buttons/iconButton'
 
 import BoardPermissionGate from './permissions/boardPermissionGate'
 
@@ -68,28 +68,6 @@ const CardDialog = (props: Props): JSX.Element => {
     const [cardIdentityElement, setCardIdentityElement] = useState<HTMLDivElement|null>(null)
     const [showStickyCardContext, setShowStickyCardContext] = useState(false)
     const dialogRef = useRef<HTMLDivElement>(null)
-    const makeTemplateClicked = async () => {
-        if (!card) {
-            Utils.assertFailure('card')
-            return
-        }
-
-        TelemetryClient.trackEvent(TelemetryCategory, TelemetryActions.AddTemplateFromCard, {board: props.board.id, view: activeView.id, card: props.cardId})
-        await mutator.duplicateCard(
-            props.cardId,
-            board.id,
-            card.fields.isTemplate,
-            intl.formatMessage({id: 'Mutator.new-template-from-card', defaultMessage: 'new template from card'}),
-            true,
-            {},
-            async (newCardId) => {
-                props.showCard(newCardId)
-            },
-            async () => {
-                props.showCard(undefined)
-            },
-        )
-    }
     const handleDeleteCard = async () => {
         if (!card) {
             Utils.assertFailure()
@@ -102,8 +80,10 @@ const CardDialog = (props: Props): JSX.Element => {
     }
 
     const confirmDialogProps: ConfirmationDialogBoxProps = {
-        heading: intl.formatMessage({id: 'CardDialog.delete-confirmation-dialog-heading', defaultMessage: 'Confirm card delete!'}),
+        heading: intl.formatMessage({id: 'CardDialog.delete-confirmation-dialog-heading', defaultMessage: 'Delete this card?'}),
+        subText: intl.formatMessage({id: 'CardDialog.delete-confirmation-dialog-subtext', defaultMessage: 'This action is permanent and cannot be undone. All card data will be lost. Would you rather change the card status instead?'}),
         confirmButtonText: intl.formatMessage({id: 'CardDialog.delete-confirmation-dialog-button-text', defaultMessage: 'Delete'}),
+        destructive: true,
         onConfirm: handleDeleteCard,
         onClose: () => {
             setShowConfirmationDialogBox(false)
@@ -122,28 +102,16 @@ const CardDialog = (props: Props): JSX.Element => {
         setShowConfirmationDialogBox(true)
     }
 
-    const menu = (
-        <CardActionsMenu
-            cardId={props.cardId}
-            boardId={board.id}
-            cardCode={card?.code}
-            onClickDelete={handleDeleteButtonOnClick}
-        >
-            {!isTemplate &&
-            <BoardPermissionGate permissions={[Permission.ManageBoardProperties]}>
-                <Menu.Text
-                    id='makeTemplate'
-                    icon={
-                        <CompassIcon
-                            icon='plus'
-                        />}
-                    name='New template from card'
-                    onClick={makeTemplateClicked}
-                />
-            </BoardPermissionGate>
-            }
-        </CardActionsMenu>
-    )
+    const handleDuplicateCard = async () => {
+        if (!card) {
+            return
+        }
+        TelemetryClient.trackEvent(TelemetryCategory, TelemetryActions.DuplicateCard, {board: board.id, card: card.id})
+        const [, newCardId] = await mutator.duplicateCard(card.id, board.id)
+        if (newCardId) {
+            props.showCard(newCardId)
+        }
+    }
 
     const removeUploadingAttachment = (uploadingBlock: Block) => {
         uploadingBlock.deleteAt = 1
@@ -255,53 +223,48 @@ const CardDialog = (props: Props): JSX.Element => {
         props.onClose()
     }, [cleanupEmptyBlocks, props.onClose])
 
-    const attachBtn = (): React.ReactNode => {
-        return (
+    const menu = (
+        <CardActionsMenu
+            cardId={props.cardId}
+            boardId={board.id}
+            cardCode={card?.code}
+            onClickDelete={handleDeleteButtonOnClick}
+            onClickDuplicate={handleDuplicateCard}
+        >
             <BoardPermissionGate permissions={[Permission.ManageBoardCards]}>
-                <Button
+                <Menu.Text
                     icon={<CompassIcon icon='paperclip'/>}
-                    className='cardFollowBtn cardFollowBtn--attach'
-                    emphasis='gray'
-                    size='medium'
+                    id='attach'
+                    name={intl.formatMessage({id: 'CardDetail.Attach', defaultMessage: 'Attach'})}
                     onClick={addElement}
-                >
-                    {intl.formatMessage({id: 'CardDetail.Attach', defaultMessage: 'Attach'})}
-                </Button>
+                />
             </BoardPermissionGate>
-        )
-    }
+        </CardActionsMenu>
+    )
 
     const followActionButton = (following: boolean): React.ReactNode => {
         const followBtn = (
-            <>
-                <Button
-                    className='cardFollowBtn follow'
-                    emphasis='gray'
-                    size='medium'
-                    onClick={() => mutator.followBlock(props.cardId, 'card', me!.id)}
-                >
-                    {intl.formatMessage({id: 'CardDetail.Follow', defaultMessage: 'Follow'})}
-                </Button>
-            </>
+            <IconButton
+                className='cardFollowBtn follow'
+                title={intl.formatMessage({id: 'CardDetail.Follow', defaultMessage: 'Follow this card'})}
+                icon={<CompassIcon icon='bell-outline'/>}
+                onClick={() => mutator.followBlock(props.cardId, 'card', me!.id)}
+            />
         )
 
         const unfollowBtn = (
-            <>
-                <Button
-                    className='cardFollowBtn unfollow'
-                    emphasis='tertiary'
-                    size='medium'
-                    onClick={() => mutator.unfollowBlock(props.cardId, 'card', me!.id)}
-                >
-                    {intl.formatMessage({id: 'CardDetail.Following', defaultMessage: 'Following'})}
-                </Button>
-            </>
+            <IconButton
+                className='cardFollowBtn unfollow'
+                title={intl.formatMessage({id: 'CardDetail.Unfollow', defaultMessage: 'Stop following this card'})}
+                icon={<CompassIcon icon='bell-ring-outline'/>}
+                onClick={() => mutator.unfollowBlock(props.cardId, 'card', me!.id)}
+            />
         )
 
         if (!isTemplate && Utils.isFocalboardPlugin() && !card?.limited) {
-            return (<>{attachBtn()}{following ? unfollowBtn : followBtn}</>)
+            return (<>{following ? unfollowBtn : followBtn}</>)
         }
-        return (<>{attachBtn()}</>)
+        return null
     }
 
     const followingCards = useAppSelector(getUserBlockSubscriptionList)
