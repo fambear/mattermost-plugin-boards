@@ -1,6 +1,10 @@
 @import '../../styles/z-index';
 
 .CardDetail {
+    .card-identity-wrapper {
+        width: 100%;
+    }
+
     .card-code-header {
         display: flex;
         align-items: center;

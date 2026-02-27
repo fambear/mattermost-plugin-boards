@@ -243,7 +243,7 @@ const CardDetail = (props: Props): JSX.Element|null => {
     return (
         <>
             <div className={`CardDetail ${limited ? ' CardDetail--is-limited' : ''}`}>
-                <div ref={props.cardIdentityRef}>
+                <div className='card-identity-wrapper' ref={props.cardIdentityRef}>
                     {card.code && (
                         <div className='card-code-header'>
                             <span className='card-code-text'>{card.code}</span>
