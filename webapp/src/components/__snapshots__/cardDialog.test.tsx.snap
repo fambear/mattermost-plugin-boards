@@ -53,11 +53,12 @@ exports[`components/cardDialog already following card 1`] = `
                 </span>
               </button>
               <button
+                title="Stop following this card"
                 type="button"
               >
-                <span>
-                  Following
-                </span>
+                <i
+                  class="CompassIcon icon-bell-ring-outline"
+                />
               </button>
             </div>
             <div
@@ -560,11 +561,12 @@ exports[`components/cardDialog return a cardDialog readonly 1`] = `
                 </span>
               </button>
               <button
+                title="Follow this card"
                 type="button"
               >
-                <span>
-                  Follow
-                </span>
+                <i
+                  class="CompassIcon icon-bell-outline"
+                />
               </button>
             </div>
             <button
@@ -750,11 +752,12 @@ exports[`components/cardDialog return cardDialog menu content 1`] = `
                 </span>
               </button>
               <button
+                title="Follow this card"
                 type="button"
               >
-                <span>
-                  Follow
-                </span>
+                <i
+                  class="CompassIcon icon-bell-outline"
+                />
               </button>
             </div>
             <div
@@ -1146,11 +1149,12 @@ exports[`components/cardDialog return cardDialog menu content and cancel delete 
                 </span>
               </button>
               <button
+                title="Follow this card"
                 type="button"
               >
-                <span>
-                  Follow
-                </span>
+                <i
+                  class="CompassIcon icon-bell-outline"
+                />
               </button>
             </div>
             <div
@@ -1405,11 +1409,12 @@ exports[`components/cardDialog should match snapshot 1`] = `
                 </span>
               </button>
               <button
+                title="Follow this card"
                 type="button"
               >
-                <span>
-                  Follow
-                </span>
+                <i
+                  class="CompassIcon icon-bell-outline"
+                />
               </button>
             </div>
             <div
@@ -1654,11 +1659,12 @@ exports[`components/cardDialog should match snapshot without permissions 1`] = `
               class="d-flex"
             >
               <button
+                title="Follow this card"
                 type="button"
               >
-                <span>
-                  Follow
-                </span>
+                <i
+                  class="CompassIcon icon-bell-outline"
+                />
               </button>
             </div>
             <div

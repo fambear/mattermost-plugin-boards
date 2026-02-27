@@ -35,6 +35,7 @@ import {AttachmentBlock, createAttachmentBlock} from '../blocks/attachmentBlock'
 
 import BoardPermissionGate from './permissions/boardPermissionGate'
 
+import IconButton from '../widgets/buttons/iconButton'
 import CardDetail from './cardDetail/cardDetail'
 import Dialog from './dialog'
 
@@ -273,29 +274,21 @@ const CardDialog = (props: Props): JSX.Element => {
 
     const followActionButton = (following: boolean): React.ReactNode => {
         const followBtn = (
-            <>
-                <Button
-                    className='cardFollowBtn follow'
-                    emphasis='gray'
-                    size='medium'
-                    onClick={() => mutator.followBlock(props.cardId, 'card', me!.id)}
-                >
-                    {intl.formatMessage({id: 'CardDetail.Follow', defaultMessage: 'Follow'})}
-                </Button>
-            </>
+            <IconButton
+                className='cardFollowBtn follow'
+                title={intl.formatMessage({id: 'CardDetail.Follow', defaultMessage: 'Follow this card'})}
+                icon={<CompassIcon icon='bell-outline'/>}
+                onClick={() => mutator.followBlock(props.cardId, 'card', me!.id)}
+            />
         )
 
         const unfollowBtn = (
-            <>
-                <Button
-                    className='cardFollowBtn unfollow'
-                    emphasis='tertiary'
-                    size='medium'
-                    onClick={() => mutator.unfollowBlock(props.cardId, 'card', me!.id)}
-                >
-                    {intl.formatMessage({id: 'CardDetail.Following', defaultMessage: 'Following'})}
-                </Button>
-            </>
+            <IconButton
+                className='cardFollowBtn unfollow'
+                title={intl.formatMessage({id: 'CardDetail.Unfollow', defaultMessage: 'Stop following this card'})}
+                icon={<CompassIcon icon='bell-ring-outline'/>}
+                onClick={() => mutator.unfollowBlock(props.cardId, 'card', me!.id)}
+            />
         )
 
         if (!isTemplate && Utils.isFocalboardPlugin() && !card?.limited) {
