@@ -43,16 +43,7 @@ exports[`components/cardDialog already following card 1`] = `
               class="d-flex"
             >
               <button
-                type="button"
-              >
-                <i
-                  class="CompassIcon icon-paperclip"
-                />
-                <span>
-                  Attach
-                </span>
-              </button>
-              <button
+                aria-label="Stop following this card"
                 title="Stop following this card"
                 type="button"
               >
@@ -299,20 +290,6 @@ exports[`components/cardDialog limited card shows hidden view (no toolbar) 1`] =
           <div
             class="toolbar--right"
           >
-            <div
-              class="d-flex"
-            >
-              <button
-                type="button"
-              >
-                <i
-                  class="CompassIcon icon-paperclip"
-                />
-                <span>
-                  Attach
-                </span>
-              </button>
-            </div>
             <button
               aria-label="Close dialog"
               title="Close dialog"
@@ -551,16 +528,7 @@ exports[`components/cardDialog return a cardDialog readonly 1`] = `
               class="d-flex"
             >
               <button
-                type="button"
-              >
-                <i
-                  class="CompassIcon icon-paperclip"
-                />
-                <span>
-                  Attach
-                </span>
-              </button>
-              <button
+                aria-label="Follow this card"
                 title="Follow this card"
                 type="button"
               >
@@ -742,16 +710,7 @@ exports[`components/cardDialog return cardDialog menu content 1`] = `
               class="d-flex"
             >
               <button
-                type="button"
-              >
-                <i
-                  class="CompassIcon icon-paperclip"
-                />
-                <span>
-                  Attach
-                </span>
-              </button>
-              <button
+                aria-label="Follow this card"
                 title="Follow this card"
                 type="button"
               >
@@ -811,6 +770,35 @@ exports[`components/cardDialog return cardDialog menu content 1`] = `
                           class="noicon"
                         />
                       </div>
+                      <div
+                        aria-label="Duplicate"
+                        class="MenuOption TextOption menu-option"
+                        role="button"
+                      >
+                        <div
+                          class="d-flex"
+                        >
+                          <div
+                            class="menu-option__icon"
+                          >
+                            <i
+                              class="CompassIcon icon-content-copy content-copy"
+                            />
+                          </div>
+                        </div>
+                        <div
+                          class="menu-option__content"
+                        >
+                          <div
+                            class="menu-name"
+                          >
+                            Duplicate
+                          </div>
+                        </div>
+                        <div
+                          class="noicon"
+                        />
+                      </div>
                     </div>
                     <div>
                       <div
@@ -845,7 +833,7 @@ exports[`components/cardDialog return cardDialog menu content 1`] = `
                     </div>
                     <div>
                       <div
-                        aria-label="New template from card"
+                        aria-label="Attach"
                         class="MenuOption TextOption menu-option"
                         role="button"
                       >
@@ -856,7 +844,7 @@ exports[`components/cardDialog return cardDialog menu content 1`] = `
                             class="menu-option__icon"
                           >
                             <i
-                              class="CompassIcon icon-plus"
+                              class="CompassIcon icon-paperclip"
                             />
                           </div>
                         </div>
@@ -866,7 +854,7 @@ exports[`components/cardDialog return cardDialog menu content 1`] = `
                           <div
                             class="menu-name"
                           >
-                            New template from card
+                            Attach
                           </div>
                         </div>
                         <div
@@ -1139,16 +1127,7 @@ exports[`components/cardDialog return cardDialog menu content and cancel delete 
               class="d-flex"
             >
               <button
-                type="button"
-              >
-                <i
-                  class="CompassIcon icon-paperclip"
-                />
-                <span>
-                  Attach
-                </span>
-              </button>
-              <button
+                aria-label="Follow this card"
                 title="Follow this card"
                 type="button"
               >
@@ -1399,16 +1378,7 @@ exports[`components/cardDialog should match snapshot 1`] = `
               class="d-flex"
             >
               <button
-                type="button"
-              >
-                <i
-                  class="CompassIcon icon-paperclip"
-                />
-                <span>
-                  Attach
-                </span>
-              </button>
-              <button
+                aria-label="Follow this card"
                 title="Follow this card"
                 type="button"
               >
@@ -1659,6 +1629,7 @@ exports[`components/cardDialog should match snapshot without permissions 1`] = `
               class="d-flex"
             >
               <button
+                aria-label="Follow this card"
                 title="Follow this card"
                 type="button"
               >
