@@ -107,6 +107,10 @@
             align-items: flex-start;
         }
 
+        .toolbar--left {
+            min-width: 0;
+        }
+
         .toolbar--right {
             display: flex;
             gap: 8px;

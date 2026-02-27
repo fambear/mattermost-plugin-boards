@@ -66,6 +66,7 @@ type Props = {
     onDelete: (block: Block) => void
     addAttachment: () => void
     showCard?: (cardId?: string) => void
+    cardIdentityRef?: React.Ref<HTMLDivElement>
 }
 
 async function addBlockNewEditor(card: Card, intl: IntlShape, title: string, fields: any, contentType: ContentBlockTypes, afterBlockId: string, dispatch: any): Promise<Block> {
@@ -168,6 +169,10 @@ const CardDetail = (props: Props): JSX.Element|null => {
     }, [])
 
     const dispatch = useAppDispatch()
+    const copyCardURLText = intl.formatMessage({
+        id: 'CardDetail.copy-card-url',
+        defaultMessage: 'Copy card URL',
+    })
     useEffect(() => {
         dispatch(setCurrentCard(card.id))
     }, [card.id])
@@ -238,36 +243,38 @@ const CardDetail = (props: Props): JSX.Element|null => {
     return (
         <>
             <div className={`CardDetail ${limited ? ' CardDetail--is-limited' : ''}`}>
-                {card.code && (
-                    <div className='card-code-header'>
-                        <span className='card-code-text'>{card.code}</span>
-                        <button
-                            type='button'
-                            className='Button card-code-copy-btn'
-                            onClick={() => {
-                                const cardLink = window.location.origin + '/boards/task/' + card.code
-                                Utils.copyTextToClipboard(cardLink)
-                                sendFlashMessage({content: intl.formatMessage({id: 'CardActionsMenu.copiedLink', defaultMessage: 'Copied!'}), severity: 'high'})
-                            }}
-                            title='Copy card URL'
-                        >
-                            🔗
-                        </button>
-                    </div>
-                )}
+                <div ref={props.cardIdentityRef}>
+                    {card.code && (
+                        <div className='card-code-header'>
+                            <span className='card-code-text'>{card.code}</span>
+                            <button
+                                type='button'
+                                className='Button card-code-copy-btn'
+                                onClick={() => {
+                                    const cardLink = `${window.location.origin}/boards/task/${card.code}`
+                                    Utils.copyTextToClipboard(cardLink)
+                                    sendFlashMessage({content: intl.formatMessage({id: 'CardActionsMenu.copiedLink', defaultMessage: 'Copied!'}), severity: 'high'})
+                                }}
+                                title={copyCardURLText}
+                            >
+                                🔗
+                            </button>
+                        </div>
+                    )}
 
-                <EditableArea
-                    ref={titleRef}
-                    className='title'
-                    value={title}
-                    placeholderText='Untitled'
-                    onChange={(newTitle: string) => setTitle(newTitle)}
-                    saveOnEsc={true}
-                    onSave={saveTitle}
-                    onCancel={() => setTitle(props.card.title)}
-                    readonly={props.readonly || !canEditBoardCards || limited}
-                    spellCheck={true}
-                />
+                    <EditableArea
+                        ref={titleRef}
+                        className='title'
+                        value={title}
+                        placeholderText='Untitled'
+                        onChange={(newTitle: string) => setTitle(newTitle)}
+                        saveOnEsc={true}
+                        onSave={saveTitle}
+                        onCancel={() => setTitle(props.card.title)}
+                        readonly={props.readonly || !canEditBoardCards || limited}
+                        spellCheck={true}
+                    />
+                </div>
 
                 {/* Hidden (limited) card copy + CTA */}
 

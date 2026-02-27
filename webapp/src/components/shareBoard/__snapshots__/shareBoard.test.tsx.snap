@@ -18,7 +18,9 @@ exports[`src/components/shareBoard/shareBoard confirm unlinking linked channel 1
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
             <h1
               class="dialog-title"
             >
@@ -268,7 +270,9 @@ exports[`src/components/shareBoard/shareBoard return shareBoard and click Copy l
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
             <h1
               class="dialog-title"
             >
@@ -477,7 +481,9 @@ exports[`src/components/shareBoard/shareBoard return shareBoard and click Copy l
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
             <h1
               class="dialog-title"
             >
@@ -686,7 +692,9 @@ exports[`src/components/shareBoard/shareBoard return shareBoard and click Regene
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
             <h1
               class="dialog-title"
             >
@@ -918,7 +926,9 @@ exports[`src/components/shareBoard/shareBoard return shareBoard and click Select
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
             <h1
               class="dialog-title"
             >
@@ -1154,7 +1164,9 @@ exports[`src/components/shareBoard/shareBoard return shareBoard and click Select
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
             <h1
               class="dialog-title"
             >
@@ -1622,7 +1634,9 @@ exports[`src/components/shareBoard/shareBoard return shareBoard and click Select
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
             <h1
               class="dialog-title"
             >
@@ -1858,7 +1872,9 @@ exports[`src/components/shareBoard/shareBoard return shareBoard and click Select
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
             <h1
               class="dialog-title"
             >
@@ -2344,7 +2360,9 @@ exports[`src/components/shareBoard/shareBoard return shareBoard template and cli
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
             <h1
               class="dialog-title"
             >
@@ -2529,7 +2547,9 @@ exports[`src/components/shareBoard/shareBoard return shareBoard template and cli
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
             <h1
               class="dialog-title"
             >
@@ -2850,7 +2870,9 @@ exports[`src/components/shareBoard/shareBoard return shareBoard, and click switc
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
             <h1
               class="dialog-title"
             >
@@ -3082,7 +3104,9 @@ exports[`src/components/shareBoard/shareBoard return shareBoardComponent and cli
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
             <h1
               class="dialog-title"
             >
@@ -3314,7 +3338,9 @@ exports[`src/components/shareBoard/shareBoard should match snapshot 1`] = `
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
             <h1
               class="dialog-title"
             >
@@ -3523,7 +3549,9 @@ exports[`src/components/shareBoard/shareBoard should match snapshot with sharing
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
             <h1
               class="dialog-title"
             >
@@ -3732,7 +3760,9 @@ exports[`src/components/shareBoard/shareBoard should match snapshot with sharing
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
             <h1
               class="dialog-title"
             >
@@ -3941,7 +3971,9 @@ exports[`src/components/shareBoard/shareBoard should match snapshot with sharing
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
             <h1
               class="dialog-title"
             >
@@ -4150,7 +4182,9 @@ exports[`src/components/shareBoard/shareBoard should match snapshot, with templa
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
             <h1
               class="dialog-title"
             >

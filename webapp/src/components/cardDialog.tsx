@@ -1,7 +1,7 @@
 // Copyright (c) 2020-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState, useCallback} from 'react'
+import React, {useState, useCallback, useEffect, useRef} from 'react'
 import {FormattedMessage, useIntl} from 'react-intl'
 
 import {Board} from '../blocks/board'
@@ -65,6 +65,9 @@ const CardDialog = (props: Props): JSX.Element => {
     const isTemplate = card && card.fields.isTemplate
 
     const [showConfirmationDialogBox, setShowConfirmationDialogBox] = useState<boolean>(false)
+    const [cardIdentityElement, setCardIdentityElement] = useState<HTMLDivElement|null>(null)
+    const [showStickyCardContext, setShowStickyCardContext] = useState(false)
+    const dialogRef = useRef<HTMLDivElement>(null)
     const makeTemplateClicked = async () => {
         if (!card) {
             Utils.assertFailure('card')
@@ -305,6 +308,65 @@ const CardDialog = (props: Props): JSX.Element => {
     const isFollowingCard = Boolean(followingCards.find((following) => following.blockId === props.cardId))
     const toolbar = followActionButton(isFollowingCard)
 
+    useEffect(() => {
+        setShowStickyCardContext(false)
+    }, [card?.id])
+
+    useEffect(() => {
+        const root = dialogRef.current
+        const target = cardIdentityElement
+        if (!root || !target) {
+            return
+        }
+
+        const toolbarElement = root.querySelector(':scope > .toolbar') as HTMLElement | null
+        const toolbarHeight = Math.ceil(toolbarElement?.getBoundingClientRect().height || 0)
+
+        if (typeof IntersectionObserver === 'undefined') {
+            const updateStickyContextVisibility = () => {
+                if (!toolbarElement) {
+                    return
+                }
+                const toolbarBottom = toolbarElement.getBoundingClientRect().bottom
+                setShowStickyCardContext(target.getBoundingClientRect().top <= toolbarBottom)
+            }
+            updateStickyContextVisibility()
+            root.addEventListener('scroll', updateStickyContextVisibility, {passive: true})
+            window.addEventListener('resize', updateStickyContextVisibility)
+            return () => {
+                root.removeEventListener('scroll', updateStickyContextVisibility)
+                window.removeEventListener('resize', updateStickyContextVisibility)
+            }
+        }
+
+        const intersectionObserver = new IntersectionObserver(([entry]) => {
+            if (!entry) {
+                return
+            }
+            setShowStickyCardContext(!entry.isIntersecting)
+        }, {
+            root,
+            threshold: 0,
+            rootMargin: `-${toolbarHeight}px 0px 0px 0px`,
+        })
+
+        intersectionObserver.observe(target)
+
+        return () => {
+            intersectionObserver.disconnect()
+        }
+    }, [card?.id, cardIdentityElement])
+
+    const toolbarLeft = (
+        showStickyCardContext &&
+        card &&
+        (card.code || card.title) &&
+        <div className='cardDialog__toolbar-card-context'>
+            {card.code && <span className='card-code-text'>{card.code}</span>}
+            {card.title && <span className='cardDialog__toolbar-card-title'>{card.title}</span>}
+        </div>
+    )
+
     return (
         <>
             <Dialog
@@ -313,6 +375,8 @@ const CardDialog = (props: Props): JSX.Element => {
                 onClose={handleClose}
                 toolsMenu={!props.readonly && !card?.limited && menu}
                 toolbar={toolbar}
+                toolbarLeft={toolbarLeft}
+                dialogRef={dialogRef}
             >
                 {isTemplate &&
                     <div className='banner'>
@@ -337,6 +401,7 @@ const CardDialog = (props: Props): JSX.Element => {
                         onDelete={deleteBlock}
                         addAttachment={addElement}
                         showCard={props.showCard}
+                        cardIdentityRef={setCardIdentityElement}
                     />}
 
                 {!card &&

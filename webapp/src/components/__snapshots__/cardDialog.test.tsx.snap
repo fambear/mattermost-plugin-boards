@@ -18,7 +18,18 @@ exports[`components/cardDialog already following card 1`] = `
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
+            <div
+              class="cardDialog__toolbar-card-context"
+            >
+              <span
+                class="cardDialog__toolbar-card-title"
+              >
+                title
+              </span>
+            </div>
             <h1
               class="dialog-title"
             >
@@ -76,31 +87,33 @@ exports[`components/cardDialog already following card 1`] = `
         <div
           class="CardDetail "
         >
-          <div
-            class="EditableAreaWrap"
-          >
-            <textarea
-              class="EditableArea Editable title"
-              height="0"
-              placeholder="Untitled"
-              rows="1"
-              spellcheck="true"
-              title="title"
-            >
-              title
-            </textarea>
+          <div>
             <div
-              class="EditableAreaContainer"
+              class="EditableAreaWrap"
             >
               <textarea
-                aria-hidden="true"
-                class="EditableAreaReference Editable title"
-                dir="auto"
-                disabled=""
+                class="EditableArea Editable title"
+                height="0"
+                placeholder="Untitled"
                 rows="1"
+                spellcheck="true"
+                title="title"
               >
                 title
               </textarea>
+              <div
+                class="EditableAreaContainer"
+              >
+                <textarea
+                  aria-hidden="true"
+                  class="EditableAreaReference Editable title"
+                  dir="auto"
+                  disabled=""
+                  rows="1"
+                >
+                  title
+                </textarea>
+              </div>
             </div>
           </div>
           <div
@@ -264,7 +277,18 @@ exports[`components/cardDialog limited card shows hidden view (no toolbar) 1`] =
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
+            <div
+              class="cardDialog__toolbar-card-context"
+            >
+              <span
+                class="cardDialog__toolbar-card-title"
+              >
+                title
+              </span>
+            </div>
             <h1
               class="dialog-title"
             >
@@ -302,32 +326,34 @@ exports[`components/cardDialog limited card shows hidden view (no toolbar) 1`] =
         <div
           class="CardDetail  CardDetail--is-limited"
         >
-          <div
-            class="EditableAreaWrap"
-          >
-            <textarea
-              class="EditableArea Editable readonly title"
-              height="0"
-              placeholder="Untitled"
-              readonly=""
-              rows="1"
-              spellcheck="true"
-              title="title"
-            >
-              title
-            </textarea>
+          <div>
             <div
-              class="EditableAreaContainer"
+              class="EditableAreaWrap"
             >
               <textarea
-                aria-hidden="true"
-                class="EditableAreaReference Editable readonly title"
-                dir="auto"
-                disabled=""
+                class="EditableArea Editable readonly title"
+                height="0"
+                placeholder="Untitled"
+                readonly=""
                 rows="1"
+                spellcheck="true"
+                title="title"
               >
                 title
               </textarea>
+              <div
+                class="EditableAreaContainer"
+              >
+                <textarea
+                  aria-hidden="true"
+                  class="EditableAreaReference Editable readonly title"
+                  dir="auto"
+                  disabled=""
+                  rows="1"
+                >
+                  title
+                </textarea>
+              </div>
             </div>
           </div>
           <div
@@ -499,7 +525,18 @@ exports[`components/cardDialog return a cardDialog readonly 1`] = `
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
+            <div
+              class="cardDialog__toolbar-card-context"
+            >
+              <span
+                class="cardDialog__toolbar-card-title"
+              >
+                title
+              </span>
+            </div>
             <h1
               class="dialog-title"
             >
@@ -544,32 +581,34 @@ exports[`components/cardDialog return a cardDialog readonly 1`] = `
         <div
           class="CardDetail "
         >
-          <div
-            class="EditableAreaWrap"
-          >
-            <textarea
-              class="EditableArea Editable readonly title"
-              height="0"
-              placeholder="Untitled"
-              readonly=""
-              rows="1"
-              spellcheck="true"
-              title="title"
-            >
-              title
-            </textarea>
+          <div>
             <div
-              class="EditableAreaContainer"
+              class="EditableAreaWrap"
             >
               <textarea
-                aria-hidden="true"
-                class="EditableAreaReference Editable readonly title"
-                dir="auto"
-                disabled=""
+                class="EditableArea Editable readonly title"
+                height="0"
+                placeholder="Untitled"
+                readonly=""
                 rows="1"
+                spellcheck="true"
+                title="title"
               >
                 title
               </textarea>
+              <div
+                class="EditableAreaContainer"
+              >
+                <textarea
+                  aria-hidden="true"
+                  class="EditableAreaReference Editable readonly title"
+                  dir="auto"
+                  disabled=""
+                  rows="1"
+                >
+                  title
+                </textarea>
+              </div>
             </div>
           </div>
           <div
@@ -676,7 +715,18 @@ exports[`components/cardDialog return cardDialog menu content 1`] = `
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
+            <div
+              class="cardDialog__toolbar-card-context"
+            >
+              <span
+                class="cardDialog__toolbar-card-title"
+              >
+                title
+              </span>
+            </div>
             <h1
               class="dialog-title"
             >
@@ -871,31 +921,33 @@ exports[`components/cardDialog return cardDialog menu content 1`] = `
         <div
           class="CardDetail "
         >
-          <div
-            class="EditableAreaWrap"
-          >
-            <textarea
-              class="EditableArea Editable title"
-              height="0"
-              placeholder="Untitled"
-              rows="1"
-              spellcheck="true"
-              title="title"
-            >
-              title
-            </textarea>
+          <div>
             <div
-              class="EditableAreaContainer"
+              class="EditableAreaWrap"
             >
               <textarea
-                aria-hidden="true"
-                class="EditableAreaReference Editable title"
-                dir="auto"
-                disabled=""
+                class="EditableArea Editable title"
+                height="0"
+                placeholder="Untitled"
                 rows="1"
+                spellcheck="true"
+                title="title"
               >
                 title
               </textarea>
+              <div
+                class="EditableAreaContainer"
+              >
+                <textarea
+                  aria-hidden="true"
+                  class="EditableAreaReference Editable title"
+                  dir="auto"
+                  disabled=""
+                  rows="1"
+                >
+                  title
+                </textarea>
+              </div>
             </div>
           </div>
           <div
@@ -1059,7 +1111,18 @@ exports[`components/cardDialog return cardDialog menu content and cancel delete 
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
+            <div
+              class="cardDialog__toolbar-card-context"
+            >
+              <span
+                class="cardDialog__toolbar-card-title"
+              >
+                title
+              </span>
+            </div>
             <h1
               class="dialog-title"
             >
@@ -1117,31 +1180,33 @@ exports[`components/cardDialog return cardDialog menu content and cancel delete 
         <div
           class="CardDetail "
         >
-          <div
-            class="EditableAreaWrap"
-          >
-            <textarea
-              class="EditableArea Editable title"
-              height="0"
-              placeholder="Untitled"
-              rows="1"
-              spellcheck="true"
-              title="title"
-            >
-              title
-            </textarea>
+          <div>
             <div
-              class="EditableAreaContainer"
+              class="EditableAreaWrap"
             >
               <textarea
-                aria-hidden="true"
-                class="EditableAreaReference Editable title"
-                dir="auto"
-                disabled=""
+                class="EditableArea Editable title"
+                height="0"
+                placeholder="Untitled"
                 rows="1"
+                spellcheck="true"
+                title="title"
               >
                 title
               </textarea>
+              <div
+                class="EditableAreaContainer"
+              >
+                <textarea
+                  aria-hidden="true"
+                  class="EditableAreaReference Editable title"
+                  dir="auto"
+                  disabled=""
+                  rows="1"
+                >
+                  title
+                </textarea>
+              </div>
             </div>
           </div>
           <div
@@ -1305,7 +1370,18 @@ exports[`components/cardDialog should match snapshot 1`] = `
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
+            <div
+              class="cardDialog__toolbar-card-context"
+            >
+              <span
+                class="cardDialog__toolbar-card-title"
+              >
+                title
+              </span>
+            </div>
             <h1
               class="dialog-title"
             >
@@ -1363,31 +1439,33 @@ exports[`components/cardDialog should match snapshot 1`] = `
         <div
           class="CardDetail "
         >
-          <div
-            class="EditableAreaWrap"
-          >
-            <textarea
-              class="EditableArea Editable title"
-              height="0"
-              placeholder="Untitled"
-              rows="1"
-              spellcheck="true"
-              title="title"
-            >
-              title
-            </textarea>
+          <div>
             <div
-              class="EditableAreaContainer"
+              class="EditableAreaWrap"
             >
               <textarea
-                aria-hidden="true"
-                class="EditableAreaReference Editable title"
-                dir="auto"
-                disabled=""
+                class="EditableArea Editable title"
+                height="0"
+                placeholder="Untitled"
                 rows="1"
+                spellcheck="true"
+                title="title"
               >
                 title
               </textarea>
+              <div
+                class="EditableAreaContainer"
+              >
+                <textarea
+                  aria-hidden="true"
+                  class="EditableAreaReference Editable title"
+                  dir="auto"
+                  disabled=""
+                  rows="1"
+                >
+                  title
+                </textarea>
+              </div>
             </div>
           </div>
           <div
@@ -1551,7 +1629,18 @@ exports[`components/cardDialog should match snapshot without permissions 1`] = `
         <div
           class="toolbar"
         >
-          <div>
+          <div
+            class="toolbar--left"
+          >
+            <div
+              class="cardDialog__toolbar-card-context"
+            >
+              <span
+                class="cardDialog__toolbar-card-title"
+              >
+                title
+              </span>
+            </div>
             <h1
               class="dialog-title"
             >
@@ -1599,32 +1688,34 @@ exports[`components/cardDialog should match snapshot without permissions 1`] = `
         <div
           class="CardDetail "
         >
-          <div
-            class="EditableAreaWrap"
-          >
-            <textarea
-              class="EditableArea Editable readonly title"
-              height="0"
-              placeholder="Untitled"
-              readonly=""
-              rows="1"
-              spellcheck="true"
-              title="title"
-            >
-              title
-            </textarea>
+          <div>
             <div
-              class="EditableAreaContainer"
+              class="EditableAreaWrap"
             >
               <textarea
-                aria-hidden="true"
-                class="EditableAreaReference Editable readonly title"
-                dir="auto"
-                disabled=""
+                class="EditableArea Editable readonly title"
+                height="0"
+                placeholder="Untitled"
+                readonly=""
                 rows="1"
+                spellcheck="true"
+                title="title"
               >
                 title
               </textarea>
+              <div
+                class="EditableAreaContainer"
+              >
+                <textarea
+                  aria-hidden="true"
+                  class="EditableAreaReference Editable readonly title"
+                  dir="auto"
+                  disabled=""
+                  rows="1"
+                >
+                  title
+                </textarea>
+              </div>
             </div>
           </div>
           <div

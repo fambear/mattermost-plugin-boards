@@ -2,6 +2,33 @@
 // See LICENSE.txt for license information.
 
 
+// Polyfill DOMRect for jsdom
+if (typeof globalThis.DOMRect === 'undefined') {
+    globalThis.DOMRect = class DOMRect {
+        x: number
+        y: number
+        width: number
+        height: number
+        top: number
+        right: number
+        bottom: number
+        left: number
+        constructor(x = 0, y = 0, width = 0, height = 0) {
+            this.x = x
+            this.y = y
+            this.width = width
+            this.height = height
+            this.top = y
+            this.right = x + width
+            this.bottom = y + height
+            this.left = x
+        }
+        toJSON() {
+            return {x: this.x, y: this.y, width: this.width, height: this.height, top: this.top, right: this.right, bottom: this.bottom, left: this.left}
+        }
+    } as any
+}
+
 import '@testing-library/jest-dom'
 import {act, render, screen} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -39,6 +66,7 @@ beforeAll(() => {
     mockDOM()
 })
 describe('components/cardDialog', () => {
+    const originalIntersectionObserver = window.IntersectionObserver
     const board = TestBlockFactory.createBoard()
     board.cardProperties = []
     board.id = 'test-id'
@@ -96,6 +124,60 @@ describe('components/cardDialog', () => {
     beforeEach(() => {
         jest.clearAllMocks()
     })
+    afterEach(() => {
+        Object.defineProperty(window, 'IntersectionObserver', {
+            configurable: true,
+            writable: true,
+            value: originalIntersectionObserver,
+        })
+    })
+
+    const getRect = (rect: Partial<DOMRect> = {}): DOMRect => {
+        const x = rect.x ?? rect.left ?? 0
+        const y = rect.y ?? rect.top ?? 0
+        const width = rect.width ?? (rect.right !== undefined ? rect.right - x : 100)
+        const height = rect.height ?? (rect.bottom !== undefined ? rect.bottom - y : 40)
+        return new DOMRect(x, y, width, height)
+    }
+
+    const createIntersectionObserverEntry = (isIntersecting: boolean): IntersectionObserverEntry => {
+        return {
+            boundingClientRect: getRect(),
+            intersectionRatio: isIntersecting ? 1 : 0,
+            intersectionRect: getRect(),
+            isIntersecting,
+            rootBounds: getRect(),
+            target: document.createElement('div'),
+            time: 0,
+        }
+    }
+
+    const createIntersectionObserverMock = (
+        callbackRef: {current?: IntersectionObserverCallback},
+        observe = jest.fn(),
+    ): IntersectionObserver => {
+        const observer: IntersectionObserver = {
+            observe,
+            disconnect: jest.fn(),
+            unobserve: jest.fn(),
+            takeRecords: jest.fn(() => []),
+            root: null,
+            rootMargin: '0px',
+            thresholds: [0],
+        }
+
+        Object.defineProperty(window, 'IntersectionObserver', {
+            configurable: true,
+            writable: true,
+            value: jest.fn((callback: IntersectionObserverCallback) => {
+                callbackRef.current = callback
+                return observer
+            }),
+        })
+
+        return observer
+    }
+
     test('should match snapshot', async () => {
         let container
         await act(async () => {
@@ -394,6 +476,198 @@ describe('components/cardDialog', () => {
             container = result.container
         })
         expect(container).toMatchSnapshot()
+    })
+
+    test('shows and hides sticky card context with IntersectionObserver', async () => {
+        const stickyCard = {
+            ...card,
+            code: 'IT-610',
+            title: 'Sticky toolbar title',
+        }
+        const localState = {
+            ...state,
+            cards: {
+                ...state.cards,
+                cards: {
+                    ...state.cards.cards,
+                    [stickyCard.id]: stickyCard,
+                },
+            },
+        }
+        const localStore = mockStateStore([], localState)
+
+        const intersectionObserverCallbackRef: {current?: IntersectionObserverCallback} = {}
+        const observeMock = jest.fn()
+        const mockObserver = createIntersectionObserverMock(intersectionObserverCallbackRef, observeMock)
+
+        let container: any
+        await act(async () => {
+            const result = render(wrapDNDIntl(
+                <ReduxProvider store={localStore}>
+                    <CardDialog
+                        board={board}
+                        activeView={boardView}
+                        views={[boardView]}
+                        cards={[stickyCard]}
+                        cardId={stickyCard.id}
+                        onClose={jest.fn()}
+                        showCard={jest.fn()}
+                        readonly={false}
+                    />
+                </ReduxProvider>,
+            ))
+            container = result.container
+        })
+
+        expect(observeMock).toHaveBeenCalledTimes(1)
+        expect(container.querySelector('.cardDialog__toolbar-card-context')).not.toBeInTheDocument()
+
+        act(() => {
+            intersectionObserverCallbackRef.current?.(
+                [createIntersectionObserverEntry(false)],
+                mockObserver,
+            )
+        })
+
+        const stickyContext = container.querySelector('.cardDialog__toolbar-card-context')
+        expect(stickyContext).toBeInTheDocument()
+        expect(stickyContext?.querySelector('.card-code-text')?.textContent).toBe(stickyCard.code)
+        expect(stickyContext?.querySelector('.cardDialog__toolbar-card-title')?.textContent).toBe(stickyCard.title)
+
+        act(() => {
+            intersectionObserverCallbackRef.current?.(
+                [createIntersectionObserverEntry(true)],
+                mockObserver,
+            )
+        })
+
+        expect(container.querySelector('.cardDialog__toolbar-card-context')).not.toBeInTheDocument()
+    })
+
+    test('fallback sticky context visibility works without IntersectionObserver', async () => {
+        const stickyCard = {
+            ...card,
+            code: 'IT-610',
+            title: 'Sticky toolbar title',
+        }
+        const localState = {
+            ...state,
+            cards: {
+                ...state.cards,
+                cards: {
+                    ...state.cards.cards,
+                    [stickyCard.id]: stickyCard,
+                },
+            },
+        }
+        const localStore = mockStateStore([], localState)
+        Object.defineProperty(window, 'IntersectionObserver', {
+            configurable: true,
+            writable: true,
+            value: undefined,
+        })
+
+        let container: any
+        await act(async () => {
+            const result = render(wrapDNDIntl(
+                <ReduxProvider store={localStore}>
+                    <CardDialog
+                        board={board}
+                        activeView={boardView}
+                        views={[boardView]}
+                        cards={[stickyCard]}
+                        cardId={stickyCard.id}
+                        onClose={jest.fn()}
+                        showCard={jest.fn()}
+                        readonly={false}
+                    />
+                </ReduxProvider>,
+            ))
+            container = result.container
+        })
+
+        const dialog = container.querySelector('.dialog')
+        const toolbar = container.querySelector('.toolbar')
+        const cardIdentityElement = container.querySelector('.card-code-header')?.parentElement
+
+        expect(dialog).toBeTruthy()
+        expect(toolbar).toBeTruthy()
+        expect(cardIdentityElement).toBeTruthy()
+        if (!dialog || !toolbar || !cardIdentityElement) {
+            throw new Error('Expected dialog, toolbar, and cardIdentityElement to be present in DOM')
+        }
+
+        const toolbarRectSpy = jest.spyOn(toolbar, 'getBoundingClientRect').mockReturnValue(getRect({top: 0, bottom: 64}))
+        const identityRectSpy = jest.spyOn(cardIdentityElement, 'getBoundingClientRect').mockReturnValue(getRect({top: 32, bottom: 72}))
+
+        try {
+            act(() => {
+                dialog.dispatchEvent(new Event('scroll'))
+            })
+
+            expect(container.querySelector('.cardDialog__toolbar-card-context')).toBeInTheDocument()
+
+            identityRectSpy.mockReturnValue(getRect({top: 120, bottom: 160}))
+            act(() => {
+                window.dispatchEvent(new Event('resize'))
+            })
+
+            expect(container.querySelector('.cardDialog__toolbar-card-context')).not.toBeInTheDocument()
+        } finally {
+            toolbarRectSpy.mockRestore()
+            identityRectSpy.mockRestore()
+        }
+    })
+
+    test('does not render sticky card context when card code and title are missing', async () => {
+        const intersectionObserverCallbackRef: {current?: IntersectionObserverCallback} = {}
+        const mockObserver = createIntersectionObserverMock(intersectionObserverCallbackRef)
+
+        const emptyIdentityCard = {
+            ...card,
+            code: '',
+            title: '',
+        }
+
+        const localState = {
+            ...state,
+            cards: {
+                ...state.cards,
+                cards: {
+                    ...state.cards.cards,
+                    [emptyIdentityCard.id]: emptyIdentityCard,
+                },
+            },
+        }
+        const localStore = mockStateStore([], localState)
+
+        let container: any
+        await act(async () => {
+            const result = render(wrapDNDIntl(
+                <ReduxProvider store={localStore}>
+                    <CardDialog
+                        board={board}
+                        activeView={boardView}
+                        views={[boardView]}
+                        cards={[emptyIdentityCard]}
+                        cardId={emptyIdentityCard.id}
+                        onClose={jest.fn()}
+                        showCard={jest.fn()}
+                        readonly={false}
+                    />
+                </ReduxProvider>,
+            ))
+            container = result.container
+        })
+
+        act(() => {
+            intersectionObserverCallbackRef.current?.(
+                [createIntersectionObserverEntry(false)],
+                mockObserver,
+            )
+        })
+
+        expect(container.querySelector('.cardDialog__toolbar-card-context')).not.toBeInTheDocument()
     })
 
     test('should cleanup empty blocks on close', async () => {
