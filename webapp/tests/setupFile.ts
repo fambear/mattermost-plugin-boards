@@ -6,8 +6,9 @@ import { jest } from '@jest/globals'
 
 jest.mock('../src/webapp_globals', () =>
     Object.assign({}, jest.requireActual('../src/webapp_globals'), {
-        messageHtmlToComponent: jest.fn(() =>
-            React.createElement('div', { className: 'mocked-message-html' }, 'Test Comment')
+        formatText: jest.fn((text: string) => text),
+        messageHtmlToComponent: jest.fn((html: string) =>
+            React.createElement('div', { className: 'mocked-message-html' }, html || 'Test Comment')
         ),
     })
 )

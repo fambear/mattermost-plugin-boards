@@ -34,9 +34,10 @@ const MarkdownEditor = (props: Props): JSX.Element => {
     const displayText = text || placeholderText || ''
 
     // Use Mattermost's formatText for rich rendering (syntax highlighting, @mentions, etc.)
-    // Fall back to marked if MM renderer is not available
+    // Fall back to marked if MM renderer is not available.
+    // Only use MM renderer when there's actual text content (not for empty placeholders).
     const previewContent = useMemo(() => {
-        if (formatText && messageHtmlToComponent) {
+        if (text && formatText && messageHtmlToComponent) {
             try {
                 const formattedHtml = formatText(displayText, {})
                 return messageHtmlToComponent(formattedHtml, {})
@@ -46,7 +47,7 @@ const MarkdownEditor = (props: Props): JSX.Element => {
         }
         const html: string = Utils.htmlFromMarkdown(displayText)
         return <span dangerouslySetInnerHTML={{__html: html}}/>
-    }, [displayText])
+    }, [text, displayText])
 
     const previewElement = (
         <div
