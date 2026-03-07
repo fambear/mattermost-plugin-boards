@@ -39,8 +39,8 @@ const MarkdownEditor = (props: Props): JSX.Element => {
     const previewContent = useMemo(() => {
         if (text && formatText && messageHtmlToComponent) {
             try {
-                const formattedHtml = formatText(displayText, {})
-                return messageHtmlToComponent(formattedHtml, {})
+                const formattedHtml = formatText(displayText, {atMentions: false, team: null, channelNamesMap: {}})
+                return messageHtmlToComponent(formattedHtml, {fetchMissingUsers: false})
             } catch {
                 // Fall through to marked renderer
             }
