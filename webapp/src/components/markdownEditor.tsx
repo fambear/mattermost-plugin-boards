@@ -1,9 +1,10 @@
 // Copyright (c) 2020-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState, Suspense} from 'react'
+import React, {useState, Suspense, useMemo} from 'react'
 
 import {Utils} from '../utils'
+import {formatText, messageHtmlToComponent} from '../webapp_globals'
 import './markdownEditor.scss'
 
 const MarkdownEditorInput = React.lazy(() => import('./markdownEditorInput/markdownEditorInput'))
@@ -29,13 +30,29 @@ type Props = {
 const MarkdownEditor = (props: Props): JSX.Element => {
     const {placeholderText, onFocus, onEditorCancel, onBlur, onChange, text, id, saveOnEnter} = props
     const [isEditing, setIsEditing] = useState(Boolean(props.autofocus))
-    const html: string = Utils.htmlFromMarkdown(text || placeholderText || '')
+
+    const displayText = text || placeholderText || ''
+
+    // Use Mattermost's formatText for rich rendering (syntax highlighting, @mentions, etc.)
+    // Fall back to marked if MM renderer is not available.
+    // Only use MM renderer when there's actual text content (not for empty placeholders).
+    const previewContent = useMemo(() => {
+        if (text && formatText && messageHtmlToComponent) {
+            try {
+                const formattedHtml = formatText(displayText, {atMentions: false, team: null, channelNamesMap: {}})
+                return messageHtmlToComponent(formattedHtml, {fetchMissingUsers: false})
+            } catch {
+                // Fall through to marked renderer
+            }
+        }
+        const html: string = Utils.htmlFromMarkdown(displayText)
+        return <span dangerouslySetInnerHTML={{__html: html}}/>
+    }, [text, displayText])
 
     const previewElement = (
         <div
             data-testid='preview-element'
             className={text ? 'octo-editor-preview' : 'octo-editor-preview octo-placeholder'}
-            dangerouslySetInnerHTML={{__html: html}}
             onClick={(e) => {
                 const LINK_TAG_NAME = 'a'
                 const element = e.target as Element
@@ -48,7 +65,9 @@ const MarkdownEditor = (props: Props): JSX.Element => {
                     setIsEditing(true)
                 }
             }}
-        />
+        >
+            {previewContent}
+        </div>
     )
 
     const editorOnBlur = (newText: string) => {
