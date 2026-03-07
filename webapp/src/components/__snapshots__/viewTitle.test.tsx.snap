@@ -92,7 +92,13 @@ exports[`components/viewTitle should match snapshot 1`] = `
         <div
           class="octo-editor-preview"
           data-testid="preview-element"
-        />
+        >
+          <div
+            class="mocked-message-html"
+          >
+            description
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -136,7 +142,13 @@ exports[`components/viewTitle should match snapshot readonly 1`] = `
         <div
           class="octo-editor-preview"
           data-testid="preview-element"
-        />
+        >
+          <div
+            class="mocked-message-html"
+          >
+            description
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -180,7 +192,13 @@ exports[`components/viewTitle show description 1`] = `
         <div
           class="octo-editor-preview"
           data-testid="preview-element"
-        />
+        >
+          <div
+            class="mocked-message-html"
+          >
+            description
+          </div>
+        </div>
       </div>
     </div>
   </div>
