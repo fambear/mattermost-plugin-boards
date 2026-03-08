@@ -43,9 +43,13 @@ const AttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}> = 
         let cancelled = false
         let objectUrl: string | undefined
         octoClient.getFileAsDataUrl(boardId, attachment.fileId).then((fileInfo) => {
-            if (!cancelled && fileInfo.url) {
-                objectUrl = fileInfo.url
-                setUrl(fileInfo.url)
+            if (fileInfo.url) {
+                if (cancelled) {
+                    URL.revokeObjectURL(fileInfo.url)
+                } else {
+                    objectUrl = fileInfo.url
+                    setUrl(fileInfo.url)
+                }
             }
         })
         return () => {
