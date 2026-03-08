@@ -41,6 +41,10 @@ const MultiSelectProperty = (props: PropertyProps): JSX.Element => {
                 className={props.property.valueClassName(!isEditable)}
                 tabIndex={0}
                 data-testid='multiselect-non-editable'
+                onMouseDown={(e) => {
+                    e.preventDefault()
+                    ;(e.currentTarget as HTMLElement).focus({preventScroll: true})
+                }}
                 onClick={() => setOpen(true)}
             >
                 {values.map((v) => (
