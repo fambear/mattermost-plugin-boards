@@ -1,7 +1,7 @@
 // Copyright (c) 2020-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {FC, useRef, useState, useEffect} from 'react'
+import React, {FC, useRef} from 'react'
 import {useIntl} from 'react-intl'
 
 import {getChannelsNameMapInTeam} from 'mattermost-redux/selectors/entities/channels'
@@ -41,105 +41,38 @@ const isImageAttachment = (att: CommentAttachment): boolean => {
 
 const AttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}> = ({attachment, boardId}) => {
     const isImage = isImageAttachment(attachment)
-    const [url, setUrl] = useState<string>('')
-    const [loading, setLoading] = useState(isImage)
-    const [downloading, setDownloading] = useState(false)
 
-    // Only fetch blob eagerly for images (inline preview).
-    // Non-image files are fetched on-demand when the user clicks.
-    useEffect(() => {
-        if (!isImage) {
-            return
-        }
-        let cancelled = false
-        let objectUrl: string | undefined
-        setLoading(true)
-        octoClient.getFileAsDataUrl(boardId, attachment.fileId).then((fileInfo) => {
-            if (cancelled) {
-                if (fileInfo.url) {
-                    URL.revokeObjectURL(fileInfo.url)
-                }
-                return
-            }
-            if (fileInfo.url) {
-                objectUrl = fileInfo.url
-                setUrl(fileInfo.url)
-            }
-            setLoading(false)
-        }).catch(() => {
-            if (!cancelled) {
-                setLoading(false)
-            }
-        })
-        return () => {
-            cancelled = true
-            if (objectUrl) {
-                URL.revokeObjectURL(objectUrl)
-            }
-        }
-    }, [boardId, attachment.fileId, isImage])
+    // Use direct API URL (browser handles auth via cookies, same as video elements)
+    const fileUrl = octoClient.getFileUrl(boardId, attachment.fileId)
 
     const humanSize = attachment.fileSize < 1024 * 1024
         ? `${Math.round(attachment.fileSize / 1024)} KB`
         : `${(attachment.fileSize / (1024 * 1024)).toFixed(1)} MB`
 
     if (isImage) {
-        if (loading) {
-            return (
-                <div className='comment-attachment comment-attachment--image comment-attachment--loading'>
-                    <div className='comment-attachment-spinner'/>
+        return (
+            <div className='comment-attachment comment-attachment--image'>
+                <img
+                    src={fileUrl}
+                    alt={attachment.fileName}
+                />
+                <div className='comment-attachment-image-name'>
+                    {attachment.fileName}
+                    <span className='comment-attachment-size'>{` (${humanSize})`}</span>
                 </div>
-            )
-        }
-        if (url) {
-            return (
-                <div className='comment-attachment comment-attachment--image'>
-                    <img
-                        src={url}
-                        alt={attachment.fileName}
-                    />
-                    <div className='comment-attachment-image-name'>
-                        {attachment.fileName}
-                        <span className='comment-attachment-size'>{` (${humanSize})`}</span>
-                    </div>
-                </div>
-            )
-        }
-        // Fetch failed — fall through to file link
-    }
-
-    const handleDownload = async (e: React.MouseEvent) => {
-        e.preventDefault()
-        if (downloading) {
-            return
-        }
-        setDownloading(true)
-        try {
-            const fileInfo = await octoClient.getFileAsDataUrl(boardId, attachment.fileId)
-            if (fileInfo.url) {
-                const a = document.createElement('a')
-                a.href = fileInfo.url
-                a.download = attachment.fileName
-                document.body.appendChild(a)
-                a.click()
-                document.body.removeChild(a)
-                URL.revokeObjectURL(fileInfo.url)
-            }
-        } finally {
-            setDownloading(false)
-        }
+            </div>
+        )
     }
 
     return (
         <div className='comment-attachment comment-attachment--file'>
             <a
-                href='#'
-                onClick={handleDownload}
+                href={fileUrl}
+                download={attachment.fileName}
                 className='comment-attachment-link'
             >
                 {attachment.fileName}
                 <span className='comment-attachment-size'>{` (${humanSize})`}</span>
-                {downloading && <span className='comment-attachment-downloading'>{' ...'}</span>}
             </a>
         </div>
     )
