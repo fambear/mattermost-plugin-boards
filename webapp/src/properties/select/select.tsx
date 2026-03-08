@@ -125,6 +125,10 @@ const SelectProperty = (props: PropertyProps) => {
                 className={props.property.valueClassName(!isEditable)}
                 data-testid='select-non-editable'
                 tabIndex={0}
+                onMouseDown={(e) => {
+                    e.preventDefault()
+                    ;(e.currentTarget as HTMLElement).focus({preventScroll: true})
+                }}
                 onClick={() => {
                     if (isEditable) {
                         setOpen(true)

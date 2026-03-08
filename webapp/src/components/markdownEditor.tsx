@@ -1,7 +1,7 @@
 // Copyright (c) 2020-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState, Suspense, useMemo} from 'react'
+import React, {useState, Suspense, useMemo, useCallback} from 'react'
 import {Provider} from 'react-redux'
 
 import {Utils} from '../utils'
@@ -9,6 +9,7 @@ import {formatText, messageHtmlToComponent} from '../webapp_globals'
 import './markdownEditor.scss'
 
 const MarkdownEditorInput = React.lazy(() => import('./markdownEditorInput/markdownEditorInput'))
+const FormattingToolbar = React.lazy(() => import('./markdownEditorInput/formattingToolbar'))
 
 type Props = {
     id?: string
@@ -25,14 +26,13 @@ type Props = {
     autofocus?: boolean
     saveOnEnter?: boolean
     showToolbar?: boolean
-    keepEditing?: boolean
     onFilePaste?: (files: FileList) => void
     onAttach?: () => void
 }
 
 const MarkdownEditor = (props: Props): JSX.Element => {
     const {placeholderText, onFocus, onEditorCancel, onBlur, onChange, text, id, saveOnEnter} = props
-    const [isEditing, setIsEditing] = useState(Boolean(props.autofocus || props.keepEditing))
+    const [isEditing, setIsEditing] = useState(Boolean(props.autofocus))
 
     const displayText = text || placeholderText || ''
 
@@ -79,9 +79,7 @@ const MarkdownEditor = (props: Props): JSX.Element => {
     )
 
     const editorOnBlur = (newText: string) => {
-        if (!props.keepEditing) {
-            setIsEditing(false)
-        }
+        setIsEditing(false)
         onBlur && onBlur(newText)
     }
 
@@ -103,9 +101,23 @@ const MarkdownEditor = (props: Props): JSX.Element => {
         </Suspense>
     )
 
+    const switchToEditing = useCallback(() => {
+        if (!props.readonly) {
+            setIsEditing(true)
+        }
+    }, [props.readonly])
+
     const element = (
         <div className={`MarkdownEditor octo-editor ${props.className || ''} ${isEditing ? 'active' : ''}`}>
             {isEditing ? editorElement : previewElement}
+            {props.showToolbar && !isEditing && (
+                <Suspense fallback={<></>}>
+                    <FormattingToolbar
+                        onFormat={switchToEditing}
+                        onAttach={props.onAttach || switchToEditing}
+                    />
+                </Suspense>
+            )}
         </div>
     )
 

@@ -261,7 +261,6 @@ const CommentsList = (props: Props) => {
                             setNewComment(value)
                         }
                     }}
-                    keepEditing={true}
                     showToolbar={true}
                     onFilePaste={uploadFiles}
                     onAttach={handleAttachClick}

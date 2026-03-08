@@ -1,11 +1,12 @@
 // Copyright (c) 2020-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react'
+import React, {useEffect, useRef} from 'react'
 import {useIntl} from 'react-intl'
 import {ActionMeta, OnChangeValue} from 'react-select'
 import {FormatOptionLabelMeta} from 'react-select/base'
 import CreatableSelect from 'react-select/creatable'
+import type {SelectInstance} from 'react-select'
 
 import {CSSObject} from '@emotion/serialize'
 
@@ -165,8 +166,20 @@ const valueSelectorStyle = {
 
 function ValueSelector(props: Props): JSX.Element {
     const intl = useIntl()
+    const selectRef = useRef<SelectInstance<IPropertyOption, boolean>>(null)
+
+    // Focus the select input without scrolling the container.
+    // autoFocus causes the browser to scrollIntoView, which jumps the
+    // dialog when it is scrollable (e.g. when the comment editor is tall).
+    useEffect(() => {
+        if (selectRef.current?.inputRef) {
+            selectRef.current.inputRef.focus({preventScroll: true})
+        }
+    }, [])
+
     return (
         <CreatableSelect
+            ref={selectRef}
             noOptionsMessage={() => intl.formatMessage({id: 'ValueSelector.noOptions', defaultMessage: 'No options. Start typing to add the first one!'})}
             aria-label={intl.formatMessage({id: 'ValueSelector.valueSelector', defaultMessage: 'Value selector'})}
             captureMenuScroll={true}
@@ -210,13 +223,14 @@ function ValueSelector(props: Props): JSX.Element {
             }}
             onBlur={props.onBlur}
             onCreateOption={props.onCreate}
-            autoFocus={true}
+            autoFocus={false}
             value={props.value || null}
             closeMenuOnSelect={!props.isMulti}
             placeholder={props.emptyValue}
             hideSelectedOptions={false}
             defaultMenuIsOpen={true}
             menuIsOpen={props.isMulti}
+            menuShouldScrollIntoView={false}
             blurInputOnSelect={!props.isMulti}
         />
     )
