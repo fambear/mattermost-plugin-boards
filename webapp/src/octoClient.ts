@@ -716,7 +716,7 @@ class OctoClient {
         if (readToken) {
             path += `?read_token=${readToken}`
         }
-        const response = await fetch(this.getBaseURL() + path, {headers: this.headers()})
+        const response = await fetch(this.getBaseURL() + path, Client4.getOptions({method: 'GET', headers: this.headers()}))
         let fileInfo: FileInfo = {}
 
         if (response.status === 200) {
@@ -734,7 +734,7 @@ class OctoClient {
         if (readToken) {
             path += `?read_token=${readToken}`
         }
-        const response = await fetch(this.getBaseURL() + path, {headers: this.headers()})
+        const response = await fetch(this.getBaseURL() + path, Client4.getOptions({method: 'GET', headers: this.headers()}))
         if (response.status === 200) {
             return this.getJson(response, {})
         }
@@ -747,7 +747,7 @@ class OctoClient {
         if (readToken) {
             path += `?read_token=${readToken}`
         }
-        const response = await fetch(this.getBaseURL() + path, {headers: this.headers()})
+        const response = await fetch(this.getBaseURL() + path, Client4.getOptions({method: 'GET', headers: this.headers()}))
         let fileInfo: FileInfo = {}
 
         if (response.status === 200) {
