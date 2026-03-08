@@ -29,8 +29,18 @@ import {getCurrentTeam} from '../../store/teams'
 
 import {CommentType, CommentAttachment} from '../../blocks/commentBlock'
 
+const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'tif', 'webp', 'svg']
+
+const isImageAttachment = (att: CommentAttachment): boolean => {
+    if (att.mimeType?.startsWith('image/')) {
+        return true
+    }
+    const ext = att.fileName?.split('.').pop()?.toLowerCase() || ''
+    return IMAGE_EXTENSIONS.includes(ext)
+}
+
 const AttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}> = ({attachment, boardId}) => {
-    const isImage = attachment.mimeType?.startsWith('image/') ?? false
+    const isImage = isImageAttachment(attachment)
     const [url, setUrl] = useState<string>('')
     const [downloading, setDownloading] = useState(false)
 
