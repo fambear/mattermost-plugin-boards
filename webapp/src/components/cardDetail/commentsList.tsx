@@ -120,7 +120,8 @@ const CommentsList = (props: Props) => {
     const [replyToCommentId, setReplyToCommentId] = useState<string | null>(null)
     const [activeTab, setActiveTab] = useState<CommentType>('comment')
     const [pendingAttachments, setPendingAttachments] = useState<CommentAttachment[]>([])
-    const [uploading, setUploading] = useState(false)
+    const [activeUploads, setActiveUploads] = useState(0)
+    const uploading = activeUploads > 0
     const fileInputRef = useRef<HTMLInputElement>(null)
     const me = useAppSelector<IUser|null>(getMe)
     const canDeleteOthersComments = useHasCurrentBoardPermissions([Permission.DeleteOthersComments])
@@ -132,22 +133,27 @@ const CommentsList = (props: Props) => {
         if (!files.length) {
             return
         }
-        setUploading(true)
+        const count = files.length
+        setActiveUploads((n) => n + count)
         const results = await Promise.allSettled(
             Array.from(files).map(async (file) => {
-                const result = await octoClient.uploadFile(props.boardId, file)
-                if (!result?.fileId) {
-                    throw new Error('no fileId')
+                try {
+                    const result = await octoClient.uploadFile(props.boardId, file)
+                    if (!result?.fileId) {
+                        throw new Error('no fileId')
+                    }
+                    return {
+                        fileId: result.fileId,
+                        fileName: file.name,
+                        fileSize: file.size,
+                        mimeType: file.type || '',
+                        width: result.width,
+                        height: result.height,
+                        miniPreview: result.miniPreview,
+                    } as CommentAttachment
+                } finally {
+                    setActiveUploads((n) => Math.max(0, n - 1))
                 }
-                return {
-                    fileId: result.fileId,
-                    fileName: file.name,
-                    fileSize: file.size,
-                    mimeType: file.type || '',
-                    width: result.width,
-                    height: result.height,
-                    miniPreview: result.miniPreview,
-                } as CommentAttachment
             }),
         )
         const newAttachments: CommentAttachment[] = []
@@ -165,7 +171,6 @@ const CommentsList = (props: Props) => {
         if (newAttachments.length) {
             setPendingAttachments((prev) => [...prev, ...newAttachments])
         }
-        setUploading(false)
     }, [props.boardId, intl])
 
     const handleAttachClick = useCallback(() => {
@@ -273,6 +278,7 @@ const CommentsList = (props: Props) => {
                             <button
                                 type='button'
                                 className='CommentsList__pending-attachment-remove'
+                                aria-label={intl.formatMessage({id: 'CommentsList.remove-attachment', defaultMessage: 'Remove attachment {fileName}'}, {fileName: att.fileName})}
                                 onClick={() => removePendingAttachment(att.fileId)}
                             >
                                 {'×'}
@@ -295,6 +301,7 @@ const CommentsList = (props: Props) => {
             <Button
                 filled={true}
                 onClick={onSendClicked}
+                disabled={uploading}
             >
                 <FormattedMessage
                     id='CommentsList.send'
