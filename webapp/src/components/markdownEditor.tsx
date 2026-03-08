@@ -32,7 +32,7 @@ type Props = {
 
 const MarkdownEditor = (props: Props): JSX.Element => {
     const {placeholderText, onFocus, onEditorCancel, onBlur, onChange, text, id, saveOnEnter} = props
-    const [isEditing, setIsEditing] = useState(Boolean(props.autofocus))
+    const [isEditing, setIsEditing] = useState(Boolean(props.autofocus || props.keepEditing))
 
     const displayText = text || placeholderText || ''
 

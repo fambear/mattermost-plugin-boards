@@ -42,6 +42,7 @@ const isImageAttachment = (att: CommentAttachment): boolean => {
 const AttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}> = ({attachment, boardId}) => {
     const isImage = isImageAttachment(attachment)
     const [url, setUrl] = useState<string>('')
+    const [loading, setLoading] = useState(isImage)
     const [downloading, setDownloading] = useState(false)
 
     // Only fetch blob eagerly for images (inline preview).
@@ -52,14 +53,22 @@ const AttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}> = 
         }
         let cancelled = false
         let objectUrl: string | undefined
+        setLoading(true)
         octoClient.getFileAsDataUrl(boardId, attachment.fileId).then((fileInfo) => {
-            if (fileInfo.url) {
-                if (cancelled) {
+            if (cancelled) {
+                if (fileInfo.url) {
                     URL.revokeObjectURL(fileInfo.url)
-                } else {
-                    objectUrl = fileInfo.url
-                    setUrl(fileInfo.url)
                 }
+                return
+            }
+            if (fileInfo.url) {
+                objectUrl = fileInfo.url
+                setUrl(fileInfo.url)
+            }
+            setLoading(false)
+        }).catch(() => {
+            if (!cancelled) {
+                setLoading(false)
             }
         })
         return () => {
@@ -70,21 +79,34 @@ const AttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}> = 
         }
     }, [boardId, attachment.fileId, isImage])
 
-    if (isImage && url) {
-        return (
-            <div className='comment-attachment comment-attachment--image'>
-                <img
-                    src={url}
-                    alt={attachment.fileName}
-                    style={{maxWidth: 300, maxHeight: 200, borderRadius: 4}}
-                />
-            </div>
-        )
-    }
-
     const humanSize = attachment.fileSize < 1024 * 1024
         ? `${Math.round(attachment.fileSize / 1024)} KB`
         : `${(attachment.fileSize / (1024 * 1024)).toFixed(1)} MB`
+
+    if (isImage) {
+        if (loading) {
+            return (
+                <div className='comment-attachment comment-attachment--image comment-attachment--loading'>
+                    <div className='comment-attachment-spinner'/>
+                </div>
+            )
+        }
+        if (url) {
+            return (
+                <div className='comment-attachment comment-attachment--image'>
+                    <img
+                        src={url}
+                        alt={attachment.fileName}
+                    />
+                    <div className='comment-attachment-image-name'>
+                        {attachment.fileName}
+                        <span className='comment-attachment-size'>{` (${humanSize})`}</span>
+                    </div>
+                </div>
+            )
+        }
+        // Fetch failed — fall through to file link
+    }
 
     const handleDownload = async (e: React.MouseEvent) => {
         e.preventDefault()
@@ -98,7 +120,9 @@ const AttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}> = 
                 const a = document.createElement('a')
                 a.href = fileInfo.url
                 a.download = attachment.fileName
+                document.body.appendChild(a)
                 a.click()
+                document.body.removeChild(a)
                 URL.revokeObjectURL(fileInfo.url)
             }
         } finally {
@@ -115,6 +139,7 @@ const AttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}> = 
             >
                 {attachment.fileName}
                 <span className='comment-attachment-size'>{` (${humanSize})`}</span>
+                {downloading && <span className='comment-attachment-downloading'>{' ...'}</span>}
             </a>
         </div>
     )
