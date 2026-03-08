@@ -34,15 +34,22 @@ const AttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}> = 
 
     useEffect(() => {
         let cancelled = false
+        let objectUrl: string | undefined
         octoClient.getFileAsDataUrl(boardId, attachment.fileId).then((fileInfo) => {
             if (!cancelled && fileInfo.url) {
+                objectUrl = fileInfo.url
                 setUrl(fileInfo.url)
             }
         })
-        return () => { cancelled = true }
+        return () => {
+            cancelled = true
+            if (objectUrl) {
+                URL.revokeObjectURL(objectUrl)
+            }
+        }
     }, [boardId, attachment.fileId])
 
-    const isImage = attachment.mimeType.startsWith('image/')
+    const isImage = attachment.mimeType?.startsWith('image/') ?? false
 
     if (isImage && url) {
         return (

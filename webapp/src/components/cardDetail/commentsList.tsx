@@ -133,24 +133,34 @@ const CommentsList = (props: Props) => {
             return
         }
         setUploading(true)
-        const newAttachments: CommentAttachment[] = []
-        for (const file of files) {
-            try {
+        const results = await Promise.allSettled(
+            Array.from(files).map(async (file) => {
                 const result = await octoClient.uploadFile(props.boardId, file)
-                if (result?.fileId) {
-                    newAttachments.push({
-                        fileId: result.fileId,
-                        fileName: file.name,
-                        fileSize: file.size,
-                        mimeType: file.type || '',
-                        width: result.width,
-                        height: result.height,
-                        miniPreview: result.miniPreview,
-                    })
+                if (!result?.fileId) {
+                    throw new Error('no fileId')
                 }
-            } catch {
-                sendFlashMessage({content: intl.formatMessage({id: 'CommentsList.upload-failed', defaultMessage: 'Failed to upload {fileName}'}, {fileName: file.name}), severity: 'normal'})
+                return {
+                    fileId: result.fileId,
+                    fileName: file.name,
+                    fileSize: file.size,
+                    mimeType: file.type || '',
+                    width: result.width,
+                    height: result.height,
+                    miniPreview: result.miniPreview,
+                } as CommentAttachment
+            }),
+        )
+        const newAttachments: CommentAttachment[] = []
+        let hadFailures = false
+        for (const r of results) {
+            if (r.status === 'fulfilled') {
+                newAttachments.push(r.value)
+            } else {
+                hadFailures = true
             }
+        }
+        if (hadFailures) {
+            sendFlashMessage({content: intl.formatMessage({id: 'CommentsList.upload-failed', defaultMessage: 'Some files failed to upload'}), severity: 'normal'})
         }
         if (newAttachments.length) {
             setPendingAttachments((prev) => [...prev, ...newAttachments])

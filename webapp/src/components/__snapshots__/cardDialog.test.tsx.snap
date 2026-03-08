@@ -229,6 +229,11 @@ exports[`components/cardDialog already following card 1`] = `
               <div
                 class="CommentsList__new"
               >
+                <input
+                  multiple=""
+                  style="display: none;"
+                  type="file"
+                />
                 <div
                   class="newcomment-wrapper"
                 >
@@ -243,7 +248,6 @@ exports[`components/cardDialog already following card 1`] = `
                     </div>
                   </div>
                 </div>
-                
               </div>
               <hr
                 class="CommentsList__divider"
@@ -1072,6 +1076,11 @@ exports[`components/cardDialog return cardDialog menu content 1`] = `
               <div
                 class="CommentsList__new"
               >
+                <input
+                  multiple=""
+                  style="display: none;"
+                  type="file"
+                />
                 <div
                   class="newcomment-wrapper"
                 >
@@ -1086,7 +1095,6 @@ exports[`components/cardDialog return cardDialog menu content 1`] = `
                     </div>
                   </div>
                 </div>
-                
               </div>
               <hr
                 class="CommentsList__divider"
@@ -1329,6 +1337,11 @@ exports[`components/cardDialog return cardDialog menu content and cancel delete 
               <div
                 class="CommentsList__new"
               >
+                <input
+                  multiple=""
+                  style="display: none;"
+                  type="file"
+                />
                 <div
                   class="newcomment-wrapper"
                 >
@@ -1343,7 +1356,6 @@ exports[`components/cardDialog return cardDialog menu content and cancel delete 
                     </div>
                   </div>
                 </div>
-                
               </div>
               <hr
                 class="CommentsList__divider"
@@ -1586,6 +1598,11 @@ exports[`components/cardDialog should match snapshot 1`] = `
               <div
                 class="CommentsList__new"
               >
+                <input
+                  multiple=""
+                  style="display: none;"
+                  type="file"
+                />
                 <div
                   class="newcomment-wrapper"
                 >
@@ -1600,7 +1617,6 @@ exports[`components/cardDialog should match snapshot 1`] = `
                     </div>
                   </div>
                 </div>
-                
               </div>
               <hr
                 class="CommentsList__divider"
