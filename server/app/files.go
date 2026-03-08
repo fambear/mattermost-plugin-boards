@@ -174,6 +174,17 @@ func (a *App) validateFileReferencedByBoard(boardID, filename string) error {
 			if attachmentID, ok := block.Fields[model.BlockFieldAttachmentId].(string); ok && attachmentID == filename {
 				return nil
 			}
+		case model.TypeComment:
+			// Comment blocks store file references in fields.attachments[] array
+			if attachments, ok := block.Fields["attachments"].([]interface{}); ok {
+				for _, att := range attachments {
+					if attMap, ok := att.(map[string]interface{}); ok {
+						if fileID, ok := attMap["fileId"].(string); ok && fileID == filename {
+							return nil
+						}
+					}
+				}
+			}
 		}
 	}
 
