@@ -1025,6 +1025,63 @@ func TestValidateFileOwnership(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
+	t.Run("Should allow access to file referenced by comment attachments", func(t *testing.T) {
+		fileInfo := &mm_model.FileInfo{
+			Id:   "validfile1234567890123456",
+			Path: filepath.Join(utils.GetBaseFilePath(), filename),
+		}
+		th.Store.EXPECT().GetFileInfo("validfile1234567890123456").Return(fileInfo, nil)
+
+		block := &model.Block{
+			ID:      "blockid1234567890123456789",
+			BoardID: validBoardID,
+			Type:    model.TypeComment,
+			Fields: map[string]interface{}{
+				"attachments": []interface{}{
+					map[string]interface{}{
+						"fileId":   filename,
+						"fileName": "test.png",
+						"fileSize": float64(1024),
+						"mimeType": "image/png",
+					},
+				},
+			},
+		}
+		th.Store.EXPECT().GetBlocksForBoard(validBoardID).Return([]*model.Block{block}, nil)
+
+		err := th.App.ValidateFileOwnership(validTeamID, validBoardID, filename)
+		assert.NoError(t, err)
+	})
+
+	t.Run("Should deny access when comment attachment has different fileId", func(t *testing.T) {
+		fileInfo := &mm_model.FileInfo{
+			Id:   "validfile1234567890123456",
+			Path: filepath.Join(utils.GetBaseFilePath(), filename),
+		}
+		th.Store.EXPECT().GetFileInfo("validfile1234567890123456").Return(fileInfo, nil)
+
+		block := &model.Block{
+			ID:      "blockid1234567890123456789",
+			BoardID: validBoardID,
+			Type:    model.TypeComment,
+			Fields: map[string]interface{}{
+				"attachments": []interface{}{
+					map[string]interface{}{
+						"fileId":   "different_file.txt",
+						"fileName": "other.png",
+						"fileSize": float64(2048),
+						"mimeType": "image/png",
+					},
+				},
+			},
+		}
+		th.Store.EXPECT().GetBlocksForBoard(validBoardID).Return([]*model.Block{block}, nil)
+
+		err := th.App.ValidateFileOwnership(validTeamID, validBoardID, filename)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "file does not belong to the specified board")
+	})
+
 	t.Run("Should allow access to video file referenced by video block", func(t *testing.T) {
 		fileInfo := &mm_model.FileInfo{
 			Id:   "validfile1234567890123456",
