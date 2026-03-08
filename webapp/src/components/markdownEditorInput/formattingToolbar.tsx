@@ -13,10 +13,11 @@ import './formattingToolbar.scss'
 
 type Props = {
     onFormat: (format: string) => void
+    onAttach?: () => void
 }
 
 const FormattingToolbar = (props: Props): JSX.Element => {
-    const {onFormat} = props
+    const {onFormat, onAttach} = props
     const intl = useIntl()
 
     const boldText = intl.formatMessage({id: 'FormattingToolbar.bold', defaultMessage: 'Bold'})
@@ -93,6 +94,17 @@ const FormattingToolbar = (props: Props): JSX.Element => {
                 title={quoteText}
                 size='small'
             />
+            {onAttach && (
+                <>
+                    <div className='FormattingToolbar__separator'/>
+                    <IconButton
+                        onClick={onAttach}
+                        icon={<CompassIcon icon='paperclip'/>}
+                        title={intl.formatMessage({id: 'FormattingToolbar.attach', defaultMessage: 'Attach file'})}
+                        size='small'
+                    />
+                </>
+            )}
         </div>
     )
 }

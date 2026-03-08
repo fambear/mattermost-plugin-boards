@@ -212,6 +212,12 @@ export default function useImagePaste(
         if (document.querySelector('.ImageViewer')) {
             return
         }
+        // Don't handle paste if the target is inside the comment editor —
+        // the comment editor handles its own file pastes.
+        const target = event.target as Element | null
+        if (target?.closest?.('.CommentsList__new')) {
+            return
+        }
         if (event.clipboardData) {
             const items = event.clipboardData.files
             uploadItems(items)

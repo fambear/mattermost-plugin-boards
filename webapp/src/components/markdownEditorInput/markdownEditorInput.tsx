@@ -60,6 +60,8 @@ type Props = {
     isEditing: boolean
     saveOnEnter?: boolean
     showToolbar?: boolean
+    onFilePaste?: (files: FileList) => void
+    onAttach?: () => void
 }
 
 const MarkdownEditorInput = (props: Props): ReactElement => {
@@ -561,6 +563,14 @@ const MarkdownEditorInput = (props: Props): ReactElement => {
         return 'not-handled'
     }, [props.onEditorCancel, editorState, handleFormat])
 
+    const handlePaste = useCallback((e: React.ClipboardEvent) => {
+        if (props.onFilePaste && e.clipboardData?.files?.length) {
+            e.preventDefault()
+            e.stopPropagation()
+            props.onFilePaste(e.clipboardData.files)
+        }
+    }, [props.onFilePaste])
+
     const className = 'MarkdownEditorInput'
 
     const handleReturn = (e: any, state: EditorState): DraftHandleValue => {
@@ -575,6 +585,7 @@ const MarkdownEditorInput = (props: Props): ReactElement => {
     return (
         <div
             className={className}
+            onPaste={handlePaste}
             onKeyDown={(e: React.KeyboardEvent) => {
                 if (isMentionPopoverOpen || isEmojiPopoverOpen) {
                     e.stopPropagation()
@@ -606,7 +617,7 @@ const MarkdownEditorInput = (props: Props): ReactElement => {
                     setConfirmAddUser(mention.user)
                 }}
             />
-            {props.showToolbar && <FormattingToolbar onFormat={handleFormat}/>}
+            {props.showToolbar && <FormattingToolbar onFormat={handleFormat} onAttach={props.onAttach}/>}
             <EmojiSuggestions
                 onOpen={onEmojiPopoverOpen}
                 onClose={onEmojiPopoverClose}
