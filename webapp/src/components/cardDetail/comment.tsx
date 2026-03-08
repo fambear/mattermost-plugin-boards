@@ -30,9 +30,16 @@ import {getCurrentTeam} from '../../store/teams'
 import {CommentType, CommentAttachment} from '../../blocks/commentBlock'
 
 const AttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}> = ({attachment, boardId}) => {
+    const isImage = attachment.mimeType?.startsWith('image/') ?? false
     const [url, setUrl] = useState<string>('')
+    const [downloading, setDownloading] = useState(false)
 
+    // Only fetch blob eagerly for images (inline preview).
+    // Non-image files are fetched on-demand when the user clicks.
     useEffect(() => {
+        if (!isImage) {
+            return
+        }
         let cancelled = false
         let objectUrl: string | undefined
         octoClient.getFileAsDataUrl(boardId, attachment.fileId).then((fileInfo) => {
@@ -47,9 +54,7 @@ const AttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}> = 
                 URL.revokeObjectURL(objectUrl)
             }
         }
-    }, [boardId, attachment.fileId])
-
-    const isImage = attachment.mimeType?.startsWith('image/') ?? false
+    }, [boardId, attachment.fileId, isImage])
 
     if (isImage && url) {
         return (
@@ -67,11 +72,31 @@ const AttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}> = 
         ? `${Math.round(attachment.fileSize / 1024)} KB`
         : `${(attachment.fileSize / (1024 * 1024)).toFixed(1)} MB`
 
+    const handleDownload = async (e: React.MouseEvent) => {
+        e.preventDefault()
+        if (downloading) {
+            return
+        }
+        setDownloading(true)
+        try {
+            const fileInfo = await octoClient.getFileAsDataUrl(boardId, attachment.fileId)
+            if (fileInfo.url) {
+                const a = document.createElement('a')
+                a.href = fileInfo.url
+                a.download = attachment.fileName
+                a.click()
+                URL.revokeObjectURL(fileInfo.url)
+            }
+        } finally {
+            setDownloading(false)
+        }
+    }
+
     return (
         <div className='comment-attachment comment-attachment--file'>
             <a
-                href={url || '#'}
-                download={attachment.fileName}
+                href='#'
+                onClick={handleDownload}
                 className='comment-attachment-link'
             >
                 {attachment.fileName}
