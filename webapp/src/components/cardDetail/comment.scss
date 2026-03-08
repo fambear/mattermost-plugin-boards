@@ -84,4 +84,37 @@
     .comment-markdown > * {
         white-space: pre-wrap;
     }
+
+    .comment-attachments {
+        padding-left: 32px;
+        margin-top: 4px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .comment-attachment--image img {
+        display: block;
+        cursor: pointer;
+    }
+
+    .comment-attachment--file {
+        padding: 6px 10px;
+        background: rgba(var(--center-channel-color-rgb), 0.06);
+        border-radius: 4px;
+        font-size: 13px;
+    }
+
+    .comment-attachment-link {
+        color: rgb(var(--link-color-rgb));
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    .comment-attachment-size {
+        color: rgba(var(--center-channel-color-rgb), 0.56);
+    }
 }

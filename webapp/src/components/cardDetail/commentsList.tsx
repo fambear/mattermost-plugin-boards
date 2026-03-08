@@ -1,16 +1,18 @@
 // Copyright (c) 2020-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState, useMemo} from 'react'
+import React, {useState, useMemo, useRef, useCallback} from 'react'
 import {FormattedMessage, useIntl} from 'react-intl'
 
-import {CommentBlock, createCommentBlock, CommentType} from '../../blocks/commentBlock'
+import {CommentBlock, createCommentBlock, CommentType, CommentAttachment} from '../../blocks/commentBlock'
 import mutator from '../../mutator'
 import {useAppSelector} from '../../store/hooks'
 import {Utils} from '../../utils'
 import Button from '../../widgets/buttons/button'
+import octoClient from '../../octoClient'
 
 import {MarkdownEditor} from '../markdownEditor'
+import {sendFlashMessage} from '../flashMessages'
 
 import {IUser} from '../../user'
 import {getMe} from '../../store/users'
@@ -117,11 +119,69 @@ const CommentsList = (props: Props) => {
     const [newComment, setNewComment] = useState('')
     const [replyToCommentId, setReplyToCommentId] = useState<string | null>(null)
     const [activeTab, setActiveTab] = useState<CommentType>('comment')
+    const [pendingAttachments, setPendingAttachments] = useState<CommentAttachment[]>([])
+    const [uploading, setUploading] = useState(false)
+    const fileInputRef = useRef<HTMLInputElement>(null)
     const me = useAppSelector<IUser|null>(getMe)
     const canDeleteOthersComments = useHasCurrentBoardPermissions([Permission.DeleteOthersComments])
     const intl = useIntl()
 
     const {comments} = props
+
+    const uploadFiles = useCallback(async (files: FileList) => {
+        if (!files.length) {
+            return
+        }
+        setUploading(true)
+        const results = await Promise.allSettled(
+            Array.from(files).map(async (file) => {
+                const result = await octoClient.uploadFile(props.boardId, file)
+                if (!result?.fileId) {
+                    throw new Error('no fileId')
+                }
+                return {
+                    fileId: result.fileId,
+                    fileName: file.name,
+                    fileSize: file.size,
+                    mimeType: file.type || '',
+                    width: result.width,
+                    height: result.height,
+                    miniPreview: result.miniPreview,
+                } as CommentAttachment
+            }),
+        )
+        const newAttachments: CommentAttachment[] = []
+        let hadFailures = false
+        for (const r of results) {
+            if (r.status === 'fulfilled') {
+                newAttachments.push(r.value)
+            } else {
+                hadFailures = true
+            }
+        }
+        if (hadFailures) {
+            sendFlashMessage({content: intl.formatMessage({id: 'CommentsList.upload-failed', defaultMessage: 'Some files failed to upload'}), severity: 'normal'})
+        }
+        if (newAttachments.length) {
+            setPendingAttachments((prev) => [...prev, ...newAttachments])
+        }
+        setUploading(false)
+    }, [props.boardId, intl])
+
+    const handleAttachClick = useCallback(() => {
+        fileInputRef.current?.click()
+    }, [])
+
+    const handleFileInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files?.length) {
+            uploadFiles(e.target.files)
+        }
+        e.target.value = ''
+    }, [uploadFiles])
+
+    const removePendingAttachment = useCallback((fileId: string) => {
+        setPendingAttachments((prev) => prev.filter((a) => a.fileId !== fileId))
+    }, [])
 
     const getCommentType = (comment: CommentBlock): CommentType => {
         return (comment.fields?.commentType as CommentType | undefined) || 'comment'
@@ -141,7 +201,7 @@ const CommentsList = (props: Props) => {
 
     const onSendClicked = () => {
         const commentText = newComment
-        if (commentText) {
+        if (commentText || pendingAttachments.length > 0) {
             const {cardId, boardId} = props
             Utils.log(`Send comment: ${commentText}`)
             Utils.assertValue(cardId)
@@ -158,9 +218,17 @@ const CommentsList = (props: Props) => {
                 }
             }
 
+            if (pendingAttachments.length > 0) {
+                comment.fields = {
+                    ...comment.fields,
+                    attachments: pendingAttachments,
+                }
+            }
+
             mutator.insertBlock(boardId, comment, 'add comment')
             setNewComment('')
             setReplyToCommentId(null)
+            setPendingAttachments([])
         }
     }
 
@@ -171,6 +239,13 @@ const CommentsList = (props: Props) => {
 
     const newCommentComponent = (
         <div className='CommentsList__new'>
+            <input
+                ref={fileInputRef}
+                type='file'
+                multiple={true}
+                style={{display: 'none'}}
+                onChange={handleFileInputChange}
+            />
             <div className='newcomment-wrapper'>
                 <MarkdownEditor
                     className='newcomment'
@@ -182,10 +257,41 @@ const CommentsList = (props: Props) => {
                         }
                     }}
                     showToolbar={true}
+                    onFilePaste={uploadFiles}
+                    onAttach={handleAttachClick}
                 />
             </div>
 
-            {newComment &&
+            {pendingAttachments.length > 0 && (
+                <div className='CommentsList__pending-attachments'>
+                    {pendingAttachments.map((att) => (
+                        <div
+                            key={att.fileId}
+                            className='CommentsList__pending-attachment'
+                        >
+                            <span className='CommentsList__pending-attachment-name'>{att.fileName}</span>
+                            <button
+                                type='button'
+                                className='CommentsList__pending-attachment-remove'
+                                onClick={() => removePendingAttachment(att.fileId)}
+                            >
+                                {'×'}
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {uploading && (
+                <div className='CommentsList__uploading'>
+                    <FormattedMessage
+                        id='CommentsList.uploading'
+                        defaultMessage='Uploading...'
+                    />
+                </div>
+            )}
+
+            {(newComment || pendingAttachments.length > 0) &&
             <Button
                 filled={true}
                 onClick={onSendClicked}

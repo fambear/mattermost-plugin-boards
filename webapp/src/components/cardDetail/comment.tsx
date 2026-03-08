@@ -1,7 +1,7 @@
 // Copyright (c) 2020-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {FC, useRef} from 'react'
+import React, {FC, useRef, useState, useEffect} from 'react'
 import {useIntl} from 'react-intl'
 
 import {getChannelsNameMapInTeam} from 'mattermost-redux/selectors/entities/channels'
@@ -21,12 +21,65 @@ import {useAppSelector} from '../../store/hooks'
 import Tooltip from '../../widgets/tooltip'
 import GuestBadge from '../../widgets/guestBadge'
 
+import octoClient from '../../octoClient'
 import './comment.scss'
 import {formatText, messageHtmlToComponent} from '../../webapp_globals'
 import {getCurrentTeam} from '../../store/teams'
 
 
-import {CommentType} from '../../blocks/commentBlock'
+import {CommentType, CommentAttachment} from '../../blocks/commentBlock'
+
+const AttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}> = ({attachment, boardId}) => {
+    const [url, setUrl] = useState<string>('')
+
+    useEffect(() => {
+        let cancelled = false
+        let objectUrl: string | undefined
+        octoClient.getFileAsDataUrl(boardId, attachment.fileId).then((fileInfo) => {
+            if (!cancelled && fileInfo.url) {
+                objectUrl = fileInfo.url
+                setUrl(fileInfo.url)
+            }
+        })
+        return () => {
+            cancelled = true
+            if (objectUrl) {
+                URL.revokeObjectURL(objectUrl)
+            }
+        }
+    }, [boardId, attachment.fileId])
+
+    const isImage = attachment.mimeType?.startsWith('image/') ?? false
+
+    if (isImage && url) {
+        return (
+            <div className='comment-attachment comment-attachment--image'>
+                <img
+                    src={url}
+                    alt={attachment.fileName}
+                    style={{maxWidth: 300, maxHeight: 200, borderRadius: 4}}
+                />
+            </div>
+        )
+    }
+
+    const humanSize = attachment.fileSize < 1024 * 1024
+        ? `${Math.round(attachment.fileSize / 1024)} KB`
+        : `${(attachment.fileSize / (1024 * 1024)).toFixed(1)} MB`
+
+    return (
+        <div className='comment-attachment comment-attachment--file'>
+            <a
+                href={url || '#'}
+                download={attachment.fileName}
+                className='comment-attachment-link'
+            >
+                {attachment.fileName}
+                <span className='comment-attachment-size'>{` (${humanSize})`}</span>
+            </a>
+        </div>
+    )
+}
 
 type Props = {
     comment: Block
@@ -134,6 +187,17 @@ const Comment: FC<Props> = (props: Props) => {
             <div className='comment-markdown'>
                 {formattedText}
             </div>
+            {(comment.fields?.attachments as CommentAttachment[] | undefined)?.length ? (
+                <div className='comment-attachments'>
+                    {(comment.fields.attachments as CommentAttachment[]).map((att) => (
+                        <AttachmentPreview
+                            key={att.fileId}
+                            attachment={att}
+                            boardId={comment.boardId}
+                        />
+                    ))}
+                </div>
+            ) : null}
         </div>
     )
 }

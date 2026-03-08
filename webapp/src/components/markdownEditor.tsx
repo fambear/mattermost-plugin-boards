@@ -26,6 +26,8 @@ type Props = {
     saveOnEnter?: boolean
     showToolbar?: boolean
     keepEditing?: boolean
+    onFilePaste?: (files: FileList) => void
+    onAttach?: () => void
 }
 
 const MarkdownEditor = (props: Props): JSX.Element => {
@@ -95,6 +97,8 @@ const MarkdownEditor = (props: Props): JSX.Element => {
                 isEditing={isEditing}
                 saveOnEnter={saveOnEnter}
                 showToolbar={props.showToolbar}
+                onFilePaste={props.onFilePaste}
+                onAttach={props.onAttach}
             />
         </Suspense>
     )

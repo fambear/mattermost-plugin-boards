@@ -5,6 +5,16 @@ import {Block, createBlock} from './block'
 
 export type CommentType = 'comment' | 'edits' | 'bot'
 
+export type CommentAttachment = {
+    fileId: string
+    fileName: string
+    fileSize: number
+    mimeType: string
+    width?: number
+    height?: number
+    miniPreview?: string
+}
+
 type CommentBlock = Block & {
     type: 'comment'
 }

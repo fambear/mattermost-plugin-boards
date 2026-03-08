@@ -159,6 +159,11 @@ exports[`components/cardDetail/CommentsList comments show up 1`] = `
     <div
       class="CommentsList__new"
     >
+      <input
+        multiple=""
+        style="display: none;"
+        type="file"
+      />
       <div
         class="newcomment-wrapper"
       >
@@ -177,7 +182,6 @@ exports[`components/cardDetail/CommentsList comments show up 1`] = `
           </div>
         </div>
       </div>
-      
     </div>
     <hr
       class="CommentsList__divider"
