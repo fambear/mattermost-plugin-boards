@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useState, Suspense, useMemo} from 'react'
+import {Provider} from 'react-redux'
 
 import {Utils} from '../utils'
 import {formatText, messageHtmlToComponent} from '../webapp_globals'
@@ -39,8 +40,13 @@ const MarkdownEditor = (props: Props): JSX.Element => {
     const previewContent = useMemo(() => {
         if (text && formatText && messageHtmlToComponent) {
             try {
+                const mmStore = (window as any).store
                 const formattedHtml = formatText(displayText, {atMentions: false, team: null, channelNamesMap: {}})
-                return messageHtmlToComponent(formattedHtml, {fetchMissingUsers: false})
+                const rendered = messageHtmlToComponent(formattedHtml, {fetchMissingUsers: false})
+                if (mmStore) {
+                    return <Provider store={mmStore}>{rendered}</Provider>
+                }
+                return rendered
             } catch {
                 // Fall through to marked renderer
             }
