@@ -29,37 +29,36 @@ const FormattingToolbar = (props: Props): JSX.Element => {
     const numberListText = intl.formatMessage({id: 'FormattingToolbar.numberList', defaultMessage: 'Numbered list'})
     const quoteText = intl.formatMessage({id: 'FormattingToolbar.quote', defaultMessage: 'Quote'})
 
-    const handleFormat = (e: React.MouseEvent, format: string) => {
+    const preventFocusLoss = (e: React.MouseEvent) => {
         e.preventDefault()
-        onFormat(format)
     }
 
     return (
         <div className='FormattingToolbar'>
             <IconButton
                 onClick={() => onFormat('bold')}
-                onMouseDown={(e) => handleFormat(e, 'bold')}
+                onMouseDown={preventFocusLoss}
                 icon={<CompassIcon icon='format-bold'/>}
                 title={boldText}
                 size='small'
             />
             <IconButton
                 onClick={() => onFormat('italic')}
-                onMouseDown={(e) => handleFormat(e, 'italic')}
+                onMouseDown={preventFocusLoss}
                 icon={<CompassIcon icon='format-italic'/>}
                 title={italicText}
                 size='small'
             />
             <IconButton
                 onClick={() => onFormat('strikethrough')}
-                onMouseDown={(e) => handleFormat(e, 'strikethrough')}
+                onMouseDown={preventFocusLoss}
                 icon={<StrikethroughIcon/>}
                 title={strikethroughText}
                 size='small'
             />
             <IconButton
                 onClick={() => onFormat('code')}
-                onMouseDown={(e) => handleFormat(e, 'code')}
+                onMouseDown={preventFocusLoss}
                 icon={<CompassIcon icon='code-tags'/>}
                 title={codeText}
                 size='small'
@@ -67,7 +66,7 @@ const FormattingToolbar = (props: Props): JSX.Element => {
             <div className='FormattingToolbar__separator'/>
             <IconButton
                 onClick={() => onFormat('link')}
-                onMouseDown={(e) => handleFormat(e, 'link')}
+                onMouseDown={preventFocusLoss}
                 icon={<CompassIcon icon='link-variant'/>}
                 title={linkText}
                 size='small'
@@ -75,21 +74,21 @@ const FormattingToolbar = (props: Props): JSX.Element => {
             <div className='FormattingToolbar__separator'/>
             <IconButton
                 onClick={() => onFormat('bulletList')}
-                onMouseDown={(e) => handleFormat(e, 'bulletList')}
+                onMouseDown={preventFocusLoss}
                 icon={<CompassIcon icon='format-list-bulleted'/>}
                 title={bulletListText}
                 size='small'
             />
             <IconButton
                 onClick={() => onFormat('numberList')}
-                onMouseDown={(e) => handleFormat(e, 'numberList')}
+                onMouseDown={preventFocusLoss}
                 icon={<CompassIcon icon='format-list-numbered'/>}
                 title={numberListText}
                 size='small'
             />
             <IconButton
                 onClick={() => onFormat('quote')}
-                onMouseDown={(e) => handleFormat(e, 'quote')}
+                onMouseDown={preventFocusLoss}
                 icon={<QuoteIcon/>}
                 title={quoteText}
                 size='small'
@@ -99,6 +98,7 @@ const FormattingToolbar = (props: Props): JSX.Element => {
                     <div className='FormattingToolbar__separator'/>
                     <IconButton
                         onClick={onAttach}
+                        onMouseDown={preventFocusLoss}
                         icon={<CompassIcon icon='paperclip'/>}
                         title={intl.formatMessage({id: 'FormattingToolbar.attach', defaultMessage: 'Attach file'})}
                         size='small'
