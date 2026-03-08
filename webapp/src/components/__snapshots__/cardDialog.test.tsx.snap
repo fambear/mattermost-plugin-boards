@@ -238,13 +238,160 @@ exports[`components/cardDialog already following card 1`] = `
                   class="newcomment-wrapper"
                 >
                   <div
-                    class="MarkdownEditor octo-editor newcomment "
+                    class="MarkdownEditor octo-editor newcomment active"
                   >
                     <div
-                      class="octo-editor-preview octo-placeholder"
-                      data-testid="preview-element"
+                      class="MarkdownEditorInput"
                     >
-                      <span />
+                      <div
+                        class="DraftEditor-root"
+                      >
+                        <div
+                          class="DraftEditor-editorContainer"
+                        >
+                          <div
+                            aria-autocomplete="list"
+                            aria-expanded="false"
+                            class="notranslate public-DraftEditor-content"
+                            contenteditable="true"
+                            role="combobox"
+                            spellcheck="false"
+                            style="outline: none; user-select: text; white-space: pre-wrap; word-wrap: break-word;"
+                          >
+                            <div
+                              data-contents="true"
+                            >
+                              <div
+                                class=""
+                                data-block="true"
+                                data-editor="123"
+                                data-offset-key="123-0-0"
+                              >
+                                <div
+                                  class="public-DraftStyleDefault-block public-DraftStyleDefault-ltr"
+                                  data-offset-key="123-0-0"
+                                >
+                                  <span
+                                    data-offset-key="123-0-0"
+                                  >
+                                    <br
+                                      data-text="true"
+                                    />
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div
+                        class="FormattingToolbar"
+                      >
+                        <button
+                          aria-label="Bold"
+                          title="Bold"
+                          type="button"
+                        >
+                          <i
+                            class="CompassIcon icon-format-bold"
+                          />
+                        </button>
+                        <button
+                          aria-label="Italic"
+                          title="Italic"
+                          type="button"
+                        >
+                          <i
+                            class="CompassIcon icon-format-italic"
+                          />
+                        </button>
+                        <button
+                          aria-label="Strikethrough"
+                          title="Strikethrough"
+                          type="button"
+                        >
+                          <svg
+                            class="StrikethroughIcon Icon"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M3 12h18v2H3v-2zm6.5-6c-1.1 0-2 .9-2 2h-2c0-2.2 1.8-4 4-4h5c2.2 0 4 1.8 4 4 0 1.5-.8 2.8-2 3.4v-2.2c.6-.3 1-.9 1-1.7 0-1.1-.9-2-2-2h-5c-.6 0-1 .4-1 1s.4 1 1 1h3v2h-4zm5 8c.6 0 1-.4 1-1h2c0 2.2-1.8 4-4 4h-5c-2.2 0-4-1.8-4-4 0-1.5.8-2.8 2-3.4v2.2c-.6.3-1 .9-1 1.7 0 1.1.9 2 2 2h5c.6 0 1-.4 1-1s-.4-1-1-1h-3v-2h4z"
+                            />
+                          </svg>
+                        </button>
+                        <button
+                          aria-label="Code"
+                          title="Code"
+                          type="button"
+                        >
+                          <i
+                            class="CompassIcon icon-code-tags"
+                          />
+                        </button>
+                        <div
+                          class="FormattingToolbar__separator"
+                        />
+                        <button
+                          aria-label="Link"
+                          title="Link"
+                          type="button"
+                        >
+                          <i
+                            class="CompassIcon icon-link-variant"
+                          />
+                        </button>
+                        <div
+                          class="FormattingToolbar__separator"
+                        />
+                        <button
+                          aria-label="Bullet list"
+                          title="Bullet list"
+                          type="button"
+                        >
+                          <i
+                            class="CompassIcon icon-format-list-bulleted"
+                          />
+                        </button>
+                        <button
+                          aria-label="Numbered list"
+                          title="Numbered list"
+                          type="button"
+                        >
+                          <i
+                            class="CompassIcon icon-format-list-numbered"
+                          />
+                        </button>
+                        <button
+                          aria-label="Quote"
+                          title="Quote"
+                          type="button"
+                        >
+                          <svg
+                            class="QuoteIcon Icon"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M14 17h3l2-4V7h-6v6h3M6 17h3l2-4V7H5v6h3l-2 4z"
+                            />
+                          </svg>
+                        </button>
+                        <div
+                          class="FormattingToolbar__separator"
+                        />
+                        <button
+                          aria-label="Attach file"
+                          title="Attach file"
+                          type="button"
+                        >
+                          <i
+                            class="CompassIcon icon-paperclip"
+                          />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1085,13 +1232,160 @@ exports[`components/cardDialog return cardDialog menu content 1`] = `
                   class="newcomment-wrapper"
                 >
                   <div
-                    class="MarkdownEditor octo-editor newcomment "
+                    class="MarkdownEditor octo-editor newcomment active"
                   >
                     <div
-                      class="octo-editor-preview octo-placeholder"
-                      data-testid="preview-element"
+                      class="MarkdownEditorInput"
                     >
-                      <span />
+                      <div
+                        class="DraftEditor-root"
+                      >
+                        <div
+                          class="DraftEditor-editorContainer"
+                        >
+                          <div
+                            aria-autocomplete="list"
+                            aria-expanded="false"
+                            class="notranslate public-DraftEditor-content"
+                            contenteditable="true"
+                            role="combobox"
+                            spellcheck="false"
+                            style="outline: none; user-select: text; white-space: pre-wrap; word-wrap: break-word;"
+                          >
+                            <div
+                              data-contents="true"
+                            >
+                              <div
+                                class=""
+                                data-block="true"
+                                data-editor="123"
+                                data-offset-key="123-0-0"
+                              >
+                                <div
+                                  class="public-DraftStyleDefault-block public-DraftStyleDefault-ltr"
+                                  data-offset-key="123-0-0"
+                                >
+                                  <span
+                                    data-offset-key="123-0-0"
+                                  >
+                                    <br
+                                      data-text="true"
+                                    />
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div
+                        class="FormattingToolbar"
+                      >
+                        <button
+                          aria-label="Bold"
+                          title="Bold"
+                          type="button"
+                        >
+                          <i
+                            class="CompassIcon icon-format-bold"
+                          />
+                        </button>
+                        <button
+                          aria-label="Italic"
+                          title="Italic"
+                          type="button"
+                        >
+                          <i
+                            class="CompassIcon icon-format-italic"
+                          />
+                        </button>
+                        <button
+                          aria-label="Strikethrough"
+                          title="Strikethrough"
+                          type="button"
+                        >
+                          <svg
+                            class="StrikethroughIcon Icon"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M3 12h18v2H3v-2zm6.5-6c-1.1 0-2 .9-2 2h-2c0-2.2 1.8-4 4-4h5c2.2 0 4 1.8 4 4 0 1.5-.8 2.8-2 3.4v-2.2c.6-.3 1-.9 1-1.7 0-1.1-.9-2-2-2h-5c-.6 0-1 .4-1 1s.4 1 1 1h3v2h-4zm5 8c.6 0 1-.4 1-1h2c0 2.2-1.8 4-4 4h-5c-2.2 0-4-1.8-4-4 0-1.5.8-2.8 2-3.4v2.2c-.6.3-1 .9-1 1.7 0 1.1.9 2 2 2h5c.6 0 1-.4 1-1s-.4-1-1-1h-3v-2h4z"
+                            />
+                          </svg>
+                        </button>
+                        <button
+                          aria-label="Code"
+                          title="Code"
+                          type="button"
+                        >
+                          <i
+                            class="CompassIcon icon-code-tags"
+                          />
+                        </button>
+                        <div
+                          class="FormattingToolbar__separator"
+                        />
+                        <button
+                          aria-label="Link"
+                          title="Link"
+                          type="button"
+                        >
+                          <i
+                            class="CompassIcon icon-link-variant"
+                          />
+                        </button>
+                        <div
+                          class="FormattingToolbar__separator"
+                        />
+                        <button
+                          aria-label="Bullet list"
+                          title="Bullet list"
+                          type="button"
+                        >
+                          <i
+                            class="CompassIcon icon-format-list-bulleted"
+                          />
+                        </button>
+                        <button
+                          aria-label="Numbered list"
+                          title="Numbered list"
+                          type="button"
+                        >
+                          <i
+                            class="CompassIcon icon-format-list-numbered"
+                          />
+                        </button>
+                        <button
+                          aria-label="Quote"
+                          title="Quote"
+                          type="button"
+                        >
+                          <svg
+                            class="QuoteIcon Icon"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M14 17h3l2-4V7h-6v6h3M6 17h3l2-4V7H5v6h3l-2 4z"
+                            />
+                          </svg>
+                        </button>
+                        <div
+                          class="FormattingToolbar__separator"
+                        />
+                        <button
+                          aria-label="Attach file"
+                          title="Attach file"
+                          type="button"
+                        >
+                          <i
+                            class="CompassIcon icon-paperclip"
+                          />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1346,13 +1640,160 @@ exports[`components/cardDialog return cardDialog menu content and cancel delete 
                   class="newcomment-wrapper"
                 >
                   <div
-                    class="MarkdownEditor octo-editor newcomment "
+                    class="MarkdownEditor octo-editor newcomment active"
                   >
                     <div
-                      class="octo-editor-preview octo-placeholder"
-                      data-testid="preview-element"
+                      class="MarkdownEditorInput"
                     >
-                      <span />
+                      <div
+                        class="DraftEditor-root"
+                      >
+                        <div
+                          class="DraftEditor-editorContainer"
+                        >
+                          <div
+                            aria-autocomplete="list"
+                            aria-expanded="false"
+                            class="notranslate public-DraftEditor-content"
+                            contenteditable="true"
+                            role="combobox"
+                            spellcheck="false"
+                            style="outline: none; user-select: text; white-space: pre-wrap; word-wrap: break-word;"
+                          >
+                            <div
+                              data-contents="true"
+                            >
+                              <div
+                                class=""
+                                data-block="true"
+                                data-editor="123"
+                                data-offset-key="123-0-0"
+                              >
+                                <div
+                                  class="public-DraftStyleDefault-block public-DraftStyleDefault-ltr"
+                                  data-offset-key="123-0-0"
+                                >
+                                  <span
+                                    data-offset-key="123-0-0"
+                                  >
+                                    <br
+                                      data-text="true"
+                                    />
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div
+                        class="FormattingToolbar"
+                      >
+                        <button
+                          aria-label="Bold"
+                          title="Bold"
+                          type="button"
+                        >
+                          <i
+                            class="CompassIcon icon-format-bold"
+                          />
+                        </button>
+                        <button
+                          aria-label="Italic"
+                          title="Italic"
+                          type="button"
+                        >
+                          <i
+                            class="CompassIcon icon-format-italic"
+                          />
+                        </button>
+                        <button
+                          aria-label="Strikethrough"
+                          title="Strikethrough"
+                          type="button"
+                        >
+                          <svg
+                            class="StrikethroughIcon Icon"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M3 12h18v2H3v-2zm6.5-6c-1.1 0-2 .9-2 2h-2c0-2.2 1.8-4 4-4h5c2.2 0 4 1.8 4 4 0 1.5-.8 2.8-2 3.4v-2.2c.6-.3 1-.9 1-1.7 0-1.1-.9-2-2-2h-5c-.6 0-1 .4-1 1s.4 1 1 1h3v2h-4zm5 8c.6 0 1-.4 1-1h2c0 2.2-1.8 4-4 4h-5c-2.2 0-4-1.8-4-4 0-1.5.8-2.8 2-3.4v2.2c-.6.3-1 .9-1 1.7 0 1.1.9 2 2 2h5c.6 0 1-.4 1-1s-.4-1-1-1h-3v-2h4z"
+                            />
+                          </svg>
+                        </button>
+                        <button
+                          aria-label="Code"
+                          title="Code"
+                          type="button"
+                        >
+                          <i
+                            class="CompassIcon icon-code-tags"
+                          />
+                        </button>
+                        <div
+                          class="FormattingToolbar__separator"
+                        />
+                        <button
+                          aria-label="Link"
+                          title="Link"
+                          type="button"
+                        >
+                          <i
+                            class="CompassIcon icon-link-variant"
+                          />
+                        </button>
+                        <div
+                          class="FormattingToolbar__separator"
+                        />
+                        <button
+                          aria-label="Bullet list"
+                          title="Bullet list"
+                          type="button"
+                        >
+                          <i
+                            class="CompassIcon icon-format-list-bulleted"
+                          />
+                        </button>
+                        <button
+                          aria-label="Numbered list"
+                          title="Numbered list"
+                          type="button"
+                        >
+                          <i
+                            class="CompassIcon icon-format-list-numbered"
+                          />
+                        </button>
+                        <button
+                          aria-label="Quote"
+                          title="Quote"
+                          type="button"
+                        >
+                          <svg
+                            class="QuoteIcon Icon"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M14 17h3l2-4V7h-6v6h3M6 17h3l2-4V7H5v6h3l-2 4z"
+                            />
+                          </svg>
+                        </button>
+                        <div
+                          class="FormattingToolbar__separator"
+                        />
+                        <button
+                          aria-label="Attach file"
+                          title="Attach file"
+                          type="button"
+                        >
+                          <i
+                            class="CompassIcon icon-paperclip"
+                          />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1607,15 +2048,8 @@ exports[`components/cardDialog should match snapshot 1`] = `
                   class="newcomment-wrapper"
                 >
                   <div
-                    class="MarkdownEditor octo-editor newcomment "
-                  >
-                    <div
-                      class="octo-editor-preview octo-placeholder"
-                      data-testid="preview-element"
-                    >
-                      <span />
-                    </div>
-                  </div>
+                    class="MarkdownEditor octo-editor newcomment active"
+                  />
                 </div>
               </div>
               <hr
