@@ -128,8 +128,17 @@ const AttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}> = 
                         className={!imgLoaded ? 'preloading' : undefined}
                         src={url}
                         alt={attachment.fileName}
+                        tabIndex={0}
+                        role='button'
                         onClick={() => setShowViewer(true)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault()
+                                setShowViewer(true)
+                            }
+                        }}
                         onLoad={() => setImgLoaded(true)}
+                        onError={() => setLoadFailed(true)}
                     />
                 )}
                 {imgLoaded && (
