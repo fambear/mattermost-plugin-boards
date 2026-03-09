@@ -57,3 +57,4 @@ server/**/*.coverage
 
 # notice
 .notice-work
+.claude/settings.local.json
