@@ -288,16 +288,24 @@ const PdfAttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}>
 
     useEffect(() => {
         let cancelled = false
+        let objectUrl: string | undefined
         octoClient.getFileAsDataUrl(boardId, attachment.fileId).then((fileInfo) => {
             if (cancelled) {
+                if (fileInfo.url) {
+                    URL.revokeObjectURL(fileInfo.url)
+                }
                 return
             }
             if (fileInfo.url) {
+                objectUrl = fileInfo.url
                 setDataUrl(fileInfo.url)
             }
         }).catch(() => { /* ignore */ })
         return () => {
             cancelled = true
+            if (objectUrl) {
+                URL.revokeObjectURL(objectUrl)
+            }
         }
     }, [boardId, attachment.fileId])
 
@@ -354,8 +362,14 @@ const PdfAttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}>
             return
         }
         setDownloading(true)
+        let fetchedUrl: string | undefined
         try {
-            const url = dataUrl || (await octoClient.getFileAsDataUrl(boardId, attachment.fileId)).url
+            let url = dataUrl
+            if (!url) {
+                const fileInfo = await octoClient.getFileAsDataUrl(boardId, attachment.fileId)
+                url = fileInfo.url
+                fetchedUrl = url
+            }
             if (url) {
                 const link = document.createElement('a')
                 link.href = url
@@ -367,6 +381,9 @@ const PdfAttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}>
         } catch {
             sendFlashMessage({content: `Failed to download ${attachment.fileName}`, severity: 'normal'})
         } finally {
+            if (fetchedUrl) {
+                URL.revokeObjectURL(fetchedUrl)
+            }
             setDownloading(false)
         }
     }, [dataUrl, boardId, attachment.fileId, attachment.fileName, downloading])
