@@ -236,14 +236,21 @@ const VideoAttachmentPreview: FC<{attachment: CommentAttachment; boardId: string
     return (
         <div className='comment-attachment comment-attachment--video'>
             <div className='comment-attachment-video-wrapper'>
-                <video className='comment-attachment-video-preview'>
+                <video
+                    className='comment-attachment-video-preview'
+                    onError={() => setLoadFailed(true)}
+                >
                     <source src={url}/>
                 </video>
                 <div
                     className='comment-attachment-video-overlay'
-                    onClick={() => setShowViewer(true)}
+                    onClick={() => {
+                        if (!loadFailed) {
+                            setShowViewer(true)
+                        }
+                    }}
                     onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
+                        if ((e.key === 'Enter' || e.key === ' ') && !loadFailed) {
                             e.preventDefault()
                             setShowViewer(true)
                         }
@@ -282,6 +289,7 @@ const PdfAttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}>
     const [dataUrl, setDataUrl] = useState<string>('')
     const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null)
     const [pageCount, setPageCount] = useState(0)
+    const [loadFailed, setLoadFailed] = useState(false)
     const [downloading, setDownloading] = useState(false)
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const intl = useIntl()
@@ -299,8 +307,14 @@ const PdfAttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}>
             if (fileInfo.url) {
                 objectUrl = fileInfo.url
                 setDataUrl(fileInfo.url)
+            } else {
+                setLoadFailed(true)
             }
-        }).catch(() => { /* ignore */ })
+        }).catch(() => {
+            if (!cancelled) {
+                setLoadFailed(true)
+            }
+        })
         return () => {
             cancelled = true
             if (objectUrl) {
@@ -367,7 +381,7 @@ const PdfAttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}>
             let url = dataUrl
             if (!url) {
                 const fileInfo = await octoClient.getFileAsDataUrl(boardId, attachment.fileId)
-                url = fileInfo.url
+                url = fileInfo.url || ''
                 fetchedUrl = url
             }
             if (url) {
@@ -389,6 +403,15 @@ const PdfAttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}>
     }, [dataUrl, boardId, attachment.fileId, attachment.fileName, downloading])
 
     const humanSize = Utils.humanFileSize(attachment.fileSize)
+
+    if (loadFailed) {
+        return (
+            <FileAttachmentPreview
+                attachment={attachment}
+                boardId={boardId}
+            />
+        )
+    }
 
     return (
         <div className='comment-attachment comment-attachment--pdf'>
