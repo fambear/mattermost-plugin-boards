@@ -46,6 +46,7 @@ const AttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}> = 
     const isImage = isImageAttachment(attachment)
     const [url, setUrl] = useState<string>('')
     const [imgLoaded, setImgLoaded] = useState(false)
+    const [loadFailed, setLoadFailed] = useState(false)
     const [showViewer, setShowViewer] = useState(false)
     const [downloading, setDownloading] = useState(false)
 
@@ -65,8 +66,14 @@ const AttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}> = 
             if (fileInfo.url) {
                 objectUrl = fileInfo.url
                 setUrl(fileInfo.url)
+            } else {
+                setLoadFailed(true)
             }
-        }).catch(() => { /* fetch failed */ })
+        }).catch(() => {
+            if (!cancelled) {
+                setLoadFailed(true)
+            }
+        })
         return () => {
             cancelled = true
             if (objectUrl) {
@@ -79,7 +86,7 @@ const AttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}> = 
         ? `${Math.round(attachment.fileSize / 1024)} KB`
         : `${(attachment.fileSize / (1024 * 1024)).toFixed(1)} MB`
 
-    if (isImage) {
+    if (isImage && !loadFailed) {
         // Calculate proportional placeholder dimensions
         const MAX_W = 300
         const MAX_H = 200
