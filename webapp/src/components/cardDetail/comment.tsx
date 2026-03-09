@@ -1,7 +1,7 @@
 // Copyright (c) 2020-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {FC, useRef, useState, useEffect, useCallback, useMemo} from 'react'
+import React, {FC, useRef, useState, useEffect, useCallback} from 'react'
 import {useIntl} from 'react-intl'
 
 import {getChannelsNameMapInTeam} from 'mattermost-redux/selectors/entities/channels'
@@ -183,53 +183,119 @@ const ImageAttachmentPreview: FC<{attachment: CommentAttachment; boardId: string
 
 // Video attachment with preview thumbnail and VideoViewer playback
 const VideoAttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}> = ({attachment, boardId}) => {
+    const [url, setUrl] = useState<string>('')
     const [loadFailed, setLoadFailed] = useState(false)
     const [showViewer, setShowViewer] = useState(false)
+    const [isVisible, setIsVisible] = useState(false)
+    const containerRef = useRef<HTMLDivElement>(null)
     const intl = useIntl()
 
-    // Use direct API URL for streaming — no eager blob download
-    const url = useMemo(() => octoClient.getFileUrl(boardId, attachment.fileId), [boardId, attachment.fileId])
+    // Defer loading until the element scrolls into view
+    useEffect(() => {
+        const el = containerRef.current
+        if (!el) {
+            return
+        }
+        if (typeof IntersectionObserver === 'undefined') {
+            setIsVisible(true)
+            return
+        }
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setIsVisible(true)
+                    observer.disconnect()
+                }
+            },
+            {rootMargin: '200px'},
+        )
+        observer.observe(el)
+        return () => observer.disconnect()
+    }, [])
+
+    // Fetch blob URL only when visible
+    useEffect(() => {
+        if (!isVisible) {
+            return
+        }
+        let cancelled = false
+        let objectUrl: string | undefined
+        octoClient.getFileAsDataUrl(boardId, attachment.fileId).then((fileInfo) => {
+            if (cancelled) {
+                if (fileInfo.url) {
+                    URL.revokeObjectURL(fileInfo.url)
+                }
+                return
+            }
+            if (fileInfo.url) {
+                objectUrl = fileInfo.url
+                setUrl(fileInfo.url)
+            } else {
+                setLoadFailed(true)
+            }
+        }).catch(() => {
+            if (!cancelled) {
+                setLoadFailed(true)
+            }
+        })
+        return () => {
+            cancelled = true
+            if (objectUrl) {
+                URL.revokeObjectURL(objectUrl)
+            }
+        }
+    }, [isVisible, boardId, attachment.fileId])
 
     if (loadFailed) {
         return <FileAttachmentPreview attachment={attachment} boardId={boardId}/>
     }
 
     return (
-        <div className='comment-attachment comment-attachment--video'>
+        <div
+            ref={containerRef}
+            className='comment-attachment comment-attachment--video'
+        >
             <div className='comment-attachment-video-wrapper'>
-                <video
-                    className='comment-attachment-video-preview'
-                    preload='metadata'
-                    onError={() => setLoadFailed(true)}
-                >
-                    <source src={url}/>
-                </video>
-                <div
-                    className='comment-attachment-video-overlay'
-                    onClick={() => setShowViewer(true)}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault()
-                            setShowViewer(true)
-                        }
-                    }}
-                    tabIndex={0}
-                    role='button'
-                    aria-label={intl.formatMessage({id: 'Comment.play-video', defaultMessage: 'Play video'})}
-                >
-                    <div className='comment-attachment-video-play'>
-                        <CompassIcon
-                            icon='play'
-                            className='PlayIcon'
-                        />
+                {url ? (
+                    <video
+                        className='comment-attachment-video-preview'
+                        onError={() => setLoadFailed(true)}
+                    >
+                        <source src={url}/>
+                    </video>
+                ) : (
+                    <div className='comment-attachment-spinner'>
+                        <div className='MediaLoader__spinner'/>
                     </div>
-                </div>
+                )}
+                {url && (
+                    <div
+                        className='comment-attachment-video-overlay'
+                        onClick={() => setShowViewer(true)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault()
+                                setShowViewer(true)
+                            }
+                        }}
+                        tabIndex={0}
+                        role='button'
+                        aria-label={intl.formatMessage({id: 'Comment.play-video', defaultMessage: 'Play video'})}
+                    >
+                        <div className='comment-attachment-video-play'>
+                            <CompassIcon
+                                icon='play'
+                                className='PlayIcon'
+                            />
+                        </div>
+                    </div>
+                )}
             </div>
             <div className='comment-attachment-video-name'>
                 {attachment.fileName}
                 <span className='comment-attachment-size'>{` (${Utils.humanFileSize(attachment.fileSize)})`}</span>
             </div>
-            {showViewer && (
+            {showViewer && url && (
                 <RootPortal>
                     <VideoViewer
                         sourceType='file'
@@ -258,6 +324,10 @@ const PdfAttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}>
     useEffect(() => {
         const el = containerRef.current
         if (!el) {
+            return
+        }
+        if (typeof IntersectionObserver === 'undefined') {
+            setIsVisible(true)
             return
         }
         const observer = new IntersectionObserver(
