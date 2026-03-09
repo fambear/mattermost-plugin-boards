@@ -19,6 +19,8 @@ import {createH3Block} from './blocks/h3Block'
 import {FilterCondition} from './blocks/filterClause'
 import {createAttachmentBlock} from './blocks/attachmentBlock'
 import {createVideoBlock} from './blocks/videoBlock'
+import {createFilePdfBlock} from './blocks/filePdfBlock'
+import {createFileGenericBlock} from './blocks/fileGenericBlock'
 import {Utils} from './utils'
 
 class OctoUtils {
@@ -36,8 +38,12 @@ class OctoUtils {
         case 'checkbox': { return createCheckboxBlock(block) }
         case 'attachment': { return createAttachmentBlock(block) }
         case 'video': { return createVideoBlock(block) }
+        case 'file-pdf': { return createFilePdfBlock(block) }
+        case 'file-generic': { return createFileGenericBlock(block) }
         default: {
-            Utils.assertFailure(`Can't hydrate unknown block type: ${block.type}`)
+            if (block.type) {
+                Utils.assertFailure(`Can't hydrate unknown block type: ${block.type}`)
+            }
             return createBlock(block)
         }
         }

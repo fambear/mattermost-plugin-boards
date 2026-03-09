@@ -22,6 +22,8 @@ import Tooltip from '../../widgets/tooltip'
 import GuestBadge from '../../widgets/guestBadge'
 
 import octoClient from '../../octoClient'
+import ImageViewer from '../imageViewer/imageViewer'
+import RootPortal from '../rootPortal'
 import './comment.scss'
 import {formatText, messageHtmlToComponent} from '../../webapp_globals'
 import {getCurrentTeam} from '../../store/teams'
@@ -43,6 +45,8 @@ const isImageAttachment = (att: CommentAttachment): boolean => {
 const AttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}> = ({attachment, boardId}) => {
     const isImage = isImageAttachment(attachment)
     const [url, setUrl] = useState<string>('')
+    const [imgLoaded, setImgLoaded] = useState(false)
+    const [showViewer, setShowViewer] = useState(false)
     const [downloading, setDownloading] = useState(false)
 
     useEffect(() => {
@@ -75,17 +79,66 @@ const AttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}> = 
         ? `${Math.round(attachment.fileSize / 1024)} KB`
         : `${(attachment.fileSize / (1024 * 1024)).toFixed(1)} MB`
 
-    if (isImage && url) {
+    if (isImage) {
+        // Calculate proportional placeholder dimensions
+        const MAX_W = 300
+        const MAX_H = 200
+        const aw = attachment.width || 0
+        const ah = attachment.height || 0
+        let placeholderStyle: React.CSSProperties | undefined
+        if (aw > 0 && ah > 0) {
+            const scale = Math.min(MAX_W / aw, MAX_H / ah, 1)
+            placeholderStyle = {
+                width: `${Math.round(aw * scale)}px`,
+                height: `${Math.round(ah * scale)}px`,
+            }
+        }
+        const miniPreviewSrc = attachment.miniPreview
+            ? `data:image/jpeg;base64,${attachment.miniPreview}`
+            : undefined
+
         return (
             <div className='comment-attachment comment-attachment--image'>
-                <img
-                    src={url}
-                    alt={attachment.fileName}
-                />
-                <div className='comment-attachment-image-name'>
-                    {attachment.fileName}
-                    <span className='comment-attachment-size'>{` (${humanSize})`}</span>
-                </div>
+                {!imgLoaded && (
+                    <div
+                        className='comment-attachment-placeholder'
+                        style={placeholderStyle}
+                    >
+                        {miniPreviewSrc && (
+                            <img
+                                className='comment-attachment-mini-preview'
+                                src={miniPreviewSrc}
+                                alt=''
+                            />
+                        )}
+                        <div className='comment-attachment-spinner'>
+                            <div className='MediaLoader__spinner'/>
+                        </div>
+                    </div>
+                )}
+                {url && (
+                    <img
+                        src={url}
+                        alt={attachment.fileName}
+                        onClick={() => setShowViewer(true)}
+                        onLoad={() => setImgLoaded(true)}
+                        style={!imgLoaded ? {position: 'absolute', opacity: 0, pointerEvents: 'none'} : undefined}
+                    />
+                )}
+                {imgLoaded && (
+                    <div className='comment-attachment-image-name'>
+                        {attachment.fileName}
+                        <span className='comment-attachment-size'>{` (${humanSize})`}</span>
+                    </div>
+                )}
+                {showViewer && url && (
+                    <RootPortal>
+                        <ImageViewer
+                            imageUrl={url}
+                            onClose={() => setShowViewer(false)}
+                        />
+                    </RootPortal>
+                )}
             </div>
         )
     }
