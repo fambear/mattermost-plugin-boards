@@ -1,7 +1,7 @@
 // Copyright (c) 2020-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {FC, useRef, useState, useEffect, useCallback} from 'react'
+import React, {FC, useRef, useState, useEffect, useCallback, useMemo} from 'react'
 import {useIntl} from 'react-intl'
 
 import {getChannelsNameMapInTeam} from 'mattermost-redux/selectors/entities/channels'
@@ -183,54 +183,15 @@ const ImageAttachmentPreview: FC<{attachment: CommentAttachment; boardId: string
 
 // Video attachment with preview thumbnail and VideoViewer playback
 const VideoAttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}> = ({attachment, boardId}) => {
-    const [url, setUrl] = useState<string>('')
     const [loadFailed, setLoadFailed] = useState(false)
     const [showViewer, setShowViewer] = useState(false)
     const intl = useIntl()
 
-    useEffect(() => {
-        let cancelled = false
-        let objectUrl: string | undefined
-        octoClient.getFileAsDataUrl(boardId, attachment.fileId).then((fileInfo) => {
-            if (cancelled) {
-                if (fileInfo.url) {
-                    URL.revokeObjectURL(fileInfo.url)
-                }
-                return
-            }
-            if (fileInfo.url) {
-                objectUrl = fileInfo.url
-                setUrl(fileInfo.url)
-            } else {
-                setLoadFailed(true)
-            }
-        }).catch(() => {
-            if (!cancelled) {
-                setLoadFailed(true)
-            }
-        })
-        return () => {
-            cancelled = true
-            if (objectUrl) {
-                URL.revokeObjectURL(objectUrl)
-            }
-        }
-    }, [boardId, attachment.fileId])
+    // Use direct API URL for streaming — no eager blob download
+    const url = useMemo(() => octoClient.getFileUrl(boardId, attachment.fileId), [boardId, attachment.fileId])
 
-    if (loadFailed || !url) {
-        if (loadFailed) {
-            return <FileAttachmentPreview attachment={attachment} boardId={boardId}/>
-        }
-        return (
-            <div className='comment-attachment comment-attachment--video'>
-                <div className='comment-attachment-video-wrapper'>
-                    <div className='comment-attachment-spinner'>
-                        <div className='MediaLoader__spinner'/>
-                    </div>
-                </div>
-                <div className='comment-attachment-video-name'>{attachment.fileName}</div>
-            </div>
-        )
+    if (loadFailed) {
+        return <FileAttachmentPreview attachment={attachment} boardId={boardId}/>
     }
 
     return (
@@ -238,19 +199,16 @@ const VideoAttachmentPreview: FC<{attachment: CommentAttachment; boardId: string
             <div className='comment-attachment-video-wrapper'>
                 <video
                     className='comment-attachment-video-preview'
+                    preload='metadata'
                     onError={() => setLoadFailed(true)}
                 >
                     <source src={url}/>
                 </video>
                 <div
                     className='comment-attachment-video-overlay'
-                    onClick={() => {
-                        if (!loadFailed) {
-                            setShowViewer(true)
-                        }
-                    }}
+                    onClick={() => setShowViewer(true)}
                     onKeyDown={(e) => {
-                        if ((e.key === 'Enter' || e.key === ' ') && !loadFailed) {
+                        if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault()
                             setShowViewer(true)
                         }
@@ -291,10 +249,34 @@ const PdfAttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}>
     const [pageCount, setPageCount] = useState(0)
     const [loadFailed, setLoadFailed] = useState(false)
     const [downloading, setDownloading] = useState(false)
+    const [isVisible, setIsVisible] = useState(false)
+    const containerRef = useRef<HTMLDivElement>(null)
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const intl = useIntl()
 
+    // Defer loading until the element scrolls into view
     useEffect(() => {
+        const el = containerRef.current
+        if (!el) {
+            return
+        }
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setIsVisible(true)
+                    observer.disconnect()
+                }
+            },
+            {rootMargin: '200px'},
+        )
+        observer.observe(el)
+        return () => observer.disconnect()
+    }, [])
+
+    useEffect(() => {
+        if (!isVisible) {
+            return
+        }
         let cancelled = false
         let objectUrl: string | undefined
         octoClient.getFileAsDataUrl(boardId, attachment.fileId).then((fileInfo) => {
@@ -321,7 +303,7 @@ const PdfAttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}>
                 URL.revokeObjectURL(objectUrl)
             }
         }
-    }, [boardId, attachment.fileId])
+    }, [isVisible, boardId, attachment.fileId])
 
     // Render PDF thumbnail
     useEffect(() => {
@@ -414,7 +396,10 @@ const PdfAttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}>
     }
 
     return (
-        <div className='comment-attachment comment-attachment--pdf'>
+        <div
+            ref={containerRef}
+            className='comment-attachment comment-attachment--pdf'
+        >
             <div className='comment-attachment-pdf-thumbnail'>
                 {thumbnailUrl ? (
                     <img
