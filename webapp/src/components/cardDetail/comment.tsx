@@ -125,11 +125,11 @@ const AttachmentPreview: FC<{attachment: CommentAttachment; boardId: string}> = 
                 )}
                 {url && (
                     <img
+                        className={!imgLoaded ? 'preloading' : undefined}
                         src={url}
                         alt={attachment.fileName}
                         onClick={() => setShowViewer(true)}
                         onLoad={() => setImgLoaded(true)}
-                        style={!imgLoaded ? {position: 'absolute', opacity: 0, pointerEvents: 'none'} : undefined}
                     />
                 )}
                 {imgLoaded && (

@@ -41,7 +41,9 @@ class OctoUtils {
         case 'file-pdf': { return createFilePdfBlock(block) }
         case 'file-generic': { return createFileGenericBlock(block) }
         default: {
-            if (block.type) {
+            if (!block.type && block.deleteAt > 0) {
+                Utils.log(`Hydrating deleted block with empty type: ${block.id}`)
+            } else {
                 Utils.assertFailure(`Can't hydrate unknown block type: ${block.type}`)
             }
             return createBlock(block)
