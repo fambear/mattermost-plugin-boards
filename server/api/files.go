@@ -133,18 +133,24 @@ func (a *API) handleServeFile(w http.ResponseWriter, r *http.Request) {
 	filename := vars["filename"]
 	userID := getUserID(r)
 
+	startTotal := time.Now()
+
 	hasValidReadToken := a.hasValidReadTokenForBoard(r, boardID)
 	if userID == "" && !hasValidReadToken {
 		a.errorResponse(w, r, model.NewErrUnauthorized("access denied to board"))
 		return
 	}
 
+	startPerm := time.Now()
 	if !hasValidReadToken && !a.permissions.HasPermissionToBoard(userID, boardID, model.PermissionViewBoard) {
 		a.errorResponse(w, r, model.NewErrPermission("access denied to board"))
 		return
 	}
+	durPerm := time.Since(startPerm)
 
+	startGetBoard := time.Now()
 	board, err := a.app.GetBoard(boardID)
+	durGetBoard := time.Since(startGetBoard)
 	if err != nil {
 		a.errorResponse(w, r, err)
 		return
@@ -157,13 +163,24 @@ func (a *API) handleServeFile(w http.ResponseWriter, r *http.Request) {
 	auditRec.AddMeta("filename", filename)
 
 	// Validate file ownership ONCE (previously done separately in presigned URL path and GetFile)
+	startValidate := time.Now()
 	if validErr := a.app.ValidateFileOwnership(board.TeamID, boardID, filename); validErr != nil {
+		a.logger.Warn("handleServeFile: slow request (validation failed)",
+			mlog.String("filename", filename),
+			mlog.String("boardID", boardID),
+			mlog.Duration("total", time.Since(startTotal)),
+			mlog.Duration("getBoard", durGetBoard),
+			mlog.Duration("validate", time.Since(startValidate)),
+			mlog.Err(validErr))
 		a.errorResponse(w, r, validErr)
 		return
 	}
+	durValidate := time.Since(startValidate)
 
 	// Get file path and info (reused for both presigned URL and proxy modes)
+	startGetPath := time.Now()
 	fileInfo, filePath, pathErr := a.app.GetFilePath(board.TeamID, boardID, filename)
+	durGetPath := time.Since(startGetPath)
 	if pathErr != nil {
 		a.errorResponse(w, r, pathErr)
 		return
@@ -184,8 +201,22 @@ func (a *API) handleServeFile(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if !isUnsafe {
+			startPresign := time.Now()
 			link, _, linkErr := linkGen.GeneratePublicLink(filePath)
+			durPresign := time.Since(startPresign)
 			if linkErr == nil {
+				totalDur := time.Since(startTotal)
+				if totalDur > 2*time.Second {
+					a.logger.Warn("handleServeFile: SLOW presigned URL redirect",
+						mlog.String("filename", filename),
+						mlog.String("boardID", boardID),
+						mlog.Duration("total", totalDur),
+						mlog.Duration("perm", durPerm),
+						mlog.Duration("getBoard", durGetBoard),
+						mlog.Duration("validate", durValidate),
+						mlog.Duration("getPath", durGetPath),
+						mlog.Duration("presign", durPresign))
+				}
 				auditRec.Success()
 				http.Redirect(w, r, link, http.StatusTemporaryRedirect)
 				return
