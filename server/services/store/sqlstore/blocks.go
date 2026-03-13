@@ -248,15 +248,23 @@ func (s *SQLStore) isFileReferencedByBoard(db sq.BaseRunner, boardID, filename s
 	// Search for the filename in the JSON fields column using LIKE.
 	// The filename appears as a value in "fileId" or "attachmentId" fields,
 	// or inside "attachments" arrays in comment blocks.
-	// Pattern: the filename surrounded by quotes in JSON.
 	pattern := "%" + filename + "%"
+
+	// PostgreSQL's json type doesn't support LIKE directly — must cast to text.
+	// MySQL/SQLite fields are text-based and support LIKE natively.
+	var fieldsLike sq.Sqlizer
+	if s.dbType == model.PostgresDBType {
+		fieldsLike = sq.Expr("fields::text LIKE ?", pattern)
+	} else {
+		fieldsLike = sq.Like{"fields": pattern}
+	}
 
 	query := s.getQueryBuilder(db).
 		Select("COUNT(*)").
 		From(s.tablePrefix + "blocks").
 		Where(sq.Eq{"board_id": boardID}).
 		Where(sq.Eq{"delete_at": 0}).
-		Where(sq.Like{"fields": pattern})
+		Where(fieldsLike)
 
 	row := query.QueryRow()
 	var count int
