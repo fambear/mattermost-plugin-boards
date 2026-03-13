@@ -157,38 +157,16 @@ func (a *App) ValidateFileOwnership(teamID, boardID, filename string) error {
 }
 
 // validateFileReferencedByBoard checks if a file is referenced by blocks in the specified board.
-// Files use different storage patterns (teamID/boardID/filename for templates, boards/YYYYMMDD/filename for regular files).
-// Path mismatches don't indicate malicious files, just different storage patterns.
+// Uses an efficient SQL LIKE query instead of loading all blocks into memory.
 func (a *App) validateFileReferencedByBoard(boardID, filename string) error {
-	blocks, err := a.store.GetBlocksForBoard(boardID)
+	found, err := a.store.IsFileReferencedByBoard(boardID, filename)
 	if err != nil {
 		return err
 	}
-
-	for _, block := range blocks {
-		switch block.Type {
-		case model.TypeImage, model.TypeAttachment, model.TypeVideo, model.TypeFilePDF, model.TypeFileGeneric:
-			if fileID, ok := block.Fields[model.BlockFieldFileId].(string); ok && fileID == filename {
-				return nil
-			}
-			if attachmentID, ok := block.Fields[model.BlockFieldAttachmentId].(string); ok && attachmentID == filename {
-				return nil
-			}
-		case model.TypeComment:
-			// Comment blocks store file references in fields.attachments[] array
-			if attachments, ok := block.Fields["attachments"].([]interface{}); ok {
-				for _, att := range attachments {
-					if attMap, ok := att.(map[string]interface{}); ok {
-						if fileID, ok := attMap["fileId"].(string); ok && fileID == filename {
-							return nil
-						}
-					}
-				}
-			}
-		}
+	if !found {
+		return fmt.Errorf("%w: file %s is not referenced by any block in board %s", ErrFileNotReferencedByBoard, filename, boardID)
 	}
-
-	return fmt.Errorf("%w: file %s is not referenced by any block in board %s", ErrFileNotReferencedByBoard, filename, boardID)
+	return nil
 }
 
 // GetFileImageMetadata reads an existing file from storage and extracts image

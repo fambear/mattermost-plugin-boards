@@ -241,6 +241,31 @@ func (s *SQLStore) getSubTree2(db sq.BaseRunner, boardID string, blockID string,
 	return s.blocksFromRows(rows)
 }
 
+// isFileReferencedByBoard checks if a file is referenced by any block in the board
+// using a SQL LIKE query on the fields JSON column. This avoids loading all blocks
+// into memory and deserializing their JSON fields.
+func (s *SQLStore) isFileReferencedByBoard(db sq.BaseRunner, boardID, filename string) (bool, error) {
+	// Search for the filename in the JSON fields column using LIKE.
+	// The filename appears as a value in "fileId" or "attachmentId" fields,
+	// or inside "attachments" arrays in comment blocks.
+	// Pattern: the filename surrounded by quotes in JSON.
+	pattern := "%" + filename + "%"
+
+	query := s.getQueryBuilder(db).
+		Select("COUNT(*)").
+		From(s.tablePrefix + "blocks").
+		Where(sq.Eq{"board_id": boardID}).
+		Where(sq.Eq{"delete_at": 0}).
+		Where(sq.Like{"fields": pattern})
+
+	row := query.QueryRow()
+	var count int
+	if err := row.Scan(&count); err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
 func (s *SQLStore) getBlocksForBoard(db sq.BaseRunner, boardID string) ([]*model.Block, error) {
 	opts := model.QueryBlocksOptions{
 		BoardID: boardID,

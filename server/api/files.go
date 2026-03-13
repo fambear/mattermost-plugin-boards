@@ -5,7 +5,6 @@ package api
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,8 +12,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/mattermost/mattermost-plugin-boards/server/app"
 
 	"github.com/gorilla/mux"
 	"github.com/mattermost/mattermost-plugin-boards/server/model"
@@ -153,86 +150,78 @@ func (a *API) handleServeFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Try to generate presigned URL for direct S3 access
-	backend := a.app.GetFilesBackend()
-	a.logger.Debug("File backend type check",
-		mlog.String("backendType", fmt.Sprintf("%T", backend)),
-		mlog.String("filename", filename))
-	linkGen, hasLinkGen := backend.(filestore.FileBackendWithLinkGenerator)
-	if !hasLinkGen {
-		a.logger.Debug("Backend does NOT support presigned URLs - falling back to proxy")
-	}
-	if hasLinkGen {
-		a.logger.Debug("Backend supports presigned URLs")
-		// First validate file ownership to prevent path traversal attacks
-		if validErr := a.app.ValidateFileOwnership(board.TeamID, boardID, filename); validErr == nil {
-			fileInfo, filePath, pathErr := a.app.GetFilePath(board.TeamID, boardID, filename)
-			if pathErr == nil {
-				// Skip presigned URLs for unsafe content types - they need security headers
-				// that can only be applied via proxy mode
-				isUnsafe := false
-				if fileInfo != nil && fileInfo.MimeType != "" {
-					for _, unsafeType := range UnsafeContentTypes {
-						if strings.HasPrefix(fileInfo.MimeType, unsafeType) {
-							isUnsafe = true
-							break
-						}
-					}
-				}
-
-				if !isUnsafe {
-					link, _, linkErr := linkGen.GeneratePublicLink(filePath)
-					if linkErr == nil {
-						auditRec := a.makeAuditRecord(r, "getFile", audit.Fail)
-						defer a.audit.LogRecord(audit.LevelRead, auditRec)
-						auditRec.AddMeta("boardID", boardID)
-						auditRec.AddMeta("teamID", board.TeamID)
-						auditRec.AddMeta("filename", filename)
-						auditRec.Success()
-
-						http.Redirect(w, r, link, http.StatusTemporaryRedirect)
-						return
-					}
-					// Log the error but fall through to proxy mode
-					a.logger.Debug("Failed to generate presigned URL, falling back to proxy",
-						mlog.String("filePath", filePath),
-						mlog.Err(linkErr))
-				}
-			}
-		}
-	}
-
 	auditRec := a.makeAuditRecord(r, "getFile", audit.Fail)
 	defer a.audit.LogRecord(audit.LevelRead, auditRec)
 	auditRec.AddMeta("boardID", boardID)
 	auditRec.AddMeta("teamID", board.TeamID)
 	auditRec.AddMeta("filename", filename)
 
-	fileInfo, fileReader, err := a.app.GetFile(board.TeamID, boardID, filename)
-	if err != nil && !model.IsErrNotFound(err) {
+	// Validate file ownership ONCE (previously done separately in presigned URL path and GetFile)
+	if validErr := a.app.ValidateFileOwnership(board.TeamID, boardID, filename); validErr != nil {
+		a.errorResponse(w, r, validErr)
+		return
+	}
+
+	// Get file path and info (reused for both presigned URL and proxy modes)
+	fileInfo, filePath, pathErr := a.app.GetFilePath(board.TeamID, boardID, filename)
+	if pathErr != nil {
+		a.errorResponse(w, r, pathErr)
+		return
+	}
+
+	// Try to generate presigned URL for direct S3 access
+	backend := a.app.GetFilesBackend()
+	if linkGen, hasLinkGen := backend.(filestore.FileBackendWithLinkGenerator); hasLinkGen {
+		// Skip presigned URLs for unsafe content types - they need security headers
+		isUnsafe := false
+		if fileInfo != nil && fileInfo.MimeType != "" {
+			for _, unsafeType := range UnsafeContentTypes {
+				if strings.HasPrefix(fileInfo.MimeType, unsafeType) {
+					isUnsafe = true
+					break
+				}
+			}
+		}
+
+		if !isUnsafe {
+			link, _, linkErr := linkGen.GeneratePublicLink(filePath)
+			if linkErr == nil {
+				auditRec.Success()
+				http.Redirect(w, r, link, http.StatusTemporaryRedirect)
+				return
+			}
+			a.logger.Debug("Failed to generate presigned URL, falling back to proxy",
+				mlog.String("filePath", filePath),
+				mlog.Err(linkErr))
+		}
+	}
+
+	// Fallback: proxy the file through the server (ownership already validated above)
+	exists, err := a.app.GetFilesBackend().FileExists(filePath)
+	if err != nil {
 		a.errorResponse(w, r, err)
 		return
 	}
 
-	if errors.Is(err, app.ErrFileNotFound) && board.ChannelID != "" {
-		// prior to moving from workspaces to teams, the filepath was constructed from
-		// workspaceID, which is the channel ID in plugin mode.
-		// If a file is not found from team ID as we tried above, try looking for it via
-		// channel ID.
+	var fileReader filestore.ReadCloseSeeker
+
+	if !exists && board.ChannelID != "" {
+		// Legacy path: try channel ID instead of team ID
 		fileReader, err = a.app.GetFileReader(board.ChannelID, boardID, filename)
 		if err != nil {
 			a.errorResponse(w, r, err)
 			return
 		}
-		// move file to team location
-		// nothing to do if there is an error
 		_ = a.app.MoveFile(board.ChannelID, board.TeamID, boardID, filename)
-	}
-
-	if err != nil {
-		// if err is still not nil then it is an error other than `not found` so we must
-		// return the error to the requestor.  fileReader and Fileinfo are nil in this case.
-		a.errorResponse(w, r, err)
+	} else if !exists {
+		a.errorResponse(w, r, model.NewErrNotFound("file not found"))
+		return
+	} else {
+		fileReader, err = a.app.GetFilesBackend().Reader(filePath)
+		if err != nil {
+			a.errorResponse(w, r, err)
+			return
+		}
 	}
 
 	defer fileReader.Close()

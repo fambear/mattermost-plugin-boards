@@ -520,6 +520,21 @@ func (mr *MockStoreMockRecorder) GetBlocksForBoard(arg0 interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBlocksForBoard", reflect.TypeOf((*MockStore)(nil).GetBlocksForBoard), arg0)
 }
 
+// IsFileReferencedByBoard mocks base method.
+func (m *MockStore) IsFileReferencedByBoard(arg0, arg1 string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsFileReferencedByBoard", arg0, arg1)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IsFileReferencedByBoard indicates an expected call of IsFileReferencedByBoard.
+func (mr *MockStoreMockRecorder) IsFileReferencedByBoard(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsFileReferencedByBoard", reflect.TypeOf((*MockStore)(nil).IsFileReferencedByBoard), arg0, arg1)
+}
+
 // GetBlocksWithParent mocks base method.
 func (m *MockStore) GetBlocksWithParent(arg0, arg1 string) ([]*model.Block, error) {
 	m.ctrl.T.Helper()
