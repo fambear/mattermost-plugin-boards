@@ -407,6 +407,10 @@ func (s *SQLStore) GetBlocksForBoard(boardID string) ([]*model.Block, error) {
 
 }
 
+func (s *SQLStore) IsFileReferencedByBoard(boardID, filename string) (bool, error) {
+	return s.isFileReferencedByBoard(s.db, boardID, filename)
+}
+
 func (s *SQLStore) GetBlocksWithParent(boardID string, parentID string) ([]*model.Block, error) {
 	return s.getBlocksWithParent(s.db, boardID, parentID)
 

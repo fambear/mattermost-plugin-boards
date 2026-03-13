@@ -24,6 +24,7 @@ type Store interface {
 	GetBlocksWithType(boardID, blockType string) ([]*model.Block, error)
 	GetSubTree2(boardID, blockID string, opts model.QuerySubtreeOptions) ([]*model.Block, error)
 	GetBlocksForBoard(boardID string) ([]*model.Block, error)
+	IsFileReferencedByBoard(boardID, filename string) (bool, error)
 	// @withTransaction
 	InsertBlock(block *model.Block, userID string) error
 	// @withTransaction
