@@ -205,7 +205,8 @@ func (a *API) handleServeFile(w http.ResponseWriter, r *http.Request) {
 
 	var fileReader filestore.ReadCloseSeeker
 
-	if !exists && board.ChannelID != "" {
+	switch {
+	case !exists && board.ChannelID != "":
 		// Legacy path: try channel ID instead of team ID
 		fileReader, err = a.app.GetFileReader(board.ChannelID, boardID, filename)
 		if err != nil {
@@ -213,10 +214,10 @@ func (a *API) handleServeFile(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		_ = a.app.MoveFile(board.ChannelID, board.TeamID, boardID, filename)
-	} else if !exists {
+	case !exists:
 		a.errorResponse(w, r, model.NewErrNotFound("file not found"))
 		return
-	} else {
+	default:
 		fileReader, err = a.app.GetFilesBackend().Reader(filePath)
 		if err != nil {
 			a.errorResponse(w, r, err)
