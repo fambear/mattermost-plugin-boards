@@ -136,24 +136,60 @@ func (a *App) GetFileInfo(filename string) (*mm_model.FileInfo, error) {
 
 // ValidateFileOwnership checks if a file belongs to the specified board and team.
 func (a *App) ValidateFileOwnership(teamID, boardID, filename string) error {
+	_, _, err := a.ValidateAndResolvePath(teamID, boardID, filename)
+	return err
+}
+
+// ValidateAndResolvePath validates file ownership AND resolves the file path in a single call,
+// avoiding duplicate GetFileInfo lookups via the plugin API bridge.
+// Under memory pressure, each plugin API call can take 10-30+ seconds due to swap thrashing,
+// so deduplication halves the latency for file serving.
+func (a *App) ValidateAndResolvePath(teamID, boardID, filename string) (*mm_model.FileInfo, string, error) {
 	fileInfo, err := a.GetFileInfo(filename)
-	if err != nil {
-		return err
+	if err != nil && !model.IsErrNotFound(err) {
+		return nil, "", err
 	}
+
 	if fileInfo != nil && fileInfo.Path != "" && fileInfo.Path != emptyString {
 		expectedPath := filepath.Join(teamID, boardID, filename)
-		if fileInfo.Path == expectedPath {
-			return nil
+		if fileInfo.Path != expectedPath {
+			if refErr := a.validateFileReferencedByBoard(boardID, filename); refErr != nil {
+				if errors.Is(refErr, ErrFileNotReferencedByBoard) {
+					return nil, "", model.NewErrPermission("file does not belong to the specified board")
+				}
+				return nil, "", refErr // preserve DB/store errors as-is
+			}
 		}
-		if err := a.validateFileReferencedByBoard(boardID, filename); err != nil {
-			return model.NewErrPermission("file does not belong to the specified board")
-		}
-	} else {
-		if err := a.validateFileReferencedByBoard(boardID, filename); err != nil {
-			return model.NewErrPermission("file does not belong to the specified board")
-		}
+		return fileInfo, fileInfo.Path, nil
 	}
-	return nil
+
+	// No fileInfo or no path — validate via block reference and construct path
+	if refErr := a.validateFileReferencedByBoard(boardID, filename); refErr != nil {
+		if errors.Is(refErr, ErrFileNotReferencedByBoard) {
+			return nil, "", model.NewErrPermission("file does not belong to the specified board")
+		}
+		return nil, "", refErr // preserve DB/store errors as-is
+	}
+
+	// Build path from components (same logic as GetFilePath)
+	isTemplate := false
+	if teamID == model.GlobalTeamID {
+		board, boardErr := a.GetBoard(boardID)
+		if boardErr != nil {
+			return nil, "", fmt.Errorf("ValidateAndResolvePath: cannot validate board for GlobalTeamID: %w", boardErr)
+		}
+		isTemplate = board.IsTemplate
+	}
+	if err := model.ValidateTeamID(teamID, isTemplate); err != nil {
+		return nil, "", fmt.Errorf("ValidateAndResolvePath: %w", err)
+	}
+	if err := model.IsValidId(boardID); err != nil {
+		return nil, "", fmt.Errorf("invalid rootID in ValidateAndResolvePath: %w", err)
+	}
+	if err := validatePathComponent(filename); err != nil {
+		return nil, "", fmt.Errorf("invalid fileName in ValidateAndResolvePath: %w", err)
+	}
+	return fileInfo, filepath.Join(teamID, boardID, filename), nil
 }
 
 // validateFileReferencedByBoard checks if a file is referenced by blocks in the specified board.
@@ -173,11 +209,7 @@ func (a *App) validateFileReferencedByBoard(boardID, filename string) error {
 // dimensions + mini preview. Used for backfilling metadata on legacy images
 // that were uploaded before metadata extraction was added.
 func (a *App) GetFileImageMetadata(teamID, boardID, filename string) (*ImageMetadata, error) {
-	if err := a.ValidateFileOwnership(teamID, boardID, filename); err != nil {
-		return nil, err
-	}
-
-	_, filePath, err := a.GetFilePath(teamID, boardID, filename)
+	_, filePath, err := a.ValidateAndResolvePath(teamID, boardID, filename)
 	if err != nil {
 		return nil, err
 	}
@@ -198,18 +230,13 @@ func (a *App) GetFileImageMetadata(teamID, boardID, filename string) (*ImageMeta
 }
 
 func (a *App) GetFile(teamID, boardID, fileName string) (*mm_model.FileInfo, filestore.ReadCloseSeeker, error) {
-	if err := a.ValidateFileOwnership(teamID, boardID, fileName); err != nil {
-		a.logger.Error("GetFile: File ownership validation failed",
+	fileInfo, filePath, err := a.ValidateAndResolvePath(teamID, boardID, fileName)
+	if err != nil {
+		a.logger.Error("GetFile: validation/path resolution failed",
 			mlog.String("Team", teamID),
 			mlog.String("board", boardID),
 			mlog.String("filename", fileName),
 			mlog.Err(err))
-		return nil, nil, err
-	}
-
-	fileInfo, filePath, err := a.GetFilePath(teamID, boardID, fileName)
-	if err != nil {
-		a.logger.Error("GetFile: Failed to GetFilePath.", mlog.String("Team", teamID), mlog.String("board", boardID), mlog.String("filename", fileName), mlog.Err(err))
 		return nil, nil, err
 	}
 

@@ -162,27 +162,22 @@ func (a *API) handleServeFile(w http.ResponseWriter, r *http.Request) {
 	auditRec.AddMeta("teamID", board.TeamID)
 	auditRec.AddMeta("filename", filename)
 
-	// Validate file ownership ONCE (previously done separately in presigned URL path and GetFile)
-	startValidate := time.Now()
-	if validErr := a.app.ValidateFileOwnership(board.TeamID, boardID, filename); validErr != nil {
-		a.logger.Warn("handleServeFile: slow request (validation failed)",
+	// Validate file ownership AND resolve path in one call (single GetFileInfo lookup).
+	// Previously these were two separate calls (ValidateFileOwnership + GetFilePath),
+	// each calling GetFileInfo independently via the plugin API bridge — under memory
+	// pressure each call takes 10-30+ seconds due to swap thrashing.
+	startResolve := time.Now()
+	fileInfo, filePath, resolveErr := a.app.ValidateAndResolvePath(board.TeamID, boardID, filename)
+	durResolve := time.Since(startResolve)
+	if durResolve > 2*time.Second {
+		a.logger.Warn("handleServeFile: slow ValidateAndResolvePath",
 			mlog.String("filename", filename),
 			mlog.String("boardID", boardID),
-			mlog.Duration("total", time.Since(startTotal)),
-			mlog.Duration("getBoard", durGetBoard),
-			mlog.Duration("validate", time.Since(startValidate)),
-			mlog.Err(validErr))
-		a.errorResponse(w, r, validErr)
-		return
+			mlog.Duration("duration", durResolve),
+			mlog.Err(resolveErr))
 	}
-	durValidate := time.Since(startValidate)
-
-	// Get file path and info (reused for both presigned URL and proxy modes)
-	startGetPath := time.Now()
-	fileInfo, filePath, pathErr := a.app.GetFilePath(board.TeamID, boardID, filename)
-	durGetPath := time.Since(startGetPath)
-	if pathErr != nil {
-		a.errorResponse(w, r, pathErr)
+	if resolveErr != nil {
+		a.errorResponse(w, r, resolveErr)
 		return
 	}
 
@@ -213,8 +208,7 @@ func (a *API) handleServeFile(w http.ResponseWriter, r *http.Request) {
 						mlog.Duration("total", totalDur),
 						mlog.Duration("perm", durPerm),
 						mlog.Duration("getBoard", durGetBoard),
-						mlog.Duration("validate", durValidate),
-						mlog.Duration("getPath", durGetPath),
+						mlog.Duration("resolve", durResolve),
 						mlog.Duration("presign", durPresign))
 				}
 				auditRec.Success()

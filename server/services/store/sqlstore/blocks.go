@@ -6,6 +6,7 @@ package sqlstore
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -245,33 +246,52 @@ func (s *SQLStore) getSubTree2(db sq.BaseRunner, boardID string, blockID string,
 // using a SQL LIKE query on the fields JSON column. This avoids loading all blocks
 // into memory and deserializing their JSON fields.
 func (s *SQLStore) isFileReferencedByBoard(db sq.BaseRunner, boardID, filename string) (bool, error) {
-	// Search for the filename in the JSON fields column using LIKE.
-	// The filename appears as a value in "fileId" or "attachmentId" fields,
-	// or inside "attachments" arrays in comment blocks.
-	pattern := "%" + filename + "%"
+	// Check if a file is referenced by blocks on this board using exact field matching.
+	// Files can appear in:
+	//   - fields->>'fileId' (image/video blocks)
+	//   - fields->>'attachmentId' (attachment blocks)
+	//   - fields->'attachments' array with "fileId" values (comment blocks)
+	//
+	// For PostgreSQL: use JSON extraction operators for exact matching on top-level
+	// fields, and a targeted LIKE pattern for nested attachment arrays.
+	// For MySQL/SQLite: use LIKE with quoted JSON value patterns.
 
-	// PostgreSQL's json type doesn't support LIKE directly — must cast to text.
-	// MySQL/SQLite fields are text-based and support LIKE natively.
-	var fieldsLike sq.Sqlizer
+	var fieldsMatch sq.Sqlizer
 	if s.dbType == model.PostgresDBType {
-		fieldsLike = sq.Expr("fields::text LIKE ?", pattern)
+		// Exact JSON field extraction + targeted pattern for nested arrays
+		attachmentPattern := `%"fileId":"` + filename + `"%`
+		fieldsMatch = sq.Or{
+			sq.Expr("fields::jsonb->>'fileId' = ?", filename),
+			sq.Expr("fields::jsonb->>'attachmentId' = ?", filename),
+			sq.Expr("fields::text LIKE ?", attachmentPattern),
+		}
 	} else {
-		fieldsLike = sq.Like{"fields": pattern}
+		// MySQL/SQLite: use quoted JSON value patterns for exact matching
+		fileIdPattern := `%"fileId":"` + filename + `"%`
+		attachmentIdPattern := `%"attachmentId":"` + filename + `"%`
+		fieldsMatch = sq.Or{
+			sq.Expr("fields LIKE ?", fileIdPattern),
+			sq.Expr("fields LIKE ?", attachmentIdPattern),
+		}
 	}
 
 	query := s.getQueryBuilder(db).
-		Select("COUNT(*)").
+		Select("1").
 		From(s.tablePrefix + "blocks").
 		Where(sq.Eq{"board_id": boardID}).
 		Where(sq.Eq{"delete_at": 0}).
-		Where(fieldsLike)
+		Where(fieldsMatch).
+		Limit(1)
 
 	row := query.QueryRow()
-	var count int
-	if err := row.Scan(&count); err != nil {
+	var found int
+	if err := row.Scan(&found); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return false, nil
+		}
 		return false, err
 	}
-	return count > 0, nil
+	return true, nil
 }
 
 func (s *SQLStore) getBlocksForBoard(db sq.BaseRunner, boardID string) ([]*model.Block, error) {
