@@ -57,7 +57,9 @@ func (s *SQLStore) getFileInfo(db sq.BaseRunner, id string) (*mmModel.FileInfo, 
 		return nil, err
 	}
 
-	fileInfo.MiniPreview = &miniPreview
+	if miniPreview != nil {
+		fileInfo.MiniPreview = &miniPreview
+	}
 	if remoteid != nil {
 		fileInfo.RemoteId = remoteid
 	}
