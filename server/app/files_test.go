@@ -932,11 +932,11 @@ func TestUserCreatedTemplateFilePathValidation(t *testing.T) {
 func TestValidateFileOwnership(t *testing.T) {
 	th, _ := SetupTestHelper(t)
 
-	validTeamID := "validteamid1234567890abcde"  // 26 chars (valid Mattermost team ID)
+	validTeamID := "validteamid1234567890abcde"   // 26 chars (valid Mattermost team ID)
 	validBoardID := "bvalidboard1234567890abcdef" // 27 chars (valid Boards ID)
 	otherBoardID := "botherboard1234567890abcdef" // 27 chars
-	filename := "7validfile1234567890123456.txt"   // 27-char base (7 prefix + 26-char ID)
-	fileInfoID := "validfile1234567890123456"      // 26 chars — extracted by getFileInfoID (strips '7' prefix)
+	filename := "7validfile1234567890123456.txt"  // 27-char base (7 prefix + 26-char ID)
+	fileInfoID := "validfile1234567890123456"     // 26 chars — extracted by getFileInfoID (strips '7' prefix)
 
 	t.Run("Should allow access to file that belongs to the board", func(t *testing.T) {
 		fileInfo := &mm_model.FileInfo{

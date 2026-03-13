@@ -6,6 +6,7 @@ package sqlstore
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -285,7 +286,7 @@ func (s *SQLStore) isFileReferencedByBoard(db sq.BaseRunner, boardID, filename s
 	row := query.QueryRow()
 	var found int
 	if err := row.Scan(&found); err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return false, nil
 		}
 		return false, err
