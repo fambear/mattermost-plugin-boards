@@ -7,7 +7,6 @@ import (
 	"fmt"
 
 	"github.com/mattermost/mattermost-plugin-boards/server/model"
-	"github.com/mattermost/mattermost/server/public/shared/mlog"
 	"github.com/pkg/errors"
 )
 
@@ -29,124 +28,179 @@ func isContentBlock(blockType model.BlockType) bool {
 // parent card's contentOrder field. This ensures that content blocks created
 // via the API (not just the UI) are visible without manual reordering.
 // If the block is not a content block, or has no parent, this is a no-op.
-func (a *App) appendToContentOrderIfNeeded(block *model.Block, modifiedByID string) {
+func containsContentOrderID(contentOrder []interface{}, blockID string) bool {
+	for _, item := range contentOrder {
+		switch typedItem := item.(type) {
+		case string:
+			if typedItem == blockID {
+				return true
+			}
+		case []interface{}:
+			if containsContentOrderID(typedItem, blockID) {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+func (a *App) appendToContentOrderIfNeeded(block *model.Block, modifiedByID string, disableNotify bool) error {
 	if block.ParentID == "" || block.ParentID == block.ID {
-		return
+		return nil
 	}
 
 	if !isContentBlock(block.Type) {
-		return
+		return nil
 	}
 
-	card, err := a.GetBlockByID(block.ParentID)
-	if err != nil || card == nil || card.Type != model.TypeCard {
-		return
-	}
+	const maxRetries = 3
+	for attempt := 0; attempt < maxRetries; attempt++ {
+		card, err := a.GetBlockByID(block.ParentID)
+		if err != nil {
+			return err
+		}
+		if card == nil || card.Type != model.TypeCard {
+			return nil
+		}
 
-	// Get current contentOrder
-	var contentOrder []interface{}
-	if raw, ok := card.Fields["contentOrder"]; ok && raw != nil {
-		if co, ok := raw.([]interface{}); ok {
-			contentOrder = co
+		// Get current contentOrder
+		var contentOrder []interface{}
+		if raw, ok := card.Fields["contentOrder"]; ok && raw != nil {
+			if co, ok := raw.([]interface{}); ok {
+				contentOrder = co
+			}
+		}
+
+		if containsContentOrderID(contentOrder, block.ID) {
+			return nil
+		}
+
+		newOrder := append(append([]interface{}{}, contentOrder...), block.ID)
+
+		patch := &model.BlockPatch{
+			UpdatedFields: map[string]interface{}{
+				"contentOrder": newOrder,
+			},
+		}
+
+		if _, patchErr := a.PatchBlockAndNotify(block.ParentID, patch, modifiedByID, disableNotify); patchErr != nil {
+			return patchErr
+		}
+
+		updatedCard, getErr := a.GetBlockByID(block.ParentID)
+		if getErr != nil {
+			return getErr
+		}
+
+		var updatedOrder []interface{}
+		if updatedCard != nil {
+			if raw, ok := updatedCard.Fields["contentOrder"]; ok && raw != nil {
+				if co, ok := raw.([]interface{}); ok {
+					updatedOrder = co
+				}
+			}
+		}
+
+		if containsContentOrderID(updatedOrder, block.ID) {
+			return nil
 		}
 	}
 
-	// Check if block is already in contentOrder
-	for _, item := range contentOrder {
-		if id, ok := item.(string); ok && id == block.ID {
-			return // already present
-		}
-	}
-
-	// Append the new block ID
-	contentOrder = append(contentOrder, block.ID)
-
-	patch := &model.BlockPatch{
-		UpdatedFields: map[string]interface{}{
-			"contentOrder": contentOrder,
-		},
-	}
-
-	if _, patchErr := a.PatchBlock(block.ParentID, patch, modifiedByID); patchErr != nil {
-		a.logger.Warn(
-			"Failed to auto-update contentOrder for parent card",
-			mlog.String("block_id", block.ID),
-			mlog.String("parent_id", block.ParentID),
-			mlog.Err(patchErr),
-		)
-	}
+	return errors.New("failed to append block ID to contentOrder after retries")
 }
 
 // removeFromContentOrderIfNeeded removes a deleted content block from the
 // parent card's contentOrder field.
-func (a *App) removeFromContentOrderIfNeeded(block *model.Block, modifiedByID string) {
+func (a *App) removeFromContentOrderIfNeeded(block *model.Block, modifiedByID string, disableNotify bool) error {
 	if block.ParentID == "" || block.ParentID == block.ID {
-		return
+		return nil
 	}
 
 	if !isContentBlock(block.Type) {
-		return
+		return nil
 	}
 
-	card, err := a.GetBlockByID(block.ParentID)
-	if err != nil || card == nil || card.Type != model.TypeCard {
-		return
-	}
-
-	var contentOrder []interface{}
-	if raw, ok := card.Fields["contentOrder"]; ok && raw != nil {
-		if co, ok := raw.([]interface{}); ok {
-			contentOrder = co
+	const maxRetries = 3
+	for attempt := 0; attempt < maxRetries; attempt++ {
+		card, err := a.GetBlockByID(block.ParentID)
+		if err != nil {
+			return err
 		}
-	}
-
-	if len(contentOrder) == 0 {
-		return
-	}
-
-	newOrder := make([]interface{}, 0, len(contentOrder))
-	found := false
-	for _, item := range contentOrder {
-		if id, ok := item.(string); ok && id == block.ID {
-			found = true
-			continue
+		if card == nil || card.Type != model.TypeCard {
+			return nil
 		}
-		// Handle nested arrays (grouped blocks)
-		if arr, ok := item.([]interface{}); ok {
-			filtered := make([]interface{}, 0, len(arr))
-			for _, sub := range arr {
-				if id, ok := sub.(string); ok && id == block.ID {
-					found = true
-					continue
+
+		var contentOrder []interface{}
+		if raw, ok := card.Fields["contentOrder"]; ok && raw != nil {
+			if co, ok := raw.([]interface{}); ok {
+				contentOrder = co
+			}
+		}
+
+		if len(contentOrder) == 0 {
+			return nil
+		}
+
+		newOrder := make([]interface{}, 0, len(contentOrder))
+		found := false
+		for _, item := range contentOrder {
+			if id, ok := item.(string); ok && id == block.ID {
+				found = true
+				continue
+			}
+			// Handle nested arrays (grouped blocks)
+			if arr, ok := item.([]interface{}); ok {
+				filtered := make([]interface{}, 0, len(arr))
+				for _, sub := range arr {
+					if id, ok := sub.(string); ok && id == block.ID {
+						found = true
+						continue
+					}
+					filtered = append(filtered, sub)
 				}
-				filtered = append(filtered, sub)
+				if len(filtered) > 0 {
+					newOrder = append(newOrder, filtered)
+				}
+				continue
 			}
-			if len(filtered) > 0 {
-				newOrder = append(newOrder, filtered)
-			}
-			continue
+			newOrder = append(newOrder, item)
 		}
-		newOrder = append(newOrder, item)
+
+		if !found {
+			return nil
+		}
+
+		patch := &model.BlockPatch{
+			UpdatedFields: map[string]interface{}{
+				"contentOrder": newOrder,
+			},
+		}
+
+		if _, patchErr := a.PatchBlockAndNotify(block.ParentID, patch, modifiedByID, disableNotify); patchErr != nil {
+			return patchErr
+		}
+
+		updatedCard, getErr := a.GetBlockByID(block.ParentID)
+		if getErr != nil {
+			return getErr
+		}
+
+		var updatedOrder []interface{}
+		if updatedCard != nil {
+			if raw, ok := updatedCard.Fields["contentOrder"]; ok && raw != nil {
+				if co, ok := raw.([]interface{}); ok {
+					updatedOrder = co
+				}
+			}
+		}
+
+		if !containsContentOrderID(updatedOrder, block.ID) {
+			return nil
+		}
 	}
 
-	if !found {
-		return
-	}
-
-	patch := &model.BlockPatch{
-		UpdatedFields: map[string]interface{}{
-			"contentOrder": newOrder,
-		},
-	}
-
-	if _, patchErr := a.PatchBlock(block.ParentID, patch, modifiedByID); patchErr != nil {
-		a.logger.Warn(
-			"Failed to auto-update contentOrder after block deletion",
-			mlog.String("block_id", block.ID),
-			mlog.String("parent_id", block.ParentID),
-			mlog.Err(patchErr),
-		)
-	}
+	return errors.New("failed to remove block ID from contentOrder after retries")
 }
 
 func (a *App) MoveContentBlock(block *model.Block, dstBlock *model.Block, where string, userID string) error {

@@ -233,7 +233,9 @@ func (a *App) InsertBlockAndNotify(block *model.Block, modifiedByID string, disa
 		a.PopulateBlockCode(block, board)
 
 		// Auto-update parent card's contentOrder when inserting a content block
-		a.appendToContentOrderIfNeeded(block, modifiedByID)
+		if appendErr := a.appendToContentOrderIfNeeded(block, modifiedByID, disableNotify); appendErr != nil {
+			return appendErr
+		}
 
 		a.blockChangeNotifier.Enqueue(func() error {
 			a.wsAdapter.BroadcastBlockChange(board.TeamID, block)
@@ -338,7 +340,9 @@ func (a *App) InsertBlocksAndNotify(blocks []*model.Block, modifiedByID string, 
 		needsNotify = append(needsNotify, block)
 
 		// Auto-update parent card's contentOrder when inserting a content block
-		a.appendToContentOrderIfNeeded(block, modifiedByID)
+		if appendErr := a.appendToContentOrderIfNeeded(block, modifiedByID, disableNotify); appendErr != nil {
+			return nil, appendErr
+		}
 
 		a.wsAdapter.BroadcastBlockChange(board.TeamID, block)
 		a.metrics.IncrementBlocksInserted(1)
@@ -396,7 +400,9 @@ func (a *App) DeleteBlockAndNotify(blockID string, modifiedBy string, disableNot
 	}
 
 	// Auto-remove from parent card's contentOrder when deleting a content block
-	a.removeFromContentOrderIfNeeded(block, modifiedBy)
+	if removeErr := a.removeFromContentOrderIfNeeded(block, modifiedBy, disableNotify); removeErr != nil {
+		return removeErr
+	}
 
 	a.blockChangeNotifier.Enqueue(func() error {
 		a.wsAdapter.BroadcastBlockDelete(board.TeamID, blockID, block.BoardID)

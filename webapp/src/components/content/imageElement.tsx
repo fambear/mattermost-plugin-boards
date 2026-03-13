@@ -175,7 +175,11 @@ const ImageElement = (props: Props): JSX.Element|null => {
     }
 
     const placeholderStyle: React.CSSProperties | undefined = (finalWidth > 0 && finalHeight > 0)
-        ? {width: `${finalWidth}px`, height: `${finalHeight}px`, maxWidth: '100%'}
+        ? {
+            width: '100%',
+            maxWidth: `${finalWidth}px`,
+            aspectRatio: `${finalWidth} / ${finalHeight}`,
+        }
         : undefined
 
     if (loadError) {
@@ -198,7 +202,7 @@ const ImageElement = (props: Props): JSX.Element|null => {
 
     return (
         <div className='ImageElement__container'>
-            {/* Placeholder: sized by height + aspect-ratio, visible while loading */}
+            {/* Placeholder: responsive width + aspect-ratio, visible while loading */}
             {!imageLoaded && placeholderStyle && (
                 <div
                     className='ImageElement__placeholder'
