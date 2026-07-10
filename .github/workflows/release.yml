@@ -97,8 +97,13 @@ jobs:
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "- **Version:** ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
         echo "- **Tag:** ${{ steps.version.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
-        echo "- **Platforms:** Linux (amd64, arm64), macOS (amd64, arm64), Windows (amd64)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Platform:** Linux (amd64)" >> $GITHUB_STEP_SUMMARY
         echo "- **Artifact:** boards-${{ steps.version.outputs.version }}.tar.gz" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ steps.check_release.outputs.exists }}" = "true" ]; then
+          echo "- **Mode:** ⚠️ existing release — artifact overwritten, tag \`${{ steps.version.outputs.tag }}\` still points at its original commit" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "- **Mode:** new release — tag created at this commit" >> $GITHUB_STEP_SUMMARY
+        fi
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "Download the release from: https://github.com/${{ github.repository }}/releases/tag/${{ steps.version.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
 

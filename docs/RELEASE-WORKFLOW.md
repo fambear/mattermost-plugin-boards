@@ -1,294 +1,192 @@
-# Release Workflow Documentation
+# Release Workflow: детальный разбор
 
-## 🔄 Процесс релиза
+Этот документ описывает, что именно происходит в GitHub Actions при мерже в `main`.
+Практическая инструкция «как выпустить версию» — в [RELEASE.md](../RELEASE.md).
 
-### Автоматический релиз через GitHub Actions
+## Полная цепочка
 
+```text
+┌──────────────────────────────────────────────────────────────────┐
+│  1. Разработчик мержит PR в main                                 │
+│     (при необходимости — с бампом version в plugin.json)         │
+└───────────────────────────┬──────────────────────────────────────┘
+                            │  push: main
+                            ▼
+┌──────────────────────────────────────────────────────────────────┐
+│  2. Check-in tests            .github/workflows/ci.yml           │
+│                                                                  │
+│     make webapp-ci   →  eslint + stylelint + jest + tsc          │
+│     make server-ci   →  golangci-lint                            │
+│                         (Go-тесты НЕ запускаются)                │
+└───────────────────────────┬──────────────────────────────────────┘
+                            │  workflow_run: conclusion == success
+                            │  branches: [main]
+                            ▼
+┌──────────────────────────────────────────────────────────────────┐
+│  3. Release Build             .github/workflows/release.yml      │
+│     job: build-and-release    runs-on: ubuntu-22.04              │
+│                                                                  │
+│     ├─ VERSION=$(jq -r '.version' plugin.json)                   │
+│     ├─ setup-go (go.mod) + setup-node (.nvmrc)                   │
+│     ├─ cd webapp && npm ci                                       │
+│     ├─ make dist-linux  →  dist/boards-$VERSION.tar.gz           │
+│     │                                                            │
+│     └─ gh release view v$VERSION                                 │
+│           ├─ не найден  →  git tag -a v$VERSION                  │
+│           │                gh release create + upload артефакта  │
+│           │                                                      │
+│           └─ найден     →  gh release delete-asset               │
+│                            gh release upload --clobber           │
+│                            ⚠️ тег остаётся на прежнем коммите     │
+└───────────────────────────┬──────────────────────────────────────┘
+                            │  needs: build-and-release
+                            ▼
+┌──────────────────────────────────────────────────────────────────┐
+│  4. Release Build                                                │
+│     job: deploy-to-mattermost                                    │
+│                                                                  │
+│     ├─ gh release download v$VERSION      (до 5 попыток, пауза 5с)│
+│     ├─ POST $MM_URL/api/v4/plugins/$ID/disable                   │
+│     │       continue-on-error: true                              │
+│     ├─ POST $MM_URL/api/v4/plugins   (force=true)                │
+│     │       ⚠️ если упадёт — enable не выполнится                 │
+│     └─ POST $MM_URL/api/v4/plugins/$ID/enable                    │
+└──────────────────────────────────────────────────────────────────┘
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    RELEASE WORKFLOW                              │
-└─────────────────────────────────────────────────────────────────┘
 
-1. Разработчик                    2. GitHub Actions
-   ┌──────────┐                      ┌──────────┐
-   │ Обновить │                      │ Checkout │
-   │ version  │                      │   код    │
-   │ в plugin │                      └────┬─────┘
-   │  .json   │                           │
-   └────┬─────┘                           │
-        │                                 │
-        │                            ┌────▼─────┐
-   ┌────▼─────┐                      │ Извлечь  │
-   │  Commit  │                      │  версию  │
-   │ изменений│                      │из plugin │
-   └────┬─────┘                      │  .json   │
-        │                            └────┬─────┘
-        │                                 │
-   ┌────▼─────┐                      ┌────▼─────┐
-   │   Push   │                      │ Собрать  │
-   │    в     │─────────────────────▶│  плагин  │
-   │ release  │                      │  Linux   │
-   │  branch  │                      │  AMD64   │
-   └──────────┘                      └────┬─────┘
-                                          │
-                                     ┌────▼─────┐
-                                     │ Создать  │
-                                     │   tag    │
-                                     │v{version}│
-                                     └────┬─────┘
-                                          │
-                                     ┌────▼─────┐
-                                     │ Создать  │
-                                     │  GitHub  │
-                                     │ Release  │
-                                     └────┬─────┘
-                                          │
-                                     ┌────▼─────┐
-                                     │ Загрузить│
-                                     │  .tar.gz │
-                                     │ артефакт │
-                                     └──────────┘
-
-3. Администратор сервера
-   ┌──────────┐
-   │ Скачать  │
-   │  релиз   │
-   │ с GitHub │
-   └────┬─────┘
-        │
-   ┌────▼─────┐
-   │Установить│
-   │  плагин  │
-   │    на    │
-   │  сервер  │
-   └──────────┘
-```
+Второй вход в шаг 3 — `workflow_dispatch`. Он не проверяет ветку: Release Build,
+запущенный вручную из любой ветки, соберёт её и задеплоит на прод.
 
 ---
 
-## 📁 Структура файлов релиза
+## Триггеры
 
-```
-mattermost-plugin-boards/
-├── .github/
-│   └── workflows/
-│       ├── ci.yml              # CI тесты
-│       └── release.yml         # Автоматический релиз ⭐
-├── scripts/
-│   ├── build-release.sh        # Локальная сборка (Linux/macOS)
-│   ├── build-release.ps1       # Локальная сборка (Windows)
-│   ├── update-plugin-on-server.sh  # Автообновление на сервере
-│   └── README.md               # Документация скриптов
-├── docs/
-│   └── RELEASE-WORKFLOW.md     # Этот файл
-├── plugin.json                 # Версия плагина ⭐
-├── RELEASE.md                  # Полная инструкция
-├── QUICKSTART-RELEASE.md       # Быстрый старт
-├── .env.example                # Пример переменных окружения
-└── Makefile                    # Цели сборки
-```
+| Workflow | Файл | Когда запускается |
+|---|---|---|
+| Check-in tests | `ci.yml` | push в `main` и `releases-**`, любой PR, вручную |
+| Release Build | `release.yml` | успешное завершение Check-in tests на `main`; вручную |
+| CodeQL | `codeql-analysis.yml` | push/PR в `main` и `release-**`, еженедельно по расписанию |
+| Scorecards | `scorecards-analysis.yml` | push в `main`, еженедельно по расписанию |
+
+Ветки `release` в триггерах нет. Она осталась в репозитории с января 2026 и не используется:
+коммит `a5fcd6eb` («release from main branch now») перевёл релиз на `main`, а `de10d9d1`
+заменил прямой push-триггер на `workflow_run` после Check-in tests.
 
 ---
 
-## 🎯 Ключевые компоненты
+## Ключевые компоненты
 
-### 1. plugin.json
-Содержит версию плагина, которая используется для:
-- Создания тега релиза
-- Именования файла артефакта
-- Отображения в Mattermost
+### plugin.json
+
+Единственный источник истины для версии. Используется для имени тега (`v{version}`),
+имени артефакта (`boards-{version}.tar.gz`) и отображения в System Console.
 
 ```json
 {
-  "version": "9.2.3",
-  ...
+  "id": "focalboard",
+  "version": "9.2.4",
+  "min_server_version": "10.7.0"
 }
 ```
 
-### 2. .github/workflows/release.yml
-GitHub Actions workflow, который:
-- Триггерится при push в ветку `release`
-- Извлекает версию из `plugin.json`
-- Собирает плагин для Linux AMD64
-- Создает GitHub Release
-- Загружает артефакт
+Поднимается вручную, отдельным коммитом. Автоматической проверки, что версия выросла, нет.
 
-### 3. Makefile
-Содержит цели для сборки:
-- `make dist-linux` - сборка для Linux
-- `make trigger-release` - запуск автоматического релиза
-- `make show-version` - показать текущую версию
+### Makefile
 
----
+| Цель | Что делает |
+|---|---|
+| `make dist-linux` | `apply` + сборка `plugin-linux-amd64` + webapp + bundle |
+| `make dist` | то же, но пять бинарников (linux/darwin amd64+arm64, windows amd64) |
+| `make show-version` | печатает версию из `plugin.json` |
+| `make webapp-ci` | eslint + stylelint + jest + `tsc` |
+| `make server-ci` | **только** `golangci-lint` |
+| `make server-test` | Go-тесты (в CI не вызывается) |
 
-## 🚀 Сценарии использования
+Цели `make patch` / `minor` / `major` достались от апстрима. Они создают подписанный
+git-тег на основе `git describe`, **не изменяя `plugin.json`**. С текущей схемой релизов
+они рассинхронизируют тег и манифест — не используйте их.
 
-### Сценарий 1: Создание нового релиза
+### Секреты
 
-```bash
-# 1. Обновить версию
-vim plugin.json  # Изменить "version": "9.2.4"
-
-# 2. Закоммитить
-git add plugin.json
-git commit -m "Release v9.2.4"
-
-# 3. Запустить релиз
-make trigger-release
-# или
-git push origin main:release
-
-# 4. Дождаться завершения GitHub Actions
-# 5. Релиз появится в https://github.com/fambear/mattermost-plugin-boards/releases
-```
-
-### Сценарий 2: Локальная сборка для тестирования
-
-```bash
-# Linux/macOS
-./scripts/build-release.sh
-
-# Windows
-.\scripts\build-release.ps1
-
-# Результат: dist/boards-{version}.tar.gz
-```
-
-### Сценарий 3: Обновление на сервере
-
-```bash
-# Автоматическое обновление до последней версии
-sudo ./scripts/update-plugin-on-server.sh
-
-# Обновление до конкретной версии
-sudo ./scripts/update-plugin-on-server.sh 9.2.4
-```
+`MM_URL`, `MM_ACCESS_TOKEN`, `MM_BOARD_PLUGIN_ID` — см. [RELEASE.md](../RELEASE.md).
+`GITHUB_TOKEN` предоставляется Actions автоматически; в `build-and-release` задан
+`permissions: contents: write` для создания тегов и релизов.
 
 ---
 
-## 🔍 Проверка релиза
+## Поведение при повторном запуске с той же версией
 
-### Перед созданием релиза
+Это самый неочевидный участок пайплайна.
+
+Если релиз `v{version}` уже существует, ветка «Update existing release» удаляет старый
+артефакт и заливает новый на его место. Git-тег при этом **не двигается**.
+
+Практическое следствие: после нескольких мержей без бампа версии тег `v{version}` указывает
+на один коммит, а артефакт в релизе собран из другого. Так произошло с `v9.2.4`: тег стоит
+на коммите от 10 марта 2026, артефакт — сборка от 13 марта, перезаписанная шесть раз.
+
+Чтобы каждая сборка была адресуемой и откатываемой, поднимайте версию в `plugin.json`
+в том же PR, который меняет код.
+
+---
+
+## Чего в пайплайне нет
+
+Осознанно перечислено, чтобы никто не искал:
+
+- **`environment:` у деплоя** — нет required reviewers, нет защиты секретов.
+- **`concurrency`-группы** — параллельные деплои на один сервер не сериализуются.
+- **Проверки, что версия не выпущена** — вместо ошибки происходит тихая перезапись.
+- **Go-тестов в CI** — `server-ci` сводится к линтеру.
+- **Генерации release notes** — текст релиза всегда `Automated release build for version X`.
+- **Отката** — предыдущий артефакт той же версии затирается безвозвратно.
+
+---
+
+## Проверка релиза
+
+Перед мержем:
 
 ```bash
-# Проверить текущую версию
 make show-version
-
-# Запустить тесты
-make ci
-
-# Локальная сборка
+make check-style
+make webapp-ci
+make server-test     # локально, потому что CI это не делает
 make dist-linux
-
-# Проверить что файл создан
 ls -lh dist/boards-*.tar.gz
 ```
 
-### После создания релиза
+После мержа:
 
-1. **GitHub:**
-   - Проверить что релиз создан
-   - Проверить что артефакт загружен
-   - Проверить что тег создан
-
-2. **На сервере:**
-   ```bash
-   # Проверить версию плагина
-   # System Console → Plugins → Plugin Management
-   
-   # Проверить логи
-   tail -f /opt/mattermost/logs/mattermost.log
-   ```
+1. GitHub → Actions → Release Build → Summary.
+2. GitHub → Releases: тег создан, артефакт приложен.
+3. System Console → Plugins → Plugin Management: версия и статус «Active».
+4. При проблемах — логи сервера: `journalctl -u mattermost -n 100`.
 
 ---
 
-## ⚙️ Настройка
+## Troubleshooting
 
-### Переменные окружения
+**Release Build не запустился.** Он висит на `workflow_run` от Check-in tests с фильтром
+`branches: [main]`. Если CI упал или push был не в `main`, релиз не стартует.
 
-Создайте файл `.env` из `.env.example`:
+**Артефакт не скачался в deploy-джобе.** Между созданием релиза и доступностью ассета через
+API бывает задержка; шаг делает до 5 попыток с паузой 5 секунд (добавлено в `3b433107`).
+
+**Плагин остался выключенным.** Джоб упал между `disable` и `enable`. Включите вручную:
 
 ```bash
-cp .env.example .env
+curl -X POST "$MM_URL/api/v4/plugins/focalboard/enable" \
+  -H "Authorization: Bearer $MM_ACCESS_TOKEN"
 ```
 
-Основные переменные:
-- `MM_DEBUG=true` - сборка только для текущей платформы
-- `MM_SERVER_PATH` - путь к серверу Mattermost
-- `MM_SERVICESETTINGS_SITEURL` - URL сервера
-
-### Настройка GitHub Actions
-
-Workflow использует `GITHUB_TOKEN`, который автоматически предоставляется GitHub Actions.
-
-Требуемые permissions (уже настроены в release.yml):
-```yaml
-permissions:
-  contents: write
-```
+**Версия в System Console не изменилась после мержа.** Ожидаемо, если `plugin.json` не трогали:
+код обновился, номер версии — нет.
 
 ---
 
-## 🐛 Troubleshooting
+## Дополнительные ресурсы
 
-### Релиз не создается
-
-**Проблема:** GitHub Actions не запускается
-
-**Решение:**
-```bash
-# Проверить что вы пушите в правильную ветку
-git branch -a
-
-# Проверить логи Actions
-# GitHub → Actions → Release Build
-```
-
-**Проблема:** Версия некорректна
-
-**Решение:**
-```bash
-# Проверить формат версии в plugin.json
-jq -r '.version' plugin.json
-# Должно быть: X.Y.Z (например, 9.2.3)
-```
-
-### Сборка падает
-
-**Проблема:** Ошибки компиляции
-
-**Решение:**
-```bash
-# Проверить локально
-make dist-linux
-
-# Проверить зависимости
-go mod tidy
-cd webapp && npm ci
-```
-
-### Плагин не работает на сервере
-
-**Проблема:** Плагин не загружается
-
-**Решение:**
-```bash
-# Проверить логи
-journalctl -u mattermost -n 100
-
-# Проверить права
-ls -la /opt/mattermost/plugins/boards
-chown -R mattermost:mattermost /opt/mattermost/plugins/boards
-
-# Проверить версию Mattermost
-# Минимальная версия указана в plugin.json: "min_server_version"
-```
-
----
-
-## 📚 Дополнительные ресурсы
-
-- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+- [RELEASE.md](../RELEASE.md) — как выпускать версии
+- [AUTO-UPDATE-GUIDE.md](AUTO-UPDATE-GUIDE.md) — автообновление через Mattermost UI
 - [Mattermost Plugin Documentation](https://developers.mattermost.com/integrate/plugins/)
-- [Makefile Tutorial](https://makefiletutorial.com/)
-

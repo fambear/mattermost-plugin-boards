@@ -1,41 +1,48 @@
 # Быстрый старт: Создание релиза
 
-## 🚀 Автоматический релиз (GitHub Actions)
+> ⚠️ **Мерж в `main` = деплой на production.** Подтверждения не спрашивают.
+> Подробности и подводные камни — в [RELEASE.md](RELEASE.md).
 
-### Шаг 1: Обновите версию
+## 🚀 Автоматический релиз
+
+### Шаг 1: Поднимите версию в рабочей ветке
+
 ```bash
-# Откройте plugin.json и измените версию
-nano plugin.json
-# Измените: "version": "9.2.3"
+make show-version          # текущая версия
+nano plugin.json           # "version": "9.2.5"
 ```
 
-### Шаг 2: Закоммитьте и запушьте
+### Шаг 2: Закоммитьте и смержите PR в main
+
 ```bash
 git add plugin.json
-git commit -m "Release v9.2.3"
-git push origin main:release
+git commit -m "Bump version to 9.2.5"
+git push origin HEAD
+# дальше — обычный PR и Merge
 ```
 
-### Шаг 3: Дождитесь сборки
-- Перейдите в GitHub → Actions
-- Дождитесь завершения workflow "Release Build"
-- Релиз появится в разделе Releases
-- **Создается bundle для Linux AMD64** (~46 MB)
+### Шаг 3: Дождитесь автоматики
 
-### Шаг 4: Скачайте и установите
-```bash
-# На вашем сервере
-cd /tmp
-wget https://github.com/fambear/mattermost-plugin-boards/releases/download/v9.2.3/boards-9.2.3.tar.gz
+1. GitHub → Actions → **Check-in tests** должны пройти.
+2. После них сам запустится **Release Build**: соберёт bundle для Linux AMD64 (~48 MB),
+   создаст тег `v9.2.5`, опубликует релиз.
+3. Тот же workflow загрузит плагин на сервер и включит его.
 
-# Установите плагин
-cd /opt/mattermost/plugins
-rm -rf boards  # Удалите старую версию
-tar -xzf /tmp/boards-9.2.3.tar.gz
+### Шаг 4: Проверьте
 
-# Перезапустите Mattermost
-systemctl restart mattermost
-```
+- GitHub → Releases → `v9.2.5` с файлом `boards-9.2.5.tar.gz`
+- System Console → Plugins → Plugin Management → версия `9.2.5`, статус «Active»
+
+Скачивать и ставить руками ничего не нужно — деплой уже произошёл.
+
+---
+
+## ⚠️ Если версию не поднять
+
+Деплой всё равно случится, но новый тег не создастся, а артефакт существующего релиза
+будет перезаписан. Тег останется указывать на старый коммит, и откатиться будет не на что.
+
+Правило простое: **меняешь код — меняй версию в том же PR.**
 
 ---
 
@@ -56,54 +63,40 @@ systemctl restart mattermost
 
 ---
 
-## 📋 Checklist перед релизом
+## 📋 Checklist перед мержем в main
 
-- [ ] Обновлена версия в `plugin.json`
-- [ ] Все изменения закоммичены
-- [ ] Тесты проходят: `make ci`
-- [ ] Локальная сборка работает: `make dist-linux`
-- [ ] Changelog обновлен (если есть)
-
----
-
-## 🔍 Проверка релиза
-
-После установки на сервере:
-
-1. Откройте Mattermost
-2. System Console → Plugins → Plugin Management
-3. Найдите "Mattermost Boards"
-4. Проверьте версию плагина
-5. Убедитесь что плагин активен
+- [ ] Версия в `plugin.json` поднята
+- [ ] `make webapp-ci` проходит
+- [ ] `make server-test` проходит — **в CI Go-тесты не запускаются**
+- [ ] `make dist-linux` собирается
+- [ ] Готовы к тому, что мерж уедет на прод
 
 ---
 
 ## ❓ Troubleshooting
 
-### Релиз не создается
+### Release Build не запустился
+Он стартует только после успешных Check-in tests на ветке `main`.
 ```bash
-# Проверьте логи GitHub Actions
-# Убедитесь что версия корректна
-jq -r '.version' plugin.json
+# Проверьте статус CI
+gh run list --workflow=ci.yml --limit 5
+```
+
+### Версия в System Console не изменилась
+Значит `plugin.json` не трогали. Код обновился, номер — нет.
+
+### Плагин выключился и не включился обратно
+Деплой упал между `disable` и `enable`. Включите вручную:
+```bash
+curl -X POST "$MM_URL/api/v4/plugins/focalboard/enable" \
+  -H "Authorization: Bearer $MM_ACCESS_TOKEN"
 ```
 
 ### Сборка падает локально
 ```bash
-# Проверьте зависимости
 go version
 npm --version
-
-# Переустановите зависимости
 cd webapp && npm ci
-```
-
-### Плагин не работает после установки
-```bash
-# Проверьте логи Mattermost
-tail -f /opt/mattermost/logs/mattermost.log
-
-# Проверьте права на файлы
-chown -R mattermost:mattermost /opt/mattermost/plugins/boards
 ```
 
 ---
@@ -111,6 +104,6 @@ chown -R mattermost:mattermost /opt/mattermost/plugins/boards
 ## 📚 Дополнительная информация
 
 - Полная инструкция: [RELEASE.md](RELEASE.md)
+- Разбор workflow: [docs/RELEASE-WORKFLOW.md](docs/RELEASE-WORKFLOW.md)
 - Документация по сборке: [README.md](README.md)
 - GitHub Actions workflow: [.github/workflows/release.yml](.github/workflows/release.yml)
-

@@ -10,7 +10,7 @@
 
 ### Для разработки
 
-- **Go:** 1.23+ (проверьте: `go version`)
+- **Go:** 1.24.6+ (проверьте: `go version`)
 - **Node.js:** 20.11+ (проверьте: `node --version`)
 - **npm:** 10+ (проверьте: `npm --version`)
 - **Git:** Любая современная версия
@@ -76,18 +76,17 @@ cat plugin.json | grep version
 ## ✅ Шаг 3: Запуск тестов
 
 ```bash
-# Запустить все тесты
+# make ci == make webapp-ci: линт + jest + tsc. Только фронтенд!
 make ci
 
-# Или по отдельности:
-
-# Backend тесты
+# Backend тесты. В GitHub Actions они НЕ запускаются —
+# make server-ci сводится к golangci-lint. Гоняйте локально.
 make server-test
 
 # Frontend тесты
 cd webapp && npm run test
 
-# Линтинг
+# Линтинг обеих частей
 make check-style
 ```
 
@@ -95,22 +94,26 @@ make check-style
 
 ## 📦 Шаг 4: Создание первого релиза
 
-### Вариант A: Автоматический релиз (рекомендуется)
+> ⚠️ Мерж в `main` автоматически деплоит плагин на production-сервер.
+> Прочитайте [RELEASE.md](RELEASE.md) прежде чем мержить.
+
+### Вариант A: Автоматический релиз
 
 ```bash
-# 1. Обновить версию в plugin.json
+# 1. В рабочей ветке обновить версию в plugin.json
 vim plugin.json
-# Измените: "version": "9.2.3"
+# Измените: "version": "9.2.5"
 
 # 2. Закоммитить изменения
 git add plugin.json
-git commit -m "Release v9.2.3"
+git commit -m "Bump version to 9.2.5"
+git push origin HEAD
 
-# 3. Запустить автоматический релиз
-make trigger-release
+# 3. Открыть PR и смержить в main.
+#    Check-in tests → Release Build → тег, релиз и деплой произойдут сами.
 
-# 4. Дождаться завершения GitHub Actions
-# Перейдите на https://github.com/fambear/mattermost-plugin-boards/actions
+# 4. Следить за прогрессом
+# https://github.com/fambear/mattermost-plugin-boards/actions
 ```
 
 ### Вариант B: Локальная сборка
@@ -139,7 +142,7 @@ scp scripts/update-plugin-on-server.sh user@server:/tmp/
 ssh user@server
 
 # Запустить установку
-sudo /tmp/update-plugin-on-server.sh 9.2.3
+sudo /tmp/update-plugin-on-server.sh 9.2.4
 ```
 
 ### Вариант B: Ручная установка
@@ -147,11 +150,11 @@ sudo /tmp/update-plugin-on-server.sh 9.2.3
 ```bash
 # На сервере
 cd /tmp
-wget https://github.com/fambear/mattermost-plugin-boards/releases/download/v9.2.3/boards-9.2.3.tar.gz
+wget https://github.com/fambear/mattermost-plugin-boards/releases/download/v9.2.4/boards-9.2.4.tar.gz
 
 # Установить
 cd /opt/mattermost/plugins
-sudo tar -xzf /tmp/boards-9.2.3.tar.gz
+sudo tar -xzf /tmp/boards-9.2.4.tar.gz
 sudo chown -R mattermost:mattermost boards
 
 # Перезапустить Mattermost
@@ -163,7 +166,7 @@ sudo systemctl restart mattermost
 1. Откройте Mattermost
 2. System Console → Plugins → Plugin Management
 3. Нажмите "Upload Plugin"
-4. Выберите файл `boards-9.2.3.tar.gz`
+4. Выберите файл `boards-9.2.4.tar.gz`
 5. Нажмите "Upload"
 6. Enable плагин
 
@@ -219,7 +222,7 @@ systemctl status mattermost
 
 1. Прочитайте [QUICKSTART-RELEASE.md](QUICKSTART-RELEASE.md)
 2. Изучите доступные скрипты в [scripts/README.md](scripts/README.md)
-3. Посмотрите диаграмму процесса релиза (Mermaid diagram выше)
+3. Посмотрите диаграмму процесса релиза в [docs/RELEASE-WORKFLOW.md](docs/RELEASE-WORKFLOW.md)
 
 ---
 
@@ -280,8 +283,11 @@ make show-version
 # Собрать для Linux
 make dist-linux
 
-# Запустить тесты
+# Запустить тесты фронтенда
 make ci
+
+# Запустить тесты бэкенда (в CI не гоняются)
+make server-test
 
 # Запустить линтинг
 make check-style
@@ -291,9 +297,6 @@ make clean
 
 # Показать справку
 make help
-
-# Запустить релиз
-make trigger-release
 ```
 
 ---
