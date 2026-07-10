@@ -11,6 +11,7 @@ import {OctoUtils} from '../../octoUtils'
 import {Utils} from '../../utils'
 import {Board, IPropertyTemplate} from '../../blocks/board'
 import {BoardView} from '../../blocks/boardView'
+import {CardFilter} from '../../cardFilter'
 import Button from '../../widgets/buttons/button'
 import Menu from '../../widgets/menu'
 import MenuWrapper from '../../widgets/menuWrapper'
@@ -227,6 +228,19 @@ const FilterEntry = (props: Props): JSX.Element => {
                 view={view}
                 propertyType={propertyType}
             />
+            {CardFilter.isClauseIgnored(filter) &&
+                <div
+                    className='FilterEntry__inactive'
+                    title={intl.formatMessage({
+                        id: 'FilterEntry.inactive-tooltip',
+                        defaultMessage: 'No value is selected, so this filter is ignored and every card is shown. Pick a value to make it filter.',
+                    })}
+                >
+                    <FormattedMessage
+                        id='FilterEntry.inactive'
+                        defaultMessage='not filtering'
+                    />
+                </div>}
             <div className='octo-spacer'/>
             <Button
                 onClick={() => {

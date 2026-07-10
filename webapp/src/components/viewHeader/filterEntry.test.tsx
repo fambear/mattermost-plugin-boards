@@ -324,4 +324,44 @@ describe('components/viewHeader/filterEntry', () => {
                     values: [],
                 }]})
     })
+
+    describe('inactive filter warning', () => {
+        const warningText = 'not filtering'
+
+        const renderEntry = (filter: FilterClause) => {
+            activeView.fields.filter.filters = [filter]
+            return render(
+                wrapIntl(
+                    <ReduxProvider store={store}>
+                        <FilterEntry
+                            board={board}
+                            view={activeView}
+                            conditionClicked={mockedConditionClicked}
+                            filter={filter}
+                        />
+                    </ReduxProvider>,
+                ),
+            )
+        }
+
+        test('warns when an "includes" clause has no values, because it filters nothing', () => {
+            const emptyStatusFilter: FilterClause = {
+                propertyId: board.cardProperties[0].id,
+                condition: 'includes',
+                values: [],
+            }
+            renderEntry(emptyStatusFilter)
+            expect(screen.getByText(warningText)).toBeInTheDocument()
+        })
+
+        test('does not warn when the clause has a value', () => {
+            renderEntry(statusFilter)
+            expect(screen.queryByText(warningText)).not.toBeInTheDocument()
+        })
+
+        test('does not warn for a condition that needs no value', () => {
+            renderEntry(booleanFilter)
+            expect(screen.queryByText(warningText)).not.toBeInTheDocument()
+        })
+    })
 })

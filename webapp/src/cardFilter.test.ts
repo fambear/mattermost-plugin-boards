@@ -3,7 +3,7 @@
 
 import {mocked} from 'jest-mock'
 
-import {createFilterClause} from './blocks/filterClause'
+import {FilterCondition, createFilterClause} from './blocks/filterClause'
 
 import {createFilterGroup} from './blocks/filterGroup'
 import {CardFilter} from './cardFilter'
@@ -795,6 +795,38 @@ describe('src/cardFilter', () => {
             const filterClauseEndsWith = createFilterClause({propertyId: 'colorPropertyId', condition: 'endsWith', values: ['ED']})
             const result = CardFilter.isClauseMet(filterClauseEndsWith, [template], textCard)
             expect(result).toBeTruthy()
+        })
+    })
+
+    describe('verify isClauseIgnored', () => {
+        const valueConditions: FilterCondition[] = [
+            'includes', 'notIncludes', 'is',
+            'contains', 'notContains',
+            'startsWith', 'notStartsWith',
+            'endsWith', 'notEndsWith',
+            'isBefore', 'isAfter',
+        ]
+        const valuelessConditions: FilterCondition[] = ['isEmpty', 'isNotEmpty', 'isSet', 'isNotSet']
+
+        test.each(valueConditions)('should report "%s" with no values as ignored', (condition) => {
+            const clause = createFilterClause({propertyId: 'propertyId', condition, values: []})
+            expect(CardFilter.isClauseIgnored(clause)).toBe(true)
+        })
+
+        test.each(valueConditions)('should not report "%s" with a value as ignored', (condition) => {
+            const clause = createFilterClause({propertyId: 'propertyId', condition, values: ['Status']})
+            expect(CardFilter.isClauseIgnored(clause)).toBe(false)
+        })
+
+        test.each(valuelessConditions)('should not report "%s" as ignored, it needs no value', (condition) => {
+            const clause = createFilterClause({propertyId: 'propertyId', condition, values: []})
+            expect(CardFilter.isClauseIgnored(clause)).toBe(false)
+        })
+
+        test('should agree with isClauseMet: an ignored clause matches every card', () => {
+            const clause = createFilterClause({propertyId: 'propertyId', condition: 'includes', values: []})
+            expect(CardFilter.isClauseIgnored(clause)).toBe(true)
+            expect(CardFilter.isClauseMet(clause, [], card1)).toBe(true)
         })
     })
 })

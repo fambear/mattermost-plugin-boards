@@ -1103,6 +1103,12 @@ exports[`components/viewHeader/filterComponent return filterComponent and filter
           </button>
         </div>
         <div
+          class="FilterEntry__inactive"
+          title="No value is selected, so this filter is ignored and every card is shown. Pick a value to make it filter."
+        >
+          not filtering
+        </div>
+        <div
           class="octo-spacer"
         />
         <button

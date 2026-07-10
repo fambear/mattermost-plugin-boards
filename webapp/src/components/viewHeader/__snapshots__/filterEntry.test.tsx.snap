@@ -2100,6 +2100,12 @@ exports[`components/viewHeader/filterEntry return filterEntry and click on statu
       </button>
     </div>
     <div
+      class="FilterEntry__inactive"
+      title="No value is selected, so this filter is ignored and every card is shown. Pick a value to make it filter."
+    >
+      not filtering
+    </div>
+    <div
       class="octo-spacer"
     />
     <button
@@ -2358,6 +2364,12 @@ exports[`components/viewHeader/filterEntry return filterEntry for date field 1`]
       </button>
     </div>
     <div
+      class="FilterEntry__inactive"
+      title="No value is selected, so this filter is ignored and every card is shown. Pick a value to make it filter."
+    >
+      not filtering
+    </div>
+    <div
       class="octo-spacer"
     />
     <button
@@ -2596,6 +2608,12 @@ exports[`components/viewHeader/filterEntry return filterEntry for date field 2`]
       </button>
     </div>
     <div
+      class="FilterEntry__inactive"
+      title="No value is selected, so this filter is ignored and every card is shown. Pick a value to make it filter."
+    >
+      not filtering
+    </div>
+    <div
       class="octo-spacer"
     />
     <button
@@ -2649,6 +2667,12 @@ exports[`components/viewHeader/filterEntry return filterEntry for text field 1`]
       title=""
       value=""
     />
+    <div
+      class="FilterEntry__inactive"
+      title="No value is selected, so this filter is ignored and every card is shown. Pick a value to make it filter."
+    >
+      not filtering
+    </div>
     <div
       class="octo-spacer"
     />
@@ -2930,6 +2954,12 @@ exports[`components/viewHeader/filterEntry return filterEntry for text field 2`]
       title=""
       value=""
     />
+    <div
+      class="FilterEntry__inactive"
+      title="No value is selected, so this filter is ignored and every card is shown. Pick a value to make it filter."
+    >
+      not filtering
+    </div>
     <div
       class="octo-spacer"
     />

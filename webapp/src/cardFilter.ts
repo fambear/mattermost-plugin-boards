@@ -7,13 +7,28 @@ import {DateProperty} from './properties/date/date'
 
 import {IPropertyTemplate} from './blocks/board'
 import {Card} from './blocks/card'
-import {FilterClause} from './blocks/filterClause'
+import {FilterClause, FilterCondition} from './blocks/filterClause'
 import {FilterGroup, isAFilterGroupInstance} from './blocks/filterGroup'
 import {Utils} from './utils'
 
 const halfDay = 12 * 60 * 60 * 1000
 
 class CardFilter {
+    // Conditions that compare against a value. isClauseMet() treats such a clause as
+    // always met while it has no value, so the clause silently filters nothing.
+    private static readonly conditionsRequiringValue: ReadonlyArray<FilterCondition> = [
+        'includes', 'notIncludes', 'is',
+        'contains', 'notContains',
+        'startsWith', 'notStartsWith',
+        'endsWith', 'notEndsWith',
+        'isBefore', 'isAfter',
+    ]
+
+    // Reports a clause that is configured but has no effect on which cards are shown.
+    static isClauseIgnored(filter: FilterClause): boolean {
+        return CardFilter.conditionsRequiringValue.includes(filter.condition) && (filter.values?.length || 0) < 1
+    }
+
     static createDatePropertyFromString(initialValue: string): DateProperty {
         let dateProperty: DateProperty = {}
         if (initialValue) {
