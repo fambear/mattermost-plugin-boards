@@ -864,6 +864,21 @@ describe('src/cardFilter', () => {
                 expect(CardFilter.isClauseIgnored(clause)).toBe(false)
             })
 
+            // `is ''` is the only way to select cards with no text, so it must not collapse
+            // into `is []`, which is ignored and matches everything.
+            test('should distinguish "is" with a blank value from "is" with no value', () => {
+                const blankCard = TestBlockFactory.createCard(board)
+                blankCard.fields.properties.colorPropertyId = ''
+
+                const blank = createFilterClause({propertyId: 'colorPropertyId', condition: 'is', values: ['']})
+                expect(CardFilter.isClauseMet(blank, [textTemplate], blankCard)).toBe(true)
+                expect(CardFilter.isClauseMet(blank, [textTemplate], redCard)).toBe(false)
+
+                const noValue = createFilterClause({propertyId: 'colorPropertyId', condition: 'is', values: []})
+                expect(CardFilter.isClauseMet(noValue, [textTemplate], redCard)).toBe(true)
+                expect(CardFilter.isClauseIgnored(noValue)).toBe(true)
+            })
+
             test('should not report a non-blank value as ignored', () => {
                 const clause = createFilterClause({propertyId: 'colorPropertyId', condition: 'contains', values: ['Red']})
                 expect(CardFilter.isClauseIgnored(clause)).toBe(false)

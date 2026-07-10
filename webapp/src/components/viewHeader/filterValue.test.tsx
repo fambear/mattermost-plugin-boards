@@ -11,7 +11,7 @@ import userEvent from '@testing-library/user-event'
 
 import {mocked} from 'jest-mock'
 
-import {FilterClause} from '../../blocks/filterClause'
+import {FilterClause, FilterCondition} from '../../blocks/filterClause'
 import {IPropertyTemplate} from '../../blocks/board'
 
 import {TestBlockFactory} from '../../test/testBlockFactory'
@@ -208,8 +208,30 @@ describe('components/viewHeader/filterValue', () => {
             expect(savedValues()).toEqual([])
         })
 
+        // A blank value makes these exclude every card, which nobody configures on purpose.
+        test.each(['notContains', 'notStartsWith', 'notEndsWith'])('saves no values when a blank "%s" is blurred', (condition) => {
+            const input = renderTextFilter({propertyId: 'textPropertyID', condition: condition as FilterCondition, values: []})
+            fireEvent.blur(input)
+            expect(savedValues()).toEqual([])
+        })
+
+        // The text filter menu exposes no isEmpty condition, so `is ''` is the only way to
+        // select cards whose text is empty. Blanking it must stay a real filter.
+        test('keeps a blank value for the "is" condition', () => {
+            const input = renderTextFilter({propertyId: 'textPropertyID', condition: 'is', values: []})
+            fireEvent.blur(input)
+            expect(savedValues()).toEqual([''])
+        })
+
         test('saves the typed text', () => {
             const input = renderTextFilter({propertyId: 'textPropertyID', condition: 'contains', values: []})
+            userEvent.type(input, 'Red')
+            fireEvent.blur(input)
+            expect(savedValues()).toEqual(['Red'])
+        })
+
+        test('saves the typed text for the "is" condition', () => {
+            const input = renderTextFilter({propertyId: 'textPropertyID', condition: 'is', values: []})
             userEvent.type(input, 'Red')
             fireEvent.blur(input)
             expect(savedValues()).toEqual(['Red'])

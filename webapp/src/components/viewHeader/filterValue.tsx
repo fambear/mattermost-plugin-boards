@@ -60,10 +60,13 @@ const filterValue = (props: Props): JSX.Element|null => {
                     const newFilter = filterGroup.filters[filterIndex] as FilterClause
                     Utils.assert(newFilter, `No filter at index ${filterIndex}`)
 
-                    // Store no value rather than [''], which would keep the clause looking
-                    // active while `contains`/`startsWith`/`endsWith` match every card and
-                    // their negations match none.
-                    newFilter.values = value ? [value] : []
+                    // `is ''` selects cards whose text is empty, and the condition menu offers
+                    // no isEmpty for text properties, so it is the only way to express that.
+                    // Every other blank text condition is useless: contains/startsWith/endsWith
+                    // match every card and their negations match none. Store no value for those,
+                    // so the clause reads as inactive instead of looking configured.
+                    const blankIsMeaningful = newFilter.condition === 'is'
+                    newFilter.values = (value || blankIsMeaningful) ? [value] : []
                     mutator.changeViewFilter(view.boardId, view.id, view.fields.filter, filterGroup)
                 }}
             />
