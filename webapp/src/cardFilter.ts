@@ -24,11 +24,25 @@ class CardFilter {
         'isBefore', 'isAfter',
     ]
 
-    // Text conditions that match every card once their value is a blank string, since every
-    // string contains, starts with and ends with ''. Blurring an empty filter input stores [''].
+    // Substring conditions. A blank value carries no intent here: every string contains, starts
+    // with and ends with '', so the first three match every card and their negations match none.
+    private static readonly substringConditions: ReadonlyArray<FilterCondition> = [
+        'contains', 'notContains',
+        'startsWith', 'notStartsWith',
+        'endsWith', 'notEndsWith',
+    ]
+
+    // The substring conditions that match every card once their value is a blank string.
     private static readonly conditionsMatchingBlankValue: ReadonlyArray<FilterCondition> = [
         'contains', 'startsWith', 'endsWith',
     ]
+
+    // A blank value only carries intent for the equality conditions, where it selects cards whose
+    // value is empty (`is ''`, `includes ''`) or everything else (`notIncludes ''`). Callers use
+    // this to decide whether an empty filter input is worth storing.
+    static isBlankValueMeaningless(condition: FilterCondition): boolean {
+        return CardFilter.substringConditions.includes(condition)
+    }
 
     // Reports a clause that is configured but has no effect on which cards are shown. The
     // negated text conditions are excluded on purpose: with a blank value they exclude every

@@ -215,10 +215,12 @@ describe('components/viewHeader/filterValue', () => {
             expect(savedValues()).toEqual([])
         })
 
-        // The text filter menu exposes no isEmpty condition, so `is ''` is the only way to
-        // select cards whose text is empty. Blanking it must stay a real filter.
-        test('keeps a blank value for the "is" condition', () => {
-            const input = renderTextFilter({propertyId: 'textPropertyID', condition: 'is', values: []})
+        // The text filter menu exposes no isEmpty condition, so a blank equality condition is
+        // the only way to select cards whose text is empty. `includes` is here because
+        // addFilterClicked creates clauses with it and FilterEntry renders it as `is` on a
+        // text property, so the user cannot tell the two apart.
+        test.each(['is', 'includes', 'notIncludes'])('keeps a blank value for the "%s" condition', (condition) => {
+            const input = renderTextFilter({propertyId: 'textPropertyID', condition: condition as FilterCondition, values: []})
             fireEvent.blur(input)
             expect(savedValues()).toEqual([''])
         })
