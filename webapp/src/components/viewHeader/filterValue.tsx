@@ -60,7 +60,10 @@ const filterValue = (props: Props): JSX.Element|null => {
                     const newFilter = filterGroup.filters[filterIndex] as FilterClause
                     Utils.assert(newFilter, `No filter at index ${filterIndex}`)
 
-                    newFilter.values = [value]
+                    // Store no value rather than [''], which would keep the clause looking
+                    // active while `contains`/`startsWith`/`endsWith` match every card and
+                    // their negations match none.
+                    newFilter.values = value ? [value] : []
                     mutator.changeViewFilter(view.boardId, view.id, view.fields.filter, filterGroup)
                 }}
             />

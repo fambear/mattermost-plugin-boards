@@ -3,7 +3,7 @@
 
 
 import React from 'react'
-import {render, screen} from '@testing-library/react'
+import {fireEvent, render, screen} from '@testing-library/react'
 import {Provider as ReduxProvider} from 'react-redux'
 
 import '@testing-library/jest-dom'
@@ -168,5 +168,51 @@ describe('components/viewHeader/filterValue', () => {
         // make sure modal is displayed
         const clearButton = screen.getByRole('button', {name: 'Clear'})
         expect(clearButton).toBeInTheDocument()
+    })
+
+    describe('text filter value', () => {
+        const textTemplate: IPropertyTemplate = {
+            id: 'textPropertyID',
+            name: 'My Text Property',
+            type: 'text',
+            options: [],
+        }
+
+        const renderTextFilter = (textFilter: FilterClause) => {
+            board.cardProperties.push(textTemplate)
+            activeView.fields.filter.filters = [textFilter]
+            render(
+                wrapIntl(
+                    <ReduxProvider store={store}>
+                        <FilterValue
+                            view={activeView}
+                            filter={textFilter}
+                            template={textTemplate}
+                            propertyType={propsRegistry.get(textTemplate.type)}
+                        />
+                    </ReduxProvider>,
+                ),
+            )
+            return screen.getByPlaceholderText('filter text')
+        }
+
+        const savedValues = (): string[] => {
+            const newFilterGroup = mockedMutator.changeViewFilter.mock.calls[0][3]
+            return (newFilterGroup.filters[0] as FilterClause).values
+        }
+
+        test('saves no values when the input is blurred while empty, so the clause stays inactive', () => {
+            const input = renderTextFilter({propertyId: 'textPropertyID', condition: 'contains', values: []})
+            fireEvent.blur(input)
+            expect(mockedMutator.changeViewFilter).toBeCalledTimes(1)
+            expect(savedValues()).toEqual([])
+        })
+
+        test('saves the typed text', () => {
+            const input = renderTextFilter({propertyId: 'textPropertyID', condition: 'contains', values: []})
+            userEvent.type(input, 'Red')
+            fireEvent.blur(input)
+            expect(savedValues()).toEqual(['Red'])
+        })
     })
 })

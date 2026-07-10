@@ -828,5 +828,46 @@ describe('src/cardFilter', () => {
             expect(CardFilter.isClauseIgnored(clause)).toBe(true)
             expect(CardFilter.isClauseMet(clause, [], card1)).toBe(true)
         })
+
+        // A text input that is focused and blurred while empty persists [''], not [].
+        describe('blank text values', () => {
+            const textTemplate: IPropertyTemplate = {
+                id: 'colorPropertyId',
+                name: 'Color',
+                type: 'text',
+                options: [],
+            }
+            const redCard = TestBlockFactory.createCard(board)
+            redCard.fields.properties.colorPropertyId = 'Red'
+
+            // '' is a substring/prefix/suffix of every string, so these match everything.
+            const blankMatchesEveryCard: FilterCondition[] = ['contains', 'startsWith', 'endsWith']
+
+            // Negating the above matches nothing, which is the opposite of "not filtering".
+            const blankMatchesNoCard: FilterCondition[] = ['notContains', 'notStartsWith', 'notEndsWith']
+
+            test.each(blankMatchesEveryCard)('should report "%s" with a blank value as ignored', (condition) => {
+                const clause = createFilterClause({propertyId: 'colorPropertyId', condition, values: ['']})
+                expect(CardFilter.isClauseMet(clause, [textTemplate], redCard)).toBe(true)
+                expect(CardFilter.isClauseIgnored(clause)).toBe(true)
+            })
+
+            test.each(blankMatchesNoCard)('should not report "%s" with a blank value as ignored, it excludes every card', (condition) => {
+                const clause = createFilterClause({propertyId: 'colorPropertyId', condition, values: ['']})
+                expect(CardFilter.isClauseMet(clause, [textTemplate], redCard)).toBe(false)
+                expect(CardFilter.isClauseIgnored(clause)).toBe(false)
+            })
+
+            test('should not report "is" with a blank value as ignored, it selects cards with an empty value', () => {
+                const clause = createFilterClause({propertyId: 'colorPropertyId', condition: 'is', values: ['']})
+                expect(CardFilter.isClauseMet(clause, [textTemplate], redCard)).toBe(false)
+                expect(CardFilter.isClauseIgnored(clause)).toBe(false)
+            })
+
+            test('should not report a non-blank value as ignored', () => {
+                const clause = createFilterClause({propertyId: 'colorPropertyId', condition: 'contains', values: ['Red']})
+                expect(CardFilter.isClauseIgnored(clause)).toBe(false)
+            })
+        })
     })
 })

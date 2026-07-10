@@ -24,9 +24,21 @@ class CardFilter {
         'isBefore', 'isAfter',
     ]
 
-    // Reports a clause that is configured but has no effect on which cards are shown.
+    // Text conditions that match every card once their value is a blank string, since every
+    // string contains, starts with and ends with ''. Blurring an empty filter input stores [''].
+    private static readonly conditionsMatchingBlankValue: ReadonlyArray<FilterCondition> = [
+        'contains', 'startsWith', 'endsWith',
+    ]
+
+    // Reports a clause that is configured but has no effect on which cards are shown. The
+    // negated text conditions are excluded on purpose: with a blank value they exclude every
+    // card rather than none, so they are the opposite of "not filtering".
     static isClauseIgnored(filter: FilterClause): boolean {
-        return CardFilter.conditionsRequiringValue.includes(filter.condition) && (filter.values?.length || 0) < 1
+        const values = filter.values || []
+        if (CardFilter.conditionsRequiringValue.includes(filter.condition) && values.length < 1) {
+            return true
+        }
+        return CardFilter.conditionsMatchingBlankValue.includes(filter.condition) && values[0] === ''
     }
 
     static createDatePropertyFromString(initialValue: string): DateProperty {
