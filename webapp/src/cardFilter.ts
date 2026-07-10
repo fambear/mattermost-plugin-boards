@@ -7,13 +7,54 @@ import {DateProperty} from './properties/date/date'
 
 import {IPropertyTemplate} from './blocks/board'
 import {Card} from './blocks/card'
-import {FilterClause} from './blocks/filterClause'
+import {FilterClause, FilterCondition} from './blocks/filterClause'
 import {FilterGroup, isAFilterGroupInstance} from './blocks/filterGroup'
 import {Utils} from './utils'
 
 const halfDay = 12 * 60 * 60 * 1000
 
 class CardFilter {
+    // Conditions that compare against a value. isClauseMet() treats such a clause as
+    // always met while it has no value, so the clause silently filters nothing.
+    private static readonly conditionsRequiringValue: ReadonlyArray<FilterCondition> = [
+        'includes', 'notIncludes', 'is',
+        'contains', 'notContains',
+        'startsWith', 'notStartsWith',
+        'endsWith', 'notEndsWith',
+        'isBefore', 'isAfter',
+    ]
+
+    // Substring conditions. A blank value carries no intent here: every string contains, starts
+    // with and ends with '', so the first three match every card and their negations match none.
+    private static readonly substringConditions: ReadonlyArray<FilterCondition> = [
+        'contains', 'notContains',
+        'startsWith', 'notStartsWith',
+        'endsWith', 'notEndsWith',
+    ]
+
+    // The substring conditions that match every card once their value is a blank string.
+    private static readonly conditionsMatchingBlankValue: ReadonlyArray<FilterCondition> = [
+        'contains', 'startsWith', 'endsWith',
+    ]
+
+    // A blank value only carries intent for the equality conditions, where it selects cards whose
+    // value is empty (`is ''`, `includes ''`) or everything else (`notIncludes ''`). Callers use
+    // this to decide whether an empty filter input is worth storing.
+    static isBlankValueMeaningless(condition: FilterCondition): boolean {
+        return CardFilter.substringConditions.includes(condition)
+    }
+
+    // Reports a clause that is configured but has no effect on which cards are shown. The
+    // negated text conditions are excluded on purpose: with a blank value they exclude every
+    // card rather than none, so they are the opposite of "not filtering".
+    static isClauseIgnored(filter: FilterClause): boolean {
+        const values = filter.values || []
+        if (CardFilter.conditionsRequiringValue.includes(filter.condition) && values.length < 1) {
+            return true
+        }
+        return CardFilter.conditionsMatchingBlankValue.includes(filter.condition) && values[0] === ''
+    }
+
     static createDatePropertyFromString(initialValue: string): DateProperty {
         let dateProperty: DateProperty = {}
         if (initialValue) {

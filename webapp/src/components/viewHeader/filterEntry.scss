@@ -14,4 +14,17 @@
         white-space: normal;
         display: block;
     }
+
+    .FilterEntry__inactive {
+        align-items: center;
+        margin-left: 4px;
+        padding: 0 6px;
+        border-radius: 4px;
+        background: rgba(var(--center-channel-color-rgb), 0.08);
+        color: var(--error-text);
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+        cursor: help;
+    }
 }

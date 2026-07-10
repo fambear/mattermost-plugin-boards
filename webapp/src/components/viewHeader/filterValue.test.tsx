@@ -3,7 +3,7 @@
 
 
 import React from 'react'
-import {render, screen} from '@testing-library/react'
+import {fireEvent, render, screen} from '@testing-library/react'
 import {Provider as ReduxProvider} from 'react-redux'
 
 import '@testing-library/jest-dom'
@@ -11,7 +11,7 @@ import userEvent from '@testing-library/user-event'
 
 import {mocked} from 'jest-mock'
 
-import {FilterClause} from '../../blocks/filterClause'
+import {FilterClause, FilterCondition} from '../../blocks/filterClause'
 import {IPropertyTemplate} from '../../blocks/board'
 
 import {TestBlockFactory} from '../../test/testBlockFactory'
@@ -168,5 +168,75 @@ describe('components/viewHeader/filterValue', () => {
         // make sure modal is displayed
         const clearButton = screen.getByRole('button', {name: 'Clear'})
         expect(clearButton).toBeInTheDocument()
+    })
+
+    describe('text filter value', () => {
+        const textTemplate: IPropertyTemplate = {
+            id: 'textPropertyID',
+            name: 'My Text Property',
+            type: 'text',
+            options: [],
+        }
+
+        const renderTextFilter = (textFilter: FilterClause) => {
+            board.cardProperties.push(textTemplate)
+            activeView.fields.filter.filters = [textFilter]
+            render(
+                wrapIntl(
+                    <ReduxProvider store={store}>
+                        <FilterValue
+                            view={activeView}
+                            filter={textFilter}
+                            template={textTemplate}
+                            propertyType={propsRegistry.get(textTemplate.type)}
+                        />
+                    </ReduxProvider>,
+                ),
+            )
+            return screen.getByPlaceholderText('filter text')
+        }
+
+        const savedValues = (): string[] => {
+            const newFilterGroup = mockedMutator.changeViewFilter.mock.calls[0][3]
+            return (newFilterGroup.filters[0] as FilterClause).values
+        }
+
+        test('saves no values when the input is blurred while empty, so the clause stays inactive', () => {
+            const input = renderTextFilter({propertyId: 'textPropertyID', condition: 'contains', values: []})
+            fireEvent.blur(input)
+            expect(mockedMutator.changeViewFilter).toBeCalledTimes(1)
+            expect(savedValues()).toEqual([])
+        })
+
+        // A blank value makes these exclude every card, which nobody configures on purpose.
+        test.each(['notContains', 'notStartsWith', 'notEndsWith'])('saves no values when a blank "%s" is blurred', (condition) => {
+            const input = renderTextFilter({propertyId: 'textPropertyID', condition: condition as FilterCondition, values: []})
+            fireEvent.blur(input)
+            expect(savedValues()).toEqual([])
+        })
+
+        // The text filter menu exposes no isEmpty condition, so a blank equality condition is
+        // the only way to select cards whose text is empty. `includes` is here because
+        // addFilterClicked creates clauses with it and FilterEntry renders it as `is` on a
+        // text property, so the user cannot tell the two apart.
+        test.each(['is', 'includes', 'notIncludes'])('keeps a blank value for the "%s" condition', (condition) => {
+            const input = renderTextFilter({propertyId: 'textPropertyID', condition: condition as FilterCondition, values: []})
+            fireEvent.blur(input)
+            expect(savedValues()).toEqual([''])
+        })
+
+        test('saves the typed text', () => {
+            const input = renderTextFilter({propertyId: 'textPropertyID', condition: 'contains', values: []})
+            userEvent.type(input, 'Red')
+            fireEvent.blur(input)
+            expect(savedValues()).toEqual(['Red'])
+        })
+
+        test('saves the typed text for the "is" condition', () => {
+            const input = renderTextFilter({propertyId: 'textPropertyID', condition: 'is', values: []})
+            userEvent.type(input, 'Red')
+            fireEvent.blur(input)
+            expect(savedValues()).toEqual(['Red'])
+        })
     })
 })

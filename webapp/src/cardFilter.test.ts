@@ -3,7 +3,7 @@
 
 import {mocked} from 'jest-mock'
 
-import {createFilterClause} from './blocks/filterClause'
+import {FilterCondition, createFilterClause} from './blocks/filterClause'
 
 import {createFilterGroup} from './blocks/filterGroup'
 import {CardFilter} from './cardFilter'
@@ -795,6 +795,119 @@ describe('src/cardFilter', () => {
             const filterClauseEndsWith = createFilterClause({propertyId: 'colorPropertyId', condition: 'endsWith', values: ['ED']})
             const result = CardFilter.isClauseMet(filterClauseEndsWith, [template], textCard)
             expect(result).toBeTruthy()
+        })
+    })
+
+    describe('verify isClauseIgnored', () => {
+        const valueConditions: FilterCondition[] = [
+            'includes', 'notIncludes', 'is',
+            'contains', 'notContains',
+            'startsWith', 'notStartsWith',
+            'endsWith', 'notEndsWith',
+            'isBefore', 'isAfter',
+        ]
+        const valuelessConditions: FilterCondition[] = ['isEmpty', 'isNotEmpty', 'isSet', 'isNotSet']
+
+        test.each(valueConditions)('should report "%s" with no values as ignored', (condition) => {
+            const clause = createFilterClause({propertyId: 'propertyId', condition, values: []})
+            expect(CardFilter.isClauseIgnored(clause)).toBe(true)
+        })
+
+        test.each(valueConditions)('should not report "%s" with a value as ignored', (condition) => {
+            const clause = createFilterClause({propertyId: 'propertyId', condition, values: ['Status']})
+            expect(CardFilter.isClauseIgnored(clause)).toBe(false)
+        })
+
+        test.each(valuelessConditions)('should not report "%s" as ignored, it needs no value', (condition) => {
+            const clause = createFilterClause({propertyId: 'propertyId', condition, values: []})
+            expect(CardFilter.isClauseIgnored(clause)).toBe(false)
+        })
+
+        test('should agree with isClauseMet: an ignored clause matches every card', () => {
+            const clause = createFilterClause({propertyId: 'propertyId', condition: 'includes', values: []})
+            expect(CardFilter.isClauseIgnored(clause)).toBe(true)
+            expect(CardFilter.isClauseMet(clause, [], card1)).toBe(true)
+        })
+
+        // A text input that is focused and blurred while empty persists [''], not [].
+        describe('blank text values', () => {
+            const textTemplate: IPropertyTemplate = {
+                id: 'colorPropertyId',
+                name: 'Color',
+                type: 'text',
+                options: [],
+            }
+            const redCard = TestBlockFactory.createCard(board)
+            redCard.fields.properties.colorPropertyId = 'Red'
+
+            // '' is a substring/prefix/suffix of every string, so these match everything.
+            const blankMatchesEveryCard: FilterCondition[] = ['contains', 'startsWith', 'endsWith']
+
+            // Negating the above matches nothing, which is the opposite of "not filtering".
+            const blankMatchesNoCard: FilterCondition[] = ['notContains', 'notStartsWith', 'notEndsWith']
+
+            test.each(blankMatchesEveryCard)('should report "%s" with a blank value as ignored', (condition) => {
+                const clause = createFilterClause({propertyId: 'colorPropertyId', condition, values: ['']})
+                expect(CardFilter.isClauseMet(clause, [textTemplate], redCard)).toBe(true)
+                expect(CardFilter.isClauseIgnored(clause)).toBe(true)
+            })
+
+            test.each(blankMatchesNoCard)('should not report "%s" with a blank value as ignored, it excludes every card', (condition) => {
+                const clause = createFilterClause({propertyId: 'colorPropertyId', condition, values: ['']})
+                expect(CardFilter.isClauseMet(clause, [textTemplate], redCard)).toBe(false)
+                expect(CardFilter.isClauseIgnored(clause)).toBe(false)
+            })
+
+            test('should not report "is" with a blank value as ignored, it selects cards with an empty value', () => {
+                const clause = createFilterClause({propertyId: 'colorPropertyId', condition: 'is', values: ['']})
+                expect(CardFilter.isClauseMet(clause, [textTemplate], redCard)).toBe(false)
+                expect(CardFilter.isClauseIgnored(clause)).toBe(false)
+            })
+
+            // `is ''` is the only way to select cards with no text, so it must not collapse
+            // into `is []`, which is ignored and matches everything.
+            test('should distinguish "is" with a blank value from "is" with no value', () => {
+                const blankCard = TestBlockFactory.createCard(board)
+                blankCard.fields.properties.colorPropertyId = ''
+
+                const blank = createFilterClause({propertyId: 'colorPropertyId', condition: 'is', values: ['']})
+                expect(CardFilter.isClauseMet(blank, [textTemplate], blankCard)).toBe(true)
+                expect(CardFilter.isClauseMet(blank, [textTemplate], redCard)).toBe(false)
+
+                const noValue = createFilterClause({propertyId: 'colorPropertyId', condition: 'is', values: []})
+                expect(CardFilter.isClauseMet(noValue, [textTemplate], redCard)).toBe(true)
+                expect(CardFilter.isClauseIgnored(noValue)).toBe(true)
+            })
+
+            // addFilterClicked defaults new clauses to `includes`, which FilterEntry renders as
+            // `is` on a text property. A blank value there is a real filter, not a no-op.
+            test('should not report the equality conditions with a blank value as ignored', () => {
+                const blankCard = TestBlockFactory.createCard(board)
+                blankCard.fields.properties.colorPropertyId = ''
+
+                const includesBlank = createFilterClause({propertyId: 'colorPropertyId', condition: 'includes', values: ['']})
+                expect(CardFilter.isClauseMet(includesBlank, [textTemplate], blankCard)).toBe(true)
+                expect(CardFilter.isClauseMet(includesBlank, [textTemplate], redCard)).toBe(false)
+                expect(CardFilter.isClauseIgnored(includesBlank)).toBe(false)
+
+                const notIncludesBlank = createFilterClause({propertyId: 'colorPropertyId', condition: 'notIncludes', values: ['']})
+                expect(CardFilter.isClauseMet(notIncludesBlank, [textTemplate], blankCard)).toBe(false)
+                expect(CardFilter.isClauseMet(notIncludesBlank, [textTemplate], redCard)).toBe(true)
+                expect(CardFilter.isClauseIgnored(notIncludesBlank)).toBe(false)
+            })
+
+            test('should recognise the substring conditions as the ones a blank value makes meaningless', () => {
+                const substring: FilterCondition[] = ['contains', 'notContains', 'startsWith', 'notStartsWith', 'endsWith', 'notEndsWith']
+                substring.forEach((condition) => expect(CardFilter.isBlankValueMeaningless(condition)).toBe(true))
+
+                const equality: FilterCondition[] = ['is', 'includes', 'notIncludes']
+                equality.forEach((condition) => expect(CardFilter.isBlankValueMeaningless(condition)).toBe(false))
+            })
+
+            test('should not report a non-blank value as ignored', () => {
+                const clause = createFilterClause({propertyId: 'colorPropertyId', condition: 'contains', values: ['Red']})
+                expect(CardFilter.isClauseIgnored(clause)).toBe(false)
+            })
         })
     })
 })

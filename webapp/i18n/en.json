@@ -187,6 +187,8 @@
     "FilterByText.placeholder": "filter text",
     "FilterComponent.add-filter": "+ Add filter",
     "FilterComponent.delete": "Delete",
+    "FilterEntry.inactive": "not filtering",
+    "FilterEntry.inactive-tooltip": "No value is selected, so this filter is ignored and every card is shown. Pick a value to make it filter.",
     "FilterValue.empty": "(empty)",
     "FindBoardsDialog.IntroText": "Search for boards",
     "FindBoardsDialog.NoResultsFor": "No results for \"{searchQuery}\"",

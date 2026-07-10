@@ -10,6 +10,7 @@ import {IPropertyTemplate} from '../../blocks/board'
 import {FilterClause} from '../../blocks/filterClause'
 import {createFilterGroup} from '../../blocks/filterGroup'
 import {BoardView} from '../../blocks/boardView'
+import {CardFilter} from '../../cardFilter'
 import mutator from '../../mutator'
 import {Utils} from '../../utils'
 import Button from '../../widgets/buttons/button'
@@ -60,7 +61,14 @@ const filterValue = (props: Props): JSX.Element|null => {
                     const newFilter = filterGroup.filters[filterIndex] as FilterClause
                     Utils.assert(newFilter, `No filter at index ${filterIndex}`)
 
-                    newFilter.values = [value]
+                    // Drop a blank value for the substring conditions, so the clause reads as
+                    // inactive instead of looking configured. Keep it for the equality ones: with
+                    // no isEmpty in the text condition menu, a blank `is`/`includes` is the only
+                    // way to select cards whose text is empty, and `notIncludes` selects the rest.
+                    // `includes` matters because addFilterClicked defaults to it and FilterEntry
+                    // renders it as `is`, so the user cannot tell which one they are editing.
+                    const dropBlank = !value && CardFilter.isBlankValueMeaningless(newFilter.condition)
+                    newFilter.values = dropBlank ? [] : [value]
                     mutator.changeViewFilter(view.boardId, view.id, view.fields.filter, filterGroup)
                 }}
             />

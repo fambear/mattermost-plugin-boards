@@ -74,33 +74,34 @@ make watch-plugin
 
 ## How to Release
 
-### Automated Release (Recommended)
+> **Warning:** merging to `main` deploys the plugin to the production Mattermost server
+> automatically. There is no approval gate. Read [RELEASE.md](RELEASE.md) before merging.
 
-This project uses GitHub Actions for automated releases:
+Releases are driven entirely by the `version` field in `plugin.json`:
 
-1. **Update version in `plugin.json`**
+1. **Bump the version in `plugin.json`** in your feature branch:
    ```bash
-   # Edit plugin.json and change the "version" field
-   # Example: "version": "9.2.3"
+   make show-version   # check the current one
+   # edit plugin.json: "version": "9.2.5"
    ```
 
-2. **Commit and push to release branch**
-   ```bash
-   git add plugin.json
-   git commit -m "Bump version to 9.2.3"
-   git push origin main:release
-   ```
+2. **Merge the PR into `main`.**
 
-3. **GitHub Actions will automatically:**
-   - Build the plugin for all platforms (Linux, macOS, Windows)
-   - Create a git tag `v{version}`
-   - Create a GitHub Release
-   - Upload universal bundle `boards-{version}.tar.gz` (~150-160 MB)
-   - **Enable automatic updates through Mattermost UI**
+3. **GitHub Actions then automatically:**
+   - runs `Check-in tests` (webapp lint + jest + `tsc`, and `golangci-lint` for the server);
+   - on success triggers `Release Build`, which builds the plugin for **Linux AMD64 only**
+     (`make dist-linux`, ~48 MB);
+   - creates the git tag `v{version}` and a GitHub Release, uploading `boards-{version}.tar.gz`;
+   - uploads and enables the plugin on the Mattermost server.
+
+If you merge **without** bumping the version, the deployment still happens, but no new tag is
+created and the artifact of the existing release is overwritten in place. See
+[RELEASE.md](RELEASE.md) for why that is a problem.
 
 For detailed instructions, see:
-- [RELEASE.md](RELEASE.md) - Complete release guide
+- [RELEASE.md](RELEASE.md) - Complete release guide, including limitations and risks
 - [QUICKSTART-RELEASE.md](QUICKSTART-RELEASE.md) - Quick start
+- [docs/RELEASE-WORKFLOW.md](docs/RELEASE-WORKFLOW.md) - Detailed workflow breakdown
 - [docs/AUTO-UPDATE-GUIDE.md](docs/AUTO-UPDATE-GUIDE.md) - Auto-update setup
 
 ### Local Build
@@ -119,14 +120,22 @@ To build the release locally:
 
 Or manually:
 ```bash
-make dist-linux
+make dist-linux   # linux-amd64 only, ~48 MB — what CI ships
+make dist         # all five platforms, ~150-160 MB
 ```
 
 
 ### Unit testing
 
-Before checking in commits, run `make ci`, which is similar to the `.gitlab-ci.yml` workflow and includes:
+`make ci` is an alias for `make webapp-ci` and covers the web app only:
 
-* **Server unit tests**: `make server-test`
-* **Web app ESLint**: `cd webapp; npm run check`
+* **Web app lint**: `cd webapp; npm run check`
 * **Web app unit tests**: `cd webapp; npm run test`
+* **Web app type check**: `cd webapp; npm run check-types`
+
+**Server tests are not run by `make ci`, and not by GitHub Actions either** — `make server-ci`
+only runs `golangci-lint`. Run the Go tests yourself before checking in:
+
+```bash
+make server-test
+```

@@ -6,9 +6,9 @@
 
 ### Основная информация
 
-- **Название:** Mattermost Boards Plugin
+- **Название:** FamBear Boards (`name` в `plugin.json`)
 - **ID плагина:** focalboard
-- **Текущая версия:** 9.2.2
+- **Текущая версия:** 9.2.4
 - **Минимальная версия Mattermost:** 10.7.0
 - **Репозиторий:** https://github.com/fambear/mattermost-plugin-boards
 - **Оригинальный репозиторий:** https://github.com/mattermost/mattermost-plugin-boards
@@ -20,7 +20,7 @@
 
 ### Backend (Server)
 - **Язык:** Go
-- **Версия Go:** Указана в go.mod (1.23+)
+- **Версия Go:** Указана в go.mod (1.24.6)
 - **Основные компоненты:**
   - API для работы с досками
   - Интеграция с Mattermost Server
@@ -89,10 +89,10 @@ make watch-plugin
 ### Тестирование
 
 ```bash
-# Все тесты
+# make ci == make webapp-ci: линт + jest + tsc (только фронтенд)
 make ci
 
-# Только backend
+# Backend-тесты. В CI НЕ запускаются — только локально
 make server-test
 
 # Только frontend
@@ -102,21 +102,32 @@ cd webapp && npm run test
 make check-style
 ```
 
+**Важно:** `make server-ci`, который вызывает GitHub Actions, сводится к `golangci-lint`.
+Go-тесты не выполняются ни в одном workflow — запускайте `make server-test` сами.
+
 ---
 
 ## 📦 Процесс релиза
 
-### Автоматический релиз (рекомендуется)
+> ⚠️ Мерж в `main` автоматически деплоит плагин на production-сервер.
+> Полное описание и список рисков — в [RELEASE.md](RELEASE.md).
+
+### Автоматический релиз
 
 ```bash
-# 1. Обновить версию
-vim plugin.json  # Изменить "version"
+# 1. В рабочей ветке обновить версию
+vim plugin.json  # "version": "9.2.5"
 
-# 2. Закоммитить и запустить релиз
+# 2. Закоммитить и смержить PR в main
 git add plugin.json
-git commit -m "Release v9.2.3"
-make trigger-release
+git commit -m "Bump version to 9.2.5"
 ```
+
+Дальше `Check-in tests` → `Release Build`: сборка, git-тег `v9.2.5`, GitHub Release
+и загрузка плагина на сервер происходят без участия человека.
+
+Если версию не поднять, деплой всё равно произойдёт, но артефакт существующего релиза
+будет перезаписан, а тег останется на старом коммите.
 
 ### Локальная сборка
 
@@ -135,7 +146,7 @@ make dist-linux
 
 - **Файл:** `dist/boards-{version}.tar.gz`
 - **Платформа:** Linux AMD64 (оптимизировано для self-hosted)
-- **Размер:** ~46 MB
+- **Размер:** ~48 MB
 - **Содержимое:**
   - `boards/server/dist/plugin-linux-amd64` - Backend бинарник (Linux AMD64)
   - `boards/webapp/dist/main.js` - Frontend bundle
@@ -158,11 +169,11 @@ sudo ./scripts/update-plugin-on-server.sh [version]
 
 ```bash
 # 1. Скачать релиз
-wget https://github.com/fambear/mattermost-plugin-boards/releases/download/v9.2.3/boards-9.2.3.tar.gz
+wget https://github.com/fambear/mattermost-plugin-boards/releases/download/v9.2.4/boards-9.2.4.tar.gz
 
 # 2. Установить
 cd /opt/mattermost/plugins
-tar -xzf boards-9.2.3.tar.gz
+tar -xzf boards-9.2.4.tar.gz
 chown -R mattermost:mattermost boards
 
 # 3. Перезапустить Mattermost
@@ -183,11 +194,13 @@ systemctl restart mattermost
 ### Основные файлы
 
 - **README.md** - Основная документация
-- **RELEASE.md** - Полная инструкция по релизам
+- **RELEASE.md** - Полная инструкция по релизам, ограничения и риски
 - **QUICKSTART-RELEASE.md** - Быстрый старт
-- **docs/RELEASE-WORKFLOW.md** - Детальный процесс релиза
+- **docs/RELEASE-WORKFLOW.md** - Детальный разбор workflow
+- **docs/AUTO-UPDATE-GUIDE.md** - Автообновление через Mattermost UI
+- **docs/INTEGRATIONS.md** - Figma и другие интеграции
+- **docs/github-pr-sync-integration.md** - Синхронизация PR с карточками
 - **scripts/README.md** - Документация скриптов
-- **CHANGELOG-RELEASE-AUTOMATION.md** - История изменений
 
 ### Полезные ссылки
 
@@ -201,7 +214,7 @@ systemctl restart mattermost
 ## 🛠️ Технологический стек
 
 ### Backend
-- Go 1.23+
+- Go 1.24.6
 - Mattermost Plugin API
 - SQLite3 / PostgreSQL
 - WebSocket
@@ -264,5 +277,5 @@ systemctl restart mattermost
 
 ---
 
-**Последнее обновление:** 2026-01-21
+**Последнее обновление:** 2026-07-10
 

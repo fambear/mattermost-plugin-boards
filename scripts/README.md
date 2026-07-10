@@ -45,7 +45,11 @@
 ---
 
 ### 3. `update-plugin-on-server.sh` (Linux Server)
-Автоматическое обновление плагина на сервере Mattermost.
+Ручное обновление плагина на сервере Mattermost.
+
+> В обычном потоке этот скрипт не нужен: мерж в `main` деплоит плагин автоматически
+> через GitHub Actions. Скрипт полезен для серверов вне контура автодеплоя,
+> для отката на конкретную версию или когда деплой-джоб упал.
 
 **Использование:**
 ```bash
@@ -53,7 +57,7 @@
 sudo ./scripts/update-plugin-on-server.sh
 
 # Установить конкретную версию
-sudo ./scripts/update-plugin-on-server.sh 9.2.3
+sudo ./scripts/update-plugin-on-server.sh 9.2.4
 ```
 
 **Требования:**
